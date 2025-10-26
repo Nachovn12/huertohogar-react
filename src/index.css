@@ -1,0 +1,521 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  color: #24323a;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Global spacing and layout improvements */
+.container {
+  max-width: 1140px; /* ancho estándar para mejor balance visual */
+}
+
+.section-padding {
+  padding: 4rem 0;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.section-subtitle {
+  font-size: 1.2rem;
+  color: #6c757d;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+/* Estilos personalizados para HuertoHogar */
+.navbar-brand {
+  font-weight: bold;
+  color: #2E8B57 !important; /* Verde Esmeralda */
+}
+
+.hero-section {
+  background: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%); /* Verde Esmeralda */
+  color: white;
+  padding: 5.5rem 0 4rem 0;
+  min-height: 56vh;
+  display: flex;
+  align-items: center;
+}
+
+.product-card {
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  overflow: hidden;
+  height: 100%;
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border-color: rgba(46,139,87,0.25);
+}
+
+.product-card .card-body {
+  padding: 1.6rem 1.6rem 1.75rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.product-card .card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #22303a;
+}
+
+.product-card .card-text {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 1rem;
+  flex-grow: 1;
+}
+
+/* Reservar un bloque de altura para la sección de precio/ahorro/stock
+   esto hace que las cards con y sin oferta tengan los botones alineados */
+.product-info-block {
+  min-height: 72px; /* espacio aproximado para precio + posible ahorro */
+  display: flex;
+  align-items: center; /* centrar contenido verticalmente si hay poco texto */
+  justify-content: center;
+}
+
+/* Ajuste más generoso para featured (útil si hay dos líneas extras) */
+.featured-product-card .product-info-block {
+  min-height: 96px;
+}
+
+.product-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 140px;
+  margin-bottom: 1rem;
+}
+
+.product-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.btn-primary {
+  background-color: #2E8B57; /* Verde Esmeralda */
+  border-color: #2E8B57;
+}
+
+.btn-primary:hover {
+  background-color: #228B22; /* Verde más oscuro */
+  border-color: #228B22;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer {
+  background-color: #2E8B57; /* Verde Esmeralda */
+  color: white;
+  padding: 2rem 0;
+  margin-top: 3rem;
+}
+
+/* Navbar styles */
+.navbar-toggler {
+  border: none;
+  padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler:focus {
+  box-shadow: none;
+}
+
+.navbar-collapse {
+  transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link {
+  padding: 0.5rem 1rem;
+  transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #2E8B57 !important;
+}
+
+/* Category cards */
+.category-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.category-icon {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Featured products */
+.featured-product-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+}
+
+.featured-product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+  border-color: #2E8B57;
+}
+
+.product-image-container {
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  padding: 1rem;
+}
+
+.featured-product-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.price-section {
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 1rem;
+}
+
+.discount-info {
+  background: #f8f9fa;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.button-group {
+  margin-top: auto;
+}
+
+/* Badges (oferta) */
+.badge-offer {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #ef4444;
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* Footer tweaks */
+.footer {
+  background-color: #131515; /* tono más oscuro para contraste */
+  color: #cfd8dc;
+  padding: 3rem 0;
+}
+
+.footer a { color: #cfd8dc; }
+
+/* Productos destacados: espaciado y grid */
+.section-padding { padding: 4rem 0; }
+.products-grid { row-gap: 2.25rem; }
+
+/* Uniformizar botones: outline más pequeño visualmente */
+.btn-outline-primary {
+  color: #1565c0;
+  border-color: #bfe0ff;
+  background-color: transparent;
+}
+
+/* Ajustes responsivos: disminuir espacios en móviles */
+@media (max-width: 768px) {
+  .hero-section { padding: 3rem 0; }
+  .product-image { height: 110px; }
+  .product-card .card-body { padding: 1rem; }
+  .products-grid { row-gap: 1rem; }
+}
+
+/* Header styles to match the requested layout */
+.site-header {
+  background: #fff;
+  border-bottom: 1px solid #e9f0ee;
+}
+.site-header .brand-logo img {
+  display: block;
+  box-shadow: 0 4px 12px rgba(34,48,58,0.06);
+}
+.brand-name {
+  font-size: 1.6rem;
+  color: #1b7830;
+}
+.nav-center .nav-link {
+  color: #22303a;
+  font-weight: 600;
+}
+.nav-center .nav-link:hover { color: #2e8b57; }
+.nav-search .search-input {
+  width: 320px;
+  border-radius: 30px;
+  padding: 0.6rem 1rem;
+  border: 1px solid #e6f0eb;
+  box-shadow: none;
+}
+.btn-pill {
+  border-radius: 30px;
+  padding: 0.45rem 1.05rem;
+}
+.cart-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid #e6f0eb;
+  background: #fff;
+  color: #2E8B57;
+}
+.cart-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-size: 0.72rem;
+}
+.mobile-menu { display:none; }
+.mobile-menu.show { display:block; padding:0.75rem 1rem; background:#fff; border-top:1px solid #eef6f1; }
+
+@media (max-width: 992px) {
+  .nav-center { display: none; }
+  .nav-search .search-input { width: 200px; }
+}
+
+
+/* Special offers section */
+.special-offers {
+  background: linear-gradient(180deg, #fffdfa 0%, #fff 30%);
+  color: #212529;
+}
+
+/* Estilos específicos para las cards de ofertas: diseño limpio y moderno */
+.special-offers .product-card {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #eef6f1;
+  transition: transform 0.28s ease, box-shadow 0.28s ease;
+}
+.special-offers .product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 18px 40px rgba(34,48,58,0.08);
+}
+
+.special-offers .product-image-container {
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  padding: 1rem;
+}
+.special-offers .product-image-container img {
+  max-height: 140px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.special-offers .offer-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #ef4444;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.special-offers .card-body { padding: 1rem 1rem 1.25rem 1rem; }
+
+.special-offers .price-new {
+  font-size: 1.15rem;
+  color: #1b9a4a;
+  font-weight: 800;
+}
+.special-offers .price-old {
+  font-size: 0.9rem;
+  text-decoration: line-through;
+  color: #9aa5a0;
+}
+.special-offers .price-discount-pill {
+  background: #ffd54a;
+  color: #2b2b2b;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.special-offers .btn-cta {
+  background: #ffd54a;
+  color: #1b1b1b;
+  border: 1px solid #f0c34a;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+}
+.special-offers .btn-cta:hover { opacity: 0.95; }
+
+.special-offers .btn-add {
+  background: #2e8b57;
+  color: #fff;
+  border: 1px solid #2e8b57;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+}
+.special-offers .btn-add:hover { background:#246f45; }
+
+/* ajustar para que las cards mantengan altura y botones alineados */
+.special-offers .card-body { display:flex; flex-direction:column; }
+.special-offers .card-body > .mt-auto { margin-top: auto; }
+
+/* HelloFresh-like theme overrides */
+.special-offers.hf-theme {
+  background: linear-gradient(180deg, #f6fcf7 0%, #ffffff 40%);
+}
+.special-offers.hf-theme .section-title { color: #153d2e; }
+.special-offers.hf-theme .section-subtitle { color: #556b63; }
+.special-offers.hf-theme .btn-cta { background: #fff; border-color: #d9f0df; }
+.special-offers.hf-theme .btn-add { background: #62b84f; border-color: #62b84f; }
+.special-offers.hf-theme .btn-add:hover { background:#4f9a3f; }
+.special-offers.hf-theme .offer-badge { right: 12px; top: 12px; background:#ff6b6b; }
+.special-offers.hf-theme .price-new { color: #1b8a3e; }
+.special-offers.hf-theme .card { border: 1px solid #eef6f1; }
+
+/* Responsive: center the header CTA on small screens */
+@media (max-width: 767px) {
+  .special-offers.hf-theme .text-md-end { text-align: center !important; }
+  .special-offers.hf-theme .section-title { font-size: 1.8rem; }
+}
+
+/* Mission section */
+.mission-section {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* Nosotros: presentación más limpia para misión y valores */
+.nosotros .card {
+  border-radius: 10px;
+}
+.nosotros .card-body ul li {
+  color: #495057;
+}
+.nosotros .card-body strong { color: #22303a; }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 2rem 0;
+  }
+  
+  .hero-section h1 {
+    font-size: 2rem;
+  }
+  
+  .navbar-collapse {
+    margin-top: 1rem;
+  }
+  
+  .section-padding {
+    padding: 2rem 0;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .product-info-block {
+    min-height: 56px;
+  }
+  .featured-product-card .product-info-block {
+    min-height: 68px;
+  }
+}
+
+/* Botones consistentes en tarjetas de producto */
+.product-card .d-grid.gap-2 {
+  gap: 0.5rem; /* asegurar separación uniforme */
+}
+
+.product-card .d-grid.gap-2 .btn {
+  min-height: 44px; /* altura consistente */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+}
+
+/* Forzar que el grupo de botones ocupe el espacio y se alineen al fondo */
+.product-card .card-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card .card-body > .mt-auto {
+  margin-top: auto; /* ya se usa en componentes, garantía de alineado */
+}
+
+/* Asegurar consistencia también en tarjetas destacadas */
+.featured-product-card .d-grid.gap-2 .btn,
+.featured-product-card .button-group .btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ajuste opcional: limitar la descripción para que no rompa el layout */
+.product-card .card-text {
+  max-height: 3.6rem; /* dos líneas aprox */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
