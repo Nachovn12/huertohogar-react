@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
 
 const Hero = () => (
-  <Box sx={{ bgcolor: '#f7faf7', py: { xs: 6, md: 10 }, textAlign: 'center' }}>
-    <Typography variant="h2" sx={{ fontWeight: 700, color: '#27ae60', fontFamily: 'Montserrat, Arial, sans-serif', mb: 3 }}>
+  <Box sx={{ bgcolor: '#f7faf7', py: { xs: 22, md: 15 }, textAlign: 'center', width: '100vw', mx: 'calc(-50vw + 50%)' }}>
+    <Typography variant="h2" sx={{ fontWeight: 750, color: '#27ae60', fontFamily: 'Montserrat, Arial, sans-serif', mb: 3 }}>
       Bienvenido a HuertoHogar
     </Typography>
     <Typography variant="h5" sx={{ color: '#333', mb: 4 }}>

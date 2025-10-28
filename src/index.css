@@ -274,57 +274,67 @@ code {
   .products-grid { row-gap: 1rem; }
 }
 
-/* Header styles to match the requested layout */
-.site-header {
-  background: #fff;
-  border-bottom: 1px solid #e9f0ee;
-}
-.site-header .brand-logo img {
-  display: block;
-  box-shadow: 0 4px 12px rgba(34,48,58,0.06);
-}
-.brand-name {
-  font-size: 1.6rem;
-  color: #1b7830;
-}
-.nav-center .nav-link {
-  color: #22303a;
-  font-weight: 600;
-}
-.nav-center .nav-link:hover { color: #2e8b57; }
-.nav-search .search-input {
-  width: 320px;
-  border-radius: 30px;
-  padding: 0.6rem 1rem;
-  border: 1px solid #e6f0eb;
-  box-shadow: none;
-}
-.btn-pill {
-  border-radius: 30px;
-  padding: 0.45rem 1.05rem;
-}
-.cart-circle {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 1px solid #e6f0eb;
-  background: #fff;
-  color: #2E8B57;
-}
-.cart-count {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  font-size: 0.72rem;
-}
-.mobile-menu { display:none; }
-.mobile-menu.show { display:block; padding:0.75rem 1rem; background:#fff; border-top:1px solid #eef6f1; }
-
-@media (max-width: 992px) {
-  .nav-center { display: none; }
-  .nav-search .search-input { width: 200px; }
+@media (max-width: 576px) {
+  .product-info-block {
+    min-height: 56px;
+  }
+  .featured-product-card .product-info-block {
+    min-height: 68px;
+  }
 }
 
+/* Botones consistentes en tarjetas de producto */
+.product-card .d-grid.gap-2 {
+  gap: 0.5rem; /* asegurar separación uniforme */
+}
+
+.product-card .d-grid.gap-2 .btn {
+  min-height: 44px; /* altura consistente */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+}
+
+/* Forzar que el grupo de botones ocupe el espacio y se alineen al fondo */
+.product-card .card-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card .card-body > .mt-auto {
+  margin-top: auto; /* ya se usa en componentes, garantía de alineado */
+}
+
+/* Asegurar consistencia también en tarjetas destacadas */
+.featured-product-card .d-grid.gap-2 .btn,
+.featured-product-card .button-group .btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ajuste opcional: limitar la descripción para que no rompa el layout */
+.product-card .card-text {
+  max-height: 3.6rem; /* dos líneas aprox */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Oculta cualquier badge de oferta que esté dentro del NavBar o cerca del carrito */
+.MuiAppBar-root .offer-badge,
+.AppBar .offer-badge,
+.hf-theme .offer-badge {
+  display: none !important;
+}
+
+/* Si el badge está cerca del carrito, también lo ocultamos */
+.MuiIconButton-root + .offer-badge,
+.IconButton + .offer-badge {
+  display: none !important;
+}
 
 /* Special offers section */
 .special-offers {
