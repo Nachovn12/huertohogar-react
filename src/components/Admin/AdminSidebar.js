@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import InventoryIcon from '@mui/icons-material/Inventory';
@@ -13,6 +14,7 @@ import './AdminSidebar.css';
 
 const AdminSidebar = () => {
   const location = useLocation();
+  const { logout } = useAuth();
 
   const menuItems = [
     { path: '/admin/dashboard', icon: <DashboardIcon />, label: 'Dashboard' },
@@ -30,7 +32,7 @@ const AdminSidebar = () => {
     <div className="admin-sidebar">
       {/* Logo / Company Name */}
       <div className="sidebar-header">
-        <h4>Company name</h4>
+        <h4>🌱 HuertoHogar</h4>
       </div>
 
       {/* Menu Items */}
@@ -49,15 +51,25 @@ const AdminSidebar = () => {
 
       {/* Bottom Actions */}
       <div className="sidebar-footer">
-        <Link to="/tienda" className="sidebar-item tienda-item">
+        <Link to="/" className="sidebar-item tienda-item">
           <span className="sidebar-icon"><StoreIcon /></span>
           <span className="sidebar-label">Tienda</span>
         </Link>
         
-        <Link to="/logout" className="sidebar-item logout-item">
+        <button 
+          onClick={logout} 
+          className="sidebar-item logout-item"
+          style={{ 
+            border: 'none', 
+            background: 'transparent',
+            width: '100%',
+            textAlign: 'left',
+            cursor: 'pointer'
+          }}
+        >
           <span className="sidebar-icon"><LogoutIcon /></span>
           <span className="sidebar-label">Cerrar Sesión</span>
-        </Link>
+        </button>
       </div>
     </div>
   );

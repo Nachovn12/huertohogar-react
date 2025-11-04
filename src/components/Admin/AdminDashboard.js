@@ -1,5 +1,6 @@
 import React from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
+import './AdminDashboard.css';
 // Importar iconos y colores para el diseño
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import InventoryIcon from '@mui/icons-material/Inventory';
@@ -68,7 +69,7 @@ const AdminDashboard = () => {
     ];
 
     return (
-        <Container fluid className="p-4"> 
+        <Container fluid className="admin-dashboard p-4"> 
             {/* Header */}
             <div className="dashboard-header mb-5">
                 <h1 style={{ fontWeight: 600, color: '#333' }}>Dashboard</h1>
@@ -76,26 +77,27 @@ const AdminDashboard = () => {
             </div>
 
             {/* Tarjetas de Estadísticas (Key Performance Indicators) */}
-            <Row className="mb-5">
+            <Row className="mb-5 kpi-row">
                 {stats.map((stat, index) => (
-                    <Col lg={4} md={6} className="mb-4" key={index}>
-                        <Card 
-                            className="stat-card" 
-                            style={{ 
-                                ...statCardStyle,
-                                backgroundColor: stat.bgColor, 
-                                color: COLORS.textLight, 
-                                border: 'none' 
+                    <Col key={index}>
+                        <Card
+                            className="stat-card text-white"
+                            style={{
+                                backgroundColor: stat.bgColor,
+                                border: 'none'
                             }}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`${stat.title} - ${stat.value}`}
                         >
-                            <Card.Body className="d-flex align-items-center justify-content-between p-4">
-                                <div className="stat-info text-start">
-                                    <h6 style={{ fontWeight: 400, opacity: 0.9 }}>{stat.title}</h6>
-                                    <h1 className="mb-2" style={{ fontWeight: 700, fontSize: '2.5rem' }}>{stat.value}</h1>
-                                    <small style={{ opacity: 0.8 }}>{stat.subtitle}</small>
-                                </div>
-                                <div className="stat-icon me-3">
+                            <Card.Body>
+                                <div className="stat-icon">
                                     {stat.icon}
+                                </div>
+                                <div className="stat-info text-start">
+                                    <h6>{stat.title}</h6>
+                                    <h1>{stat.value}</h1>
+                                    <small>{stat.subtitle}</small>
                                 </div>
                             </Card.Body>
                         </Card>
@@ -105,31 +107,25 @@ const AdminDashboard = () => {
 
             {/* Módulos del Sistema (Cards de Enlaces) */}
             <h3 style={{ fontWeight: 500, color: '#555', marginBottom: '20px' }}>Módulos del Sistema</h3>
-            <Row>
+            <div className="modules-grid">
                 {modules.map((module, index) => (
-                    <Col lg={3} md={4} sm={6} className="mb-4" key={index}>
-                        <Card 
-                            className="module-card h-100 shadow-sm"
-                            style={{ 
-                                borderRadius: '8px', 
-                                borderLeft: `5px solid ${COLORS.secondary}`, // Borde de acento
-                                transition: 'box-shadow 0.3s',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            <Card.Body className="text-start">
-                                <div className="module-icon mb-3">
-                                    {module.icon}
-                                </div>
-                                <h5 className="module-title" style={{ fontWeight: 600, color: '#333' }}>{module.title}</h5>
-                                <p className="module-description text-muted small">
-                                    {module.description}
-                                </p>
-                            </Card.Body>
-                        </Card>
-                    </Col>
+                    <div
+                        className="module-card"
+                        key={index}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={module.title}
+                    >
+                        <div className="module-left">
+                            <div className="module-icon">{module.icon}</div>
+                        </div>
+                        <div className="module-body">
+                            <div className="module-title">{module.title}</div>
+                            <div className="module-description">{module.description}</div>
+                        </div>
+                    </div>
                 ))}
-            </Row>
+            </div>
         </Container>
     );
 };

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Table, Button, Modal, Form, Badge, Row, Col, Alert } from 'react-bootstrap';
-import { Edit, Delete, Add, Search } from '@mui/icons-material';
+import { Edit, Delete, Add, Search, MoreVert } from '@mui/icons-material';
 import { products as initialProducts } from '../../data/products';
+import './AdminCommon.css';
 
 const ProductManagement = () => {
   const [products, setProducts] = useState(initialProducts.slice(0, 10)); // Primeros 10 para demo
   const [showModal, setShowModal] = useState(false);
+  const [showActionsModal, setShowActionsModal] = useState(false);
   const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
   const [currentProduct, setCurrentProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,7 +57,14 @@ const ProductManagement = () => {
       image: product.image,
       offer: product.offer || false
     });
+    setShowActionsModal(false);
     setShowModal(true);
+  };
+
+  // Abrir modal de acciones
+  const handleOpenActions = (product) => {
+    setCurrentProduct(product);
+    setShowActionsModal(true);
   };
 
   // Eliminar producto
@@ -107,18 +116,11 @@ const ProductManagement = () => {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 style={{ 
-          fontFamily: 'Playfair Display, serif', 
-          color: '#2E8B57',
-          marginBottom: 0
-        }}>
-          Gestión de Productos
-        </h2>
+      <div className="admin-page-header">
+        <h1 className="admin-page-title">Gestión de Productos</h1>
         <Button 
-          variant="success" 
           onClick={handleAddProduct}
-          style={{ borderRadius: '12px', fontWeight: 600 }}
+          className="btn-add-new"
         >
           <Add /> Agregar Producto
         </Button>
@@ -132,35 +134,25 @@ const ProductManagement = () => {
       )}
 
       {/* Barra de búsqueda */}
-      <div className="mb-4">
+      <div className="admin-filters">
         <Form.Group>
-          <div style={{ position: 'relative' }}>
-            <Search style={{ 
-              position: 'absolute', 
-              left: '15px', 
-              top: '50%', 
-              transform: 'translateY(-50%)',
-              color: '#999'
-            }} />
+          <div className="search-input-wrapper">
+            <Search className="search-icon" />
             <Form.Control
               type="text"
               placeholder="Buscar productos por nombre o categoría..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                borderRadius: '12px',
-                paddingLeft: '45px',
-                border: '2px solid #e0e0e0'
-              }}
+              className="admin-search-input"
             />
           </div>
         </Form.Group>
       </div>
 
       {/* Tabla de productos */}
-      <div style={{ overflowX: 'auto' }}>
-        <Table hover responsive style={{ minWidth: '800px' }}>
-          <thead style={{ background: '#f7faf7', borderRadius: '12px' }}>
+      <div className="admin-table-wrapper">
+        <Table hover responsive className="admin-table">
+          <thead>
             <tr>
               <th>ID</th>
               <th>Nombre</th>
@@ -175,46 +167,35 @@ const ProductManagement = () => {
           <tbody>
             {filteredProducts.map(product => (
               <tr key={product.id}>
-                <td>{product.id}</td>
+                <td style={{ color: '#64748b' }}>{product.id}</td>
                 <td style={{ fontWeight: 600 }}>{product.name}</td>
                 <td>
-                  <Badge bg="secondary" style={{ borderRadius: '8px' }}>
+                  <Badge bg="secondary" className="badge-custom">
                     {product.category}
                   </Badge>
                 </td>
-                <td>${product.price.toLocaleString()}</td>
+                <td style={{ fontWeight: 700, color: '#0f172a' }}>${product.price.toLocaleString()}</td>
                 <td>
-                  <Badge bg={product.stock > 20 ? 'success' : product.stock > 10 ? 'warning' : 'danger'}>
+                  <Badge bg={product.stock > 20 ? 'success' : product.stock > 10 ? 'warning' : 'danger'} className="badge-custom">
                     {product.stock}
                   </Badge>
                 </td>
                 <td>{product.unit}</td>
                 <td>
                   {product.offer ? (
-                    <Badge bg="danger">🔥 Sí</Badge>
+                    <Badge bg="danger" className="badge-custom">🔥 Sí</Badge>
                   ) : (
-                    <Badge bg="secondary">No</Badge>
+                    <Badge bg="secondary" className="badge-custom">No</Badge>
                   )}
                 </td>
-                <td>
-                  <div className="d-flex gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline-primary"
-                      onClick={() => handleEditProduct(product)}
-                      style={{ borderRadius: '8px' }}
-                    >
-                      <Edit fontSize="small" />
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline-danger"
-                      onClick={() => handleDeleteProduct(product.id)}
-                      style={{ borderRadius: '8px' }}
-                    >
-                      <Delete fontSize="small" />
-                    </Button>
-                  </div>
+                <td className="actions-cell">
+                  <Button 
+                    size="sm" 
+                    onClick={() => handleOpenActions(product)}
+                    className="action-btn action-btn-view"
+                  >
+                    <MoreVert fontSize="small" /> Acciones
+                  </Button>
                 </td>
               </tr>
             ))}
@@ -223,12 +204,43 @@ const ProductManagement = () => {
       </div>
 
       {filteredProducts.length === 0 && (
-        <div className="text-center py-5">
-          <p style={{ color: '#999', fontSize: '1.1rem' }}>
+        <div className="empty-state">
+          <div className="empty-state-icon">📦</div>
+          <p className="empty-state-text">
             No se encontraron productos
           </p>
         </div>
       )}
+
+      {/* Modal de Acciones */}
+      <Modal show={showActionsModal} onHide={() => setShowActionsModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Acciones - {currentProduct?.name}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="d-grid gap-2">
+            <Button 
+              variant="outline-primary"
+              onClick={() => handleEditProduct(currentProduct)}
+              className="d-flex align-items-center justify-content-center gap-2 py-3"
+              style={{ borderRadius: '10px', fontWeight: 600 }}
+            >
+              <Edit /> Editar Producto
+            </Button>
+            <Button 
+              variant="outline-danger"
+              onClick={() => {
+                setShowActionsModal(false);
+                handleDeleteProduct(currentProduct.id);
+              }}
+              className="d-flex align-items-center justify-content-center gap-2 py-3"
+              style={{ borderRadius: '10px', fontWeight: 600 }}
+            >
+              <Delete /> Eliminar Producto
+            </Button>
+          </div>
+        </Modal.Body>
+      </Modal>
 
       {/* Modal para agregar/editar producto */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
@@ -349,11 +361,11 @@ const ProductManagement = () => {
             </Form.Group>
 
             <div className="d-flex justify-content-end gap-2 mt-4">
-              <Button variant="secondary" onClick={() => setShowModal(false)}>
+              <Button onClick={() => setShowModal(false)} className="btn-modal-secondary">
                 Cancelar
               </Button>
-              <Button variant="success" type="submit">
-                {modalMode === 'add' ? 'Agregar' : 'Guardar Cambios'}
+              <Button type="submit" className="btn-modal-primary">
+                {modalMode === 'add' ? 'Agregar Producto' : 'Guardar Cambios'}
               </Button>
             </div>
           </Form>

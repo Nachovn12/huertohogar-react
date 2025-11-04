@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Table, Button, Modal, Form, Badge, Alert } from 'react-bootstrap';
-import { Edit, Delete, Add, Search } from '@mui/icons-material';
+import { Edit, Delete, Add, Search, MoreVert } from '@mui/icons-material';
+import './AdminCommon.css';
 
 const UserManagement = () => {
   // Usuarios de demostración
@@ -13,6 +14,7 @@ const UserManagement = () => {
   ]);
 
   const [showModal, setShowModal] = useState(false);
+  const [showActionsModal, setShowActionsModal] = useState(false);
   const [modalMode, setModalMode] = useState('add');
   const [currentUser, setCurrentUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,7 +49,13 @@ const UserManagement = () => {
       role: user.role,
       status: user.status
     });
+    setShowActionsModal(false);
     setShowModal(true);
+  };
+
+  const handleOpenActions = (user) => {
+    setCurrentUser(user);
+    setShowActionsModal(true);
   };
 
   const handleDeleteUser = (userId) => {
@@ -94,18 +102,11 @@ const UserManagement = () => {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 style={{ 
-          fontFamily: 'Playfair Display, serif', 
-          color: '#2E8B57',
-          marginBottom: 0
-        }}>
-          Gestión de Usuarios
-        </h2>
+      <div className="admin-page-header">
+        <h1 className="admin-page-title">Gestión de Usuarios</h1>
         <Button 
-          variant="success" 
           onClick={handleAddUser}
-          style={{ borderRadius: '12px', fontWeight: 600 }}
+          className="btn-add-new"
         >
           <Add /> Agregar Usuario
         </Button>
@@ -117,34 +118,24 @@ const UserManagement = () => {
         </Alert>
       )}
 
-      <div className="mb-4">
+      <div className="admin-filters">
         <Form.Group>
-          <div style={{ position: 'relative' }}>
-            <Search style={{ 
-              position: 'absolute', 
-              left: '15px', 
-              top: '50%', 
-              transform: 'translateY(-50%)',
-              color: '#999'
-            }} />
+          <div className="search-input-wrapper">
+            <Search className="search-icon" />
             <Form.Control
               type="text"
               placeholder="Buscar usuarios por nombre o email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                borderRadius: '12px',
-                paddingLeft: '45px',
-                border: '2px solid #e0e0e0'
-              }}
+              className="admin-search-input"
             />
           </div>
         </Form.Group>
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <Table hover responsive>
-          <thead style={{ background: '#f7faf7' }}>
+      <div className="admin-table-wrapper">
+        <Table hover responsive className="admin-table">
+          <thead>
             <tr>
               <th>ID</th>
               <th>Nombre</th>
@@ -158,39 +149,28 @@ const UserManagement = () => {
           <tbody>
             {filteredUsers.map(user => (
               <tr key={user.id}>
-                <td>{user.id}</td>
+                <td style={{ color: '#64748b' }}>{user.id}</td>
                 <td style={{ fontWeight: 600 }}>{user.name}</td>
-                <td>{user.email}</td>
+                <td style={{ color: '#64748b' }}>{user.email}</td>
                 <td>
-                  <Badge bg={user.role === 'admin' ? 'danger' : 'primary'} style={{ borderRadius: '8px' }}>
+                  <Badge bg={user.role === 'admin' ? 'danger' : 'primary'} className="badge-custom">
                     {user.role === 'admin' ? '👑 Admin' : '👤 Cliente'}
                   </Badge>
                 </td>
                 <td>
-                  <Badge bg={user.status === 'active' ? 'success' : 'secondary'} style={{ borderRadius: '8px' }}>
+                  <Badge bg={user.status === 'active' ? 'success' : 'secondary'} className="badge-custom">
                     {user.status === 'active' ? 'Activo' : 'Inactivo'}
                   </Badge>
                 </td>
                 <td>{new Date(user.createdAt).toLocaleDateString('es-ES')}</td>
-                <td>
-                  <div className="d-flex gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline-primary"
-                      onClick={() => handleEditUser(user)}
-                      style={{ borderRadius: '8px' }}
-                    >
-                      <Edit fontSize="small" />
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline-danger"
-                      onClick={() => handleDeleteUser(user.id)}
-                      style={{ borderRadius: '8px' }}
-                    >
-                      <Delete fontSize="small" />
-                    </Button>
-                  </div>
+                <td className="actions-cell">
+                  <Button 
+                    size="sm" 
+                    onClick={() => handleOpenActions(user)}
+                    className="action-btn action-btn-view"
+                  >
+                    <MoreVert fontSize="small" /> Acciones
+                  </Button>
                 </td>
               </tr>
             ))}
@@ -199,12 +179,43 @@ const UserManagement = () => {
       </div>
 
       {filteredUsers.length === 0 && (
-        <div className="text-center py-5">
-          <p style={{ color: '#999', fontSize: '1.1rem' }}>
+        <div className="empty-state">
+          <div className="empty-state-icon">👥</div>
+          <p className="empty-state-text">
             No se encontraron usuarios
           </p>
         </div>
       )}
+
+      {/* Modal de Acciones */}
+      <Modal show={showActionsModal} onHide={() => setShowActionsModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Acciones - {currentUser?.name}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="d-grid gap-2">
+            <Button 
+              variant="outline-primary"
+              onClick={() => handleEditUser(currentUser)}
+              className="d-flex align-items-center justify-content-center gap-2 py-3"
+              style={{ borderRadius: '10px', fontWeight: 600 }}
+            >
+              <Edit /> Editar Usuario
+            </Button>
+            <Button 
+              variant="outline-danger"
+              onClick={() => {
+                setShowActionsModal(false);
+                handleDeleteUser(currentUser.id);
+              }}
+              className="d-flex align-items-center justify-content-center gap-2 py-3"
+              style={{ borderRadius: '10px', fontWeight: 600 }}
+            >
+              <Delete /> Eliminar Usuario
+            </Button>
+          </div>
+        </Modal.Body>
+      </Modal>
 
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
@@ -261,11 +272,11 @@ const UserManagement = () => {
             </Form.Group>
 
             <div className="d-flex justify-content-end gap-2 mt-4">
-              <Button variant="secondary" onClick={() => setShowModal(false)}>
+              <Button onClick={() => setShowModal(false)} className="btn-modal-secondary">
                 Cancelar
               </Button>
-              <Button variant="success" type="submit">
-                {modalMode === 'add' ? 'Agregar' : 'Guardar Cambios'}
+              <Button type="submit" className="btn-modal-primary">
+                {modalMode === 'add' ? 'Agregar Usuario' : 'Guardar Cambios'}
               </Button>
             </div>
           </Form>

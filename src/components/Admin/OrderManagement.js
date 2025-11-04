@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Table, Button, Modal, Badge, Card, Row, Col, Form, Alert } from 'react-bootstrap';
-import { Visibility, Edit, Search } from '@mui/icons-material';
+import { Visibility, Edit, Search, MoreVert } from '@mui/icons-material';
+import './AdminCommon.css';
 
 const OrderManagement = () => {
   // Órdenes de demostración
@@ -81,6 +82,7 @@ const OrderManagement = () => {
   ]);
 
   const [showModal, setShowModal] = useState(false);
+  const [showActionsModal, setShowActionsModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -90,7 +92,13 @@ const OrderManagement = () => {
 
   const handleViewOrder = (order) => {
     setSelectedOrder(order);
+    setShowActionsModal(false);
     setShowModal(true);
+  };
+
+  const handleOpenActions = (order) => {
+    setSelectedOrder(order);
+    setShowActionsModal(true);
   };
 
   const handleUpdateStatus = (orderId, newStatus) => {
@@ -150,14 +158,8 @@ const OrderManagement = () => {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 style={{ 
-          fontFamily: 'Playfair Display, serif', 
-          color: '#2E8B57',
-          marginBottom: 0
-        }}>
-          Gestión de Órdenes
-        </h2>
+      <div className="admin-page-header">
+        <h1 className="admin-page-title">Gestión de Órdenes</h1>
       </div>
 
       {showAlert && (
@@ -167,86 +169,62 @@ const OrderManagement = () => {
       )}
 
       {/* Estadísticas de órdenes */}
-      <Row className="g-3 mb-4">
-        <Col xs={6} md={3}>
-          <Card style={{ borderRadius: '12px', border: '2px solid #f0f0f0' }}>
-            <Card.Body className="text-center">
-              <h3 style={{ color: '#2E8B57', marginBottom: '0.5rem' }}>{stats.total}</h3>
-              <p style={{ marginBottom: 0, color: '#666' }}>Total</p>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col xs={6} md={3}>
-          <Card style={{ borderRadius: '12px', border: '2px solid #ffc107' }}>
-            <Card.Body className="text-center">
-              <h3 style={{ color: '#ffc107', marginBottom: '0.5rem' }}>{stats.pending}</h3>
-              <p style={{ marginBottom: 0, color: '#666' }}>Pendientes</p>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col xs={6} md={3}>
-          <Card style={{ borderRadius: '12px', border: '2px solid #0dcaf0' }}>
-            <Card.Body className="text-center">
-              <h3 style={{ color: '#0dcaf0', marginBottom: '0.5rem' }}>{stats.processing}</h3>
-              <p style={{ marginBottom: 0, color: '#666' }}>Procesando</p>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col xs={6} md={3}>
-          <Card style={{ borderRadius: '12px', border: '2px solid #198754' }}>
-            <Card.Body className="text-center">
-              <h3 style={{ color: '#198754', marginBottom: '0.5rem' }}>{stats.completed}</h3>
-              <p style={{ marginBottom: 0, color: '#666' }}>Completadas</p>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+      <div className="stats-grid">
+        <div className="stat-card-mini">
+          <p>Total</p>
+          <h3 style={{ color: '#4CAF50' }}>{stats.total}</h3>
+        </div>
+        <div className="stat-card-mini">
+          <p>Pendientes</p>
+          <h3 style={{ color: '#ffc107' }}>{stats.pending}</h3>
+        </div>
+        <div className="stat-card-mini">
+          <p>Procesando</p>
+          <h3 style={{ color: '#0dcaf0' }}>{stats.processing}</h3>
+        </div>
+        <div className="stat-card-mini">
+          <p>Completadas</p>
+          <h3 style={{ color: '#198754' }}>{stats.completed}</h3>
+        </div>
+      </div>
 
       {/* Filtros y búsqueda */}
-      <Row className="mb-4">
-        <Col md={8}>
-          <Form.Group>
-            <div style={{ position: 'relative' }}>
-              <Search style={{ 
-                position: 'absolute', 
-                left: '15px', 
-                top: '50%', 
-                transform: 'translateY(-50%)',
-                color: '#999'
-              }} />
-              <Form.Control
-                type="text"
-                placeholder="Buscar por ID, nombre o email del cliente..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  borderRadius: '12px',
-                  paddingLeft: '45px',
-                  border: '2px solid #e0e0e0'
-                }}
-              />
-            </div>
-          </Form.Group>
-        </Col>
-        <Col md={4}>
-          <Form.Select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            style={{ borderRadius: '12px', border: '2px solid #e0e0e0' }}
-          >
-            <option value="all">Todos los estados</option>
-            <option value="pending">Pendientes</option>
-            <option value="processing">Procesando</option>
-            <option value="completed">Completadas</option>
-            <option value="cancelled">Canceladas</option>
-          </Form.Select>
-        </Col>
-      </Row>
+      <div className="admin-filters">
+        <Row className="g-3">
+          <Col md={8}>
+            <Form.Group>
+              <div className="search-input-wrapper">
+                <Search className="search-icon" />
+                <Form.Control
+                  type="text"
+                  placeholder="Buscar por ID, nombre o email del cliente..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="admin-search-input"
+                />
+              </div>
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="admin-select"
+            >
+              <option value="all">Todos los estados</option>
+              <option value="pending">Pendientes</option>
+              <option value="processing">Procesando</option>
+              <option value="completed">Completadas</option>
+              <option value="cancelled">Canceladas</option>
+            </Form.Select>
+          </Col>
+        </Row>
+      </div>
 
       {/* Tabla de órdenes */}
-      <div style={{ overflowX: 'auto' }}>
-        <Table hover responsive>
-          <thead style={{ background: '#f7faf7' }}>
+      <div className="admin-table-wrapper">
+        <Table hover responsive className="admin-table">
+          <thead>
             <tr>
               <th>ID Orden</th>
               <th>Cliente</th>
@@ -263,31 +241,30 @@ const OrderManagement = () => {
               const statusBadge = getStatusBadge(order.status);
               return (
                 <tr key={order.id}>
-                  <td style={{ fontWeight: 700 }}>#{order.id}</td>
-                  <td>{order.customerName}</td>
-                  <td style={{ fontSize: '0.9rem', color: '#666' }}>{order.customerEmail}</td>
+                  <td style={{ fontWeight: 700, color: '#4CAF50' }}>#{order.id}</td>
+                  <td style={{ fontWeight: 600 }}>{order.customerName}</td>
+                  <td style={{ fontSize: '0.9rem', color: '#64748b' }}>{order.customerEmail}</td>
                   <td>{new Date(order.date).toLocaleDateString('es-ES')}</td>
                   <td>
-                    <Badge bg="secondary" style={{ borderRadius: '8px' }}>
+                    <Badge bg="secondary" className="badge-custom">
                       {order.items} items
                     </Badge>
                   </td>
-                  <td style={{ fontWeight: 600, color: '#2E8B57' }}>
+                  <td style={{ fontWeight: 700, color: '#0f172a' }}>
                     ${order.total.toLocaleString()}
                   </td>
                   <td>
-                    <Badge bg={statusBadge.bg} style={{ borderRadius: '8px' }}>
+                    <Badge bg={statusBadge.bg} className="badge-custom">
                       {statusBadge.text}
                     </Badge>
                   </td>
-                  <td>
+                  <td className="actions-cell">
                     <Button 
                       size="sm" 
-                      variant="outline-success"
-                      onClick={() => handleViewOrder(order)}
-                      style={{ borderRadius: '8px' }}
+                      onClick={() => handleOpenActions(order)}
+                      className="action-btn action-btn-view"
                     >
-                      <Visibility fontSize="small" /> Ver
+                      <MoreVert fontSize="small" /> Acciones
                     </Button>
                   </td>
                 </tr>
@@ -298,12 +275,32 @@ const OrderManagement = () => {
       </div>
 
       {filteredOrders.length === 0 && (
-        <div className="text-center py-5">
-          <p style={{ color: '#999', fontSize: '1.1rem' }}>
+        <div className="empty-state">
+          <div className="empty-state-icon">📦</div>
+          <p className="empty-state-text">
             No se encontraron órdenes
           </p>
         </div>
       )}
+
+      {/* Modal de Acciones */}
+      <Modal show={showActionsModal} onHide={() => setShowActionsModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Acciones - Orden #{selectedOrder?.id}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="d-grid gap-2">
+            <Button 
+              variant="outline-primary"
+              onClick={() => handleViewOrder(selectedOrder)}
+              className="d-flex align-items-center justify-content-center gap-2 py-3"
+              style={{ borderRadius: '10px', fontWeight: 600 }}
+            >
+              <Visibility /> Ver Detalles de la Orden
+            </Button>
+          </div>
+        </Modal.Body>
+      </Modal>
 
       {/* Modal de detalles de orden */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
@@ -315,20 +312,20 @@ const OrderManagement = () => {
             <>
               <Row className="mb-4">
                 <Col md={6}>
-                  <h6 style={{ color: '#2E8B57', marginBottom: '1rem' }}>Información del Cliente</h6>
+                  <h6 style={{ color: '#4CAF50', marginBottom: '1rem', fontWeight: 700 }}>Información del Cliente</h6>
                   <p><strong>Nombre:</strong> {selectedOrder.customerName}</p>
                   <p><strong>Email:</strong> {selectedOrder.customerEmail}</p>
                   <p><strong>Dirección:</strong> {selectedOrder.shippingAddress}</p>
                 </Col>
                 <Col md={6}>
-                  <h6 style={{ color: '#2E8B57', marginBottom: '1rem' }}>Información de la Orden</h6>
+                  <h6 style={{ color: '#4CAF50', marginBottom: '1rem', fontWeight: 700 }}>Información de la Orden</h6>
                   <p><strong>Fecha:</strong> {new Date(selectedOrder.date).toLocaleDateString('es-ES')}</p>
                   <p><strong>Total Items:</strong> {selectedOrder.items}</p>
-                  <p><strong>Total:</strong> <span style={{ color: '#2E8B57', fontWeight: 700 }}>${selectedOrder.total.toLocaleString()}</span></p>
+                  <p><strong>Total:</strong> <span style={{ color: '#4CAF50', fontWeight: 700 }}>${selectedOrder.total.toLocaleString()}</span></p>
                 </Col>
               </Row>
 
-              <h6 style={{ color: '#2E8B57', marginBottom: '1rem' }}>Productos</h6>
+              <h6 style={{ color: '#4CAF50', marginBottom: '1rem', fontWeight: 700 }}>Productos</h6>
               <Table bordered size="sm">
                 <thead>
                   <tr>
@@ -350,37 +347,37 @@ const OrderManagement = () => {
                 </tbody>
               </Table>
 
-              <h6 style={{ color: '#2E8B57', marginTop: '2rem', marginBottom: '1rem' }}>Actualizar Estado</h6>
+              <h6 style={{ color: '#4CAF50', marginTop: '2rem', marginBottom: '1rem', fontWeight: 700 }}>Actualizar Estado</h6>
               <div className="d-flex gap-2 flex-wrap">
                 <Button 
                   size="sm" 
-                  variant="warning"
                   onClick={() => handleUpdateStatus(selectedOrder.id, 'pending')}
                   disabled={selectedOrder.status === 'pending'}
+                  className="btn-modal-warning"
                 >
                   ⏳ Pendiente
                 </Button>
                 <Button 
                   size="sm" 
-                  variant="info"
                   onClick={() => handleUpdateStatus(selectedOrder.id, 'processing')}
                   disabled={selectedOrder.status === 'processing'}
+                  className="btn-modal-info"
                 >
                   📦 Procesando
                 </Button>
                 <Button 
                   size="sm" 
-                  variant="success"
                   onClick={() => handleUpdateStatus(selectedOrder.id, 'completed')}
                   disabled={selectedOrder.status === 'completed'}
+                  className="btn-modal-success"
                 >
                   ✅ Completada
                 </Button>
                 <Button 
                   size="sm" 
-                  variant="danger"
                   onClick={() => handleUpdateStatus(selectedOrder.id, 'cancelled')}
                   disabled={selectedOrder.status === 'cancelled'}
+                  className="btn-modal-danger"
                 >
                   ❌ Cancelar
                 </Button>
@@ -389,7 +386,7 @@ const OrderManagement = () => {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
+          <Button onClick={() => setShowModal(false)} className="btn-modal-secondary">
             Cerrar
           </Button>
         </Modal.Footer>
