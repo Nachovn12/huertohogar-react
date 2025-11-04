@@ -1,0 +1,103 @@
+.admin-dashboard {
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  margin-bottom: 30px;
+}
+
+.dashboard-header h2 {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+/* Tarjetas de Estadísticas */
+.stat-card {
+  border-radius: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+.stat-card .card-body {
+  padding: 25px;
+}
+
+.stat-icon {
+  opacity: 0.9;
+}
+
+.stat-info h6 {
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.stat-info h2 {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 5px 0;
+}
+
+.stat-info small {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* Módulos del Sistema */
+.module-card {
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  background: white;
+}
+
+.module-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
+  border-color: #007bff;
+}
+
+.module-icon {
+  padding: 15px;
+  background-color: #f0f7ff;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.module-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.module-description {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #666;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-dashboard {
+    padding: 15px;
+  }
+
+  .stat-card .card-body {
+    padding: 20px;
+  }
+
+  .stat-info h2 {
+    font-size: 28px;
+  }
+}
