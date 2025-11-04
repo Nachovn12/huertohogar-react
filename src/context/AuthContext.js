@@ -60,12 +60,15 @@ export const AuthProvider = ({ children }) => {
 
     // Función para cerrar sesión
     const logout = () => {
+        // Guardar rol anterior si se necesita lógica basada en rol
+        const prevRole = user && user.role;
         setUser(null);
         localStorage.removeItem('userRole');
+        // Eliminar bandera de navegación como admin si existe
+        localStorage.removeItem('adminBrowsing');
         
-        // ¡CAMBIO SOLICITADO!
-        // Redirige al inicio de la página
-        navigate('/'); 
+        // Redirige a la página de login para permitir reiniciar sesión
+        navigate('/login'); 
     };
 
     // Verificar si el usuario actual es admin

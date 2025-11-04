@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { FormControl } from 'react-bootstrap';
 import { IconButton, Badge } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -15,9 +16,20 @@ const menuLinks = [
 
 const Navbar = () => {
   const { getTotalItems, toggleCart } = useCart();
+  const { user, isAdmin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [adminBrowsing, setAdminBrowsing] = useState(false);
+
+  useEffect(() => {
+    try {
+      const flag = localStorage.getItem('adminBrowsing') === 'true';
+      setAdminBrowsing(flag);
+    } catch (e) {
+      setAdminBrowsing(false);
+    }
+  }, [location]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -193,6 +205,28 @@ const Navbar = () => {
           >
             Ingresar
           </Link>
+          
+          {/* Si el admin está navegando la tienda mostramos botón para volver al panel */}
+          {isAdmin || adminBrowsing ? (
+            <button
+              onClick={() => {
+                // Limpiar bandera y regresar al dashboard
+                try { localStorage.removeItem('adminBrowsing'); } catch (e) {}
+                navigate('/admin/dashboard');
+              }}
+              style={{
+                background: '#2E8B57',
+                color: '#fff',
+                border: 'none',
+                padding: '9px 16px',
+                borderRadius: '8px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Volver al Panel
+            </button>
+          ) : null}
 
           {/* Cart Button */}
           <IconButton

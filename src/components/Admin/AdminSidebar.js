@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -15,6 +15,7 @@ import './AdminSidebar.css';
 const AdminSidebar = () => {
   const location = useLocation();
   const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const menuItems = [
     { path: '/admin/dashboard', icon: <DashboardIcon />, label: 'Dashboard' },
@@ -51,10 +52,28 @@ const AdminSidebar = () => {
 
       {/* Bottom Actions */}
       <div className="sidebar-footer">
-        <Link to="/" className="sidebar-item tienda-item">
+        {/* Si el admin pulsa Tienda marcamos adminBrowsing y navegamos al inicio */}
+        <button
+          className="sidebar-item tienda-item"
+          onClick={() => {
+            try {
+              localStorage.setItem('adminBrowsing', 'true');
+            } catch (e) {
+              // ignore
+            }
+            navigate('/');
+          }}
+          style={{
+            border: 'none',
+            background: 'transparent',
+            width: '100%',
+            textAlign: 'left',
+            cursor: 'pointer'
+          }}
+        >
           <span className="sidebar-icon"><StoreIcon /></span>
           <span className="sidebar-label">Tienda</span>
-        </Link>
+        </button>
         
         <button 
           onClick={logout} 
