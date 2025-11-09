@@ -15,7 +15,7 @@ const menuLinks = [
 ];
 
 const Navbar = () => {
-  const { getTotalItems, toggleCart } = useCart();
+  const { getTotalItems, toggleCart, openCart } = useCart();
   const { user, isAdmin, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+  
   const [adminBrowsing, setAdminBrowsing] = useState(false);
 
   // total items in cart
@@ -258,7 +258,7 @@ const Navbar = () => {
             {/* Carrito */}
             <button 
               className="cart-button"
-              onClick={() => setCartDrawerOpen(true)}
+              onClick={() => openCart && openCart()}
               aria-label="Carrito de compras"
             >
               <ShoppingCartIcon style={{ fontSize: '1.7rem' }} />
@@ -268,32 +268,7 @@ const Navbar = () => {
             </button>
           </div>
         </div>
-        {/* Drawer lateral del carrito */}
-        {cartDrawerOpen && (
-          <div className="cart-drawer-overlay" onClick={() => setCartDrawerOpen(false)}></div>
-        )}
-        <aside className={`cart-drawer${cartDrawerOpen ? ' open' : ''}`}>
-          <div className="cart-drawer-header-gradient">
-            <h2 className="cart-title">Tu Carrito</h2>
-            <button className="close-cart" onClick={() => setCartDrawerOpen(false)} aria-label="Cerrar carrito">
-              <span>&times;</span>
-            </button>
-          </div>
-          <div className="cart-drawer-content">
-            <div className="cart-empty">
-              <svg className="cart-empty-icon" width="80" height="80" viewBox="0 0 24 24" fill="none"><path d="M7 18c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm10 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm1.83-2l1.72-7.45A1 1 0 0 0 19.56 7H6.21l-.94-2H2v2h2l3.6 7.59-1.35 2.44A1.992 1.992 0 0 0 7 20h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 16h7.45c.75 0 1.41-.41 1.75-1.03z" fill="#d1d5db"/></svg>
-              <h3 className="cart-empty-title">Tu carrito está vacío</h3>
-              <p className="cart-empty-sub">Agrega algunos productos para comenzar</p>
-            </div>
-          </div>
-          <div className="cart-drawer-footer">
-            <div className="cart-subtotal-box">
-              <span className="cart-subtotal-label">Subtotal</span>
-              <span className="cart-subtotal-value">$0 CLP</span>
-            </div>
-            <button className="cart-checkout-btn" disabled>Finalizar Compra</button>
-          </div>
-        </aside>
+        {/* El cart modal/drawer ahora lo administra `src/components/Cart.js` usando CartContext -> isCartOpen */}
       </header>
     </>
   );
