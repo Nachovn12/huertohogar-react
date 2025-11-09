@@ -33,7 +33,11 @@ const AdminSidebar = () => {
     <div className="admin-sidebar">
       {/* Logo / Company Name */}
       <div className="sidebar-header">
-        <h4>🌱 HuertoHogar</h4>
+        <Link to="/" style={{ textDecoration: 'none' }} aria-label="HuertoHogar - Ir al inicio">
+          <div className="logo-card">
+            <img src={process.env.PUBLIC_URL + '/img/Logo_HuertoHogar_Web.png'} alt="HuertoHogar" className="sidebar-logo" />
+          </div>
+        </Link>
       </div>
 
       {/* Menu Items */}

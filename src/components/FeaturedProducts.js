@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -9,6 +9,8 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/autoplay';
+
+import './FeaturedProducts.css';
 
 const FeaturedProducts = () => {
   const { addToCart } = useCart();
@@ -74,6 +76,23 @@ const FeaturedProducts = () => {
     navigate(`/productos/${product.id}`);
   };
 
+  // Responsive: use continuous marquee on wide screens, fallback to Swiper on small screens
+  const [isWide, setIsWide] = useState(false);
+  useEffect(() => {
+    const update = () => setIsWide(window.innerWidth >= 900);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
+  // duplicated array for seamless loop
+  const duplicated = [...featuredProducts, ...featuredProducts];
+  const trackRef = useRef(null);
+
+  // compute speed based on number of cards (longer lists => longer duration)
+  const baseDurationPerCard = 4; // seconds per card approx
+  const duration = Math.max(12, featuredProducts.length * baseDurationPerCard);
+
   return (
     <section style={{ 
       padding: '60px 0 80px 0', 
@@ -130,6 +149,48 @@ const FeaturedProducts = () => {
           </p>
         </div>
         
+        {isWide ? (
+          <div className="ch-carousel" aria-hidden={false}>
+            <div
+              className="ch-track"
+              ref={trackRef}
+              style={{ animationDuration: `${duration}s` }}
+              onMouseEnter={() => trackRef.current && (trackRef.current.style.animationPlayState = 'paused')}
+              onMouseLeave={() => trackRef.current && (trackRef.current.style.animationPlayState = 'running')}
+            >
+              {duplicated.map((product, idx) => (
+                <div className="ch-slide" key={`${product.id}-${idx}`}>
+                  {/* Reuse same markup for product card */}
+                  <div className="ch-card">
+                    {product.discount && (
+                      <span className="ch-badge">-{product.discount}%</span>
+                    )}
+                    <div className="ch-img">
+                      <img src={product.image} alt={product.name} onError={(e) => { e.target.style.display = 'none'; }} />
+                    </div>
+                    <h5 className="ch-name">{product.name}</h5>
+                    <div className="ch-price">
+                      <span className="ch-price-main">{formatPrice(product.price)}</span>
+                      <span className="ch-unit">{product.unit}</span>
+                    </div>
+                    {product.originalPrice ? (
+                      <div className="ch-savings">
+                        <span className="ch-strike">{formatPrice(product.originalPrice)}</span>
+                        <span className="ch-save">Ahorras {formatPrice(product.savings)}</span>
+                      </div>
+                    ) : (
+                      <div style={{ height: 32 }} />
+                    )}
+                    <div className="ch-actions">
+                      <button className="ch-ghost" onClick={() => handleViewDetails(product)}>Ver Detalles</button>
+                      <button className="ch-primary" onClick={() => handleAddToCart(product)}>Agregar al Carrito</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
           spaceBetween={16}
@@ -382,6 +443,7 @@ const FeaturedProducts = () => {
             </SwiperSlide>
           ))}
         </Swiper>
+        )}
       </div>
 
       <style>{`

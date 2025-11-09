@@ -64,11 +64,9 @@ export const AuthProvider = ({ children }) => {
         const prevRole = user && user.role;
         setUser(null);
         localStorage.removeItem('userRole');
-        // Eliminar bandera de navegación como admin si existe
-        localStorage.removeItem('adminBrowsing');
-        
-        // Redirige a la página de login para permitir reiniciar sesión
-        navigate('/login'); 
+    // Eliminar bandera de navegación como admin y redirigir al login
+    localStorage.removeItem('adminBrowsing');
+    navigate('/login'); 
     };
 
     // Verificar si el usuario actual es admin

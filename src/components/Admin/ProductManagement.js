@@ -26,10 +26,11 @@ const ProductManagement = () => {
     image: '',
     offer: false
   });
-
-  // Abrir modal para agregar producto
+  
+  // ---- Handlers (restaurados) ----
   const handleAddProduct = () => {
     setModalMode('add');
+    setCurrentProduct(null);
     setFormData({
       name: '',
       price: '',
@@ -43,31 +44,27 @@ const ProductManagement = () => {
     setShowModal(true);
   };
 
-  // Abrir modal para editar producto
   const handleEditProduct = (product) => {
     setModalMode('edit');
     setCurrentProduct(product);
     setFormData({
-      name: product.name,
-      price: product.price,
-      category: product.category,
-      stock: product.stock,
-      unit: product.unit,
-      description: product.description,
-      image: product.image,
+      name: product.name || '',
+      price: product.price || '',
+      category: product.category || '',
+      stock: product.stock || '',
+      unit: product.unit || '',
+      description: product.description || '',
+      image: product.image || '',
       offer: product.offer || false
     });
-    setShowActionsModal(false);
     setShowModal(true);
   };
 
-  // Abrir modal de acciones
   const handleOpenActions = (product) => {
-    setCurrentProduct(product);
-    setShowActionsModal(true);
+    // For now open edit directly
+    handleEditProduct(product);
   };
 
-  // Eliminar producto
   const handleDeleteProduct = (productId) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
       setProducts(products.filter(p => p.id !== productId));
@@ -75,45 +72,37 @@ const ProductManagement = () => {
     }
   };
 
-  // Guardar producto (crear o actualizar)
   const handleSaveProduct = (e) => {
     e.preventDefault();
-
     if (modalMode === 'add') {
+      // Generar un id simple
       const newProduct = {
-        id: Math.max(...products.map(p => p.id)) + 1,
+        id: `PR${Date.now().toString().slice(-5)}`,
         ...formData,
-        price: parseInt(formData.price),
-        stock: parseInt(formData.stock)
+        price: Number(formData.price) || 0,
+        stock: Number(formData.stock) || 0
       };
-      setProducts([...products, newProduct]);
+      setProducts(prev => [...prev, newProduct]);
       showAlertMessage('Producto agregado exitosamente', 'success');
     } else {
-      setProducts(products.map(p => 
-        p.id === currentProduct.id 
-          ? { ...p, ...formData, price: parseInt(formData.price), stock: parseInt(formData.stock) }
-          : p
-      ));
+      setProducts(prev => prev.map(p => p.id === currentProduct.id ? { ...p, ...formData, price: Number(formData.price) || 0, stock: Number(formData.stock) || 0 } : p));
       showAlertMessage('Producto actualizado exitosamente', 'info');
     }
-
     setShowModal(false);
   };
 
-  // Mostrar alerta
-  const showAlertMessage = (message, type) => {
+  const showAlertMessage = (message, type = 'success') => {
     setAlertMessage(message);
     setAlertType(type);
     setShowAlert(true);
     setTimeout(() => setShowAlert(false), 3000);
   };
 
-  // Filtrar productos por búsqueda
+  // Filtrado
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchTerm.toLowerCase())
+    (product.category || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
-
   return (
     <div>
       <div className="admin-page-header">
@@ -125,15 +114,11 @@ const ProductManagement = () => {
           <Add /> Agregar Producto
         </Button>
       </div>
-
-      {/* Alerta de éxito/error */}
       {showAlert && (
         <Alert variant={alertType} dismissible onClose={() => setShowAlert(false)}>
           {alertMessage}
         </Alert>
       )}
-
-      {/* Barra de búsqueda */}
       <div className="admin-filters">
         <Form.Group>
           <div className="search-input-wrapper">
@@ -148,8 +133,6 @@ const ProductManagement = () => {
           </div>
         </Form.Group>
       </div>
-
-      {/* Tabla de productos */}
       <div className="admin-table-wrapper">
         <Table hover responsive className="admin-table">
           <thead>
@@ -202,7 +185,6 @@ const ProductManagement = () => {
           </tbody>
         </Table>
       </div>
-
       {filteredProducts.length === 0 && (
         <div className="empty-state">
           <div className="empty-state-icon">📦</div>
@@ -211,137 +193,91 @@ const ProductManagement = () => {
           </p>
         </div>
       )}
-
-      {/* Modal de Acciones */}
-      <Modal show={showActionsModal} onHide={() => setShowActionsModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Acciones - {currentProduct?.name}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="d-grid gap-2">
-            <Button 
-              variant="outline-primary"
-              onClick={() => handleEditProduct(currentProduct)}
-              className="d-flex align-items-center justify-content-center gap-2 py-3"
-              style={{ borderRadius: '10px', fontWeight: 600 }}
-            >
-              <Edit /> Editar Producto
-            </Button>
-            <Button 
-              variant="outline-danger"
-              onClick={() => {
-                setShowActionsModal(false);
-                handleDeleteProduct(currentProduct.id);
-              }}
-              className="d-flex align-items-center justify-content-center gap-2 py-3"
-              style={{ borderRadius: '10px', fontWeight: 600 }}
-            >
-              <Delete /> Eliminar Producto
-            </Button>
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <div className="modal-content">
+          <div className="modal-header">
+            {modalMode === 'edit' && currentProduct && (
+              <span className="modal-product-id">{currentProduct.id}</span>
+            )}
+            <h4 style={{ fontWeight: 700, margin: 0 }}>
+              {modalMode === 'add' ? 'Agregar Nuevo Producto' : 'Editar Producto'}
+            </h4>
+            <button type="button" className="btn-close" aria-label="Cerrar" onClick={() => setShowModal(false)} />
           </div>
-        </Modal.Body>
-      </Modal>
-
-      {/* Modal para agregar/editar producto */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>
-            {modalMode === 'add' ? 'Agregar Nuevo Producto' : 'Editar Producto'}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
           <Form onSubmit={handleSaveProduct}>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Nombre del Producto *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    placeholder="Ej: Tomates Orgánicos"
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Categoría *</Form.Label>
-                  <Form.Select
-                    required
-                    value={formData.category}
-                    onChange={(e) => setFormData({...formData, category: e.target.value})}
-                  >
-                    <option value="">Seleccionar categoría</option>
-                    <option value="Verduras">Verduras</option>
-                    <option value="Frutas">Frutas</option>
-                    <option value="Lácteos">Lácteos</option>
-                    <option value="Carnes">Carnes</option>
-                    <option value="Pescados">Pescados</option>
-                    <option value="Abarrotes">Abarrotes</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Precio ($) *</Form.Label>
-                  <Form.Control
-                    type="number"
-                    required
-                    value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: e.target.value})}
-                    placeholder="2500"
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Stock *</Form.Label>
-                  <Form.Control
-                    type="number"
-                    required
-                    value={formData.stock}
-                    onChange={(e) => setFormData({...formData, stock: e.target.value})}
-                    placeholder="50"
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Unidad *</Form.Label>
-                  <Form.Select
-                    required
-                    value={formData.unit}
-                    onChange={(e) => setFormData({...formData, unit: e.target.value})}
-                  >
-                    <option value="">Seleccionar</option>
-                    <option value="kg">Kilogramo (kg)</option>
-                    <option value="unidad">Unidad</option>
-                    <option value="litro">Litro</option>
-                    <option value="gramos">Gramos</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Form.Group className="mb-3">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px', marginBottom: 16 }}>
+              <div>
+                <Form.Label>Nombre del Producto *</Form.Label>
+                <Form.Control
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  placeholder="Ej: Tomates Orgánicos"
+                />
+              </div>
+              <div>
+                <Form.Label>Categoría *</Form.Label>
+                <Form.Select
+                  required
+                  value={formData.category}
+                  onChange={(e) => setFormData({...formData, category: e.target.value})}
+                >
+                  <option value="">Seleccionar categoría</option>
+                  <option value="Verduras">Verduras</option>
+                  <option value="Frutas">Frutas</option>
+                  <option value="Lácteos">Lácteos</option>
+                  <option value="Carnes">Carnes</option>
+                  <option value="Pescados">Pescados</option>
+                  <option value="Abarrotes">Abarrotes</option>
+                </Form.Select>
+              </div>
+              <div>
+                <Form.Label>Precio ($) *</Form.Label>
+                <Form.Control
+                  type="number"
+                  required
+                  value={formData.price}
+                  onChange={(e) => setFormData({...formData, price: e.target.value})}
+                  placeholder="2500"
+                />
+              </div>
+              <div>
+                <Form.Label>Stock *</Form.Label>
+                <Form.Control
+                  type="number"
+                  required
+                  value={formData.stock}
+                  onChange={(e) => setFormData({...formData, stock: e.target.value})}
+                  placeholder="50"
+                />
+              </div>
+              <div>
+                <Form.Label>Unidad *</Form.Label>
+                <Form.Select
+                  required
+                  value={formData.unit}
+                  onChange={(e) => setFormData({...formData, unit: e.target.value})}
+                >
+                  <option value="">Seleccionar</option>
+                  <option value="kg">Kilogramo (kg)</option>
+                  <option value="unidad">Unidad</option>
+                  <option value="litro">Litro</option>
+                  <option value="gramos">Gramos</option>
+                </Form.Select>
+              </div>
+            </div>
+            <div style={{ marginBottom: 16 }}>
               <Form.Label>Descripción</Form.Label>
               <Form.Control
                 as="textarea"
-                rows={3}
+                rows={2}
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 placeholder="Descripción del producto..."
               />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
+            </div>
+            <div style={{ marginBottom: 16 }}>
               <Form.Label>URL de la Imagen</Form.Label>
               <Form.Control
                 type="text"
@@ -349,27 +285,33 @@ const ProductManagement = () => {
                 onChange={(e) => setFormData({...formData, image: e.target.value})}
                 placeholder="/img/producto.jpg"
               />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
+            </div>
+            <div style={{ marginBottom: 18 }}>
               <Form.Check
                 type="checkbox"
                 label="Producto en oferta"
                 checked={formData.offer}
                 onChange={(e) => setFormData({...formData, offer: e.target.checked})}
               />
-            </Form.Group>
-
-            <div className="d-flex justify-content-end gap-2 mt-4">
-              <Button onClick={() => setShowModal(false)} className="btn-modal-secondary">
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: 18 }}>
+              <Button onClick={() => setShowModal(false)} className="btn-modal-cancel">
                 Cancelar
               </Button>
-              <Button type="submit" className="btn-modal-primary">
+              <Button type="submit" className="btn-modal-success">
                 {modalMode === 'add' ? 'Agregar Producto' : 'Guardar Cambios'}
               </Button>
+              {modalMode === 'edit' && currentProduct && (
+                <Button 
+                  onClick={() => handleDeleteProduct(currentProduct.id)}
+                  className="btn-modal-danger"
+                >
+                  <Delete style={{ fontSize: '20px', marginRight: '8px' }} /> Eliminar Producto
+                </Button>
+              )}
             </div>
           </Form>
-        </Modal.Body>
+        </div>
       </Modal>
     </div>
   );

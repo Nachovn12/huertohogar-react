@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Table, Button, Modal, Badge, Card, Row, Col, Form, Alert } from 'react-bootstrap';
-import { Visibility, Edit, Search, MoreVert } from '@mui/icons-material';
+import { Visibility, Search } from '@mui/icons-material';
 import './AdminCommon.css';
 
 const OrderManagement = () => {
@@ -82,7 +82,6 @@ const OrderManagement = () => {
   ]);
 
   const [showModal, setShowModal] = useState(false);
-  const [showActionsModal, setShowActionsModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -92,13 +91,7 @@ const OrderManagement = () => {
 
   const handleViewOrder = (order) => {
     setSelectedOrder(order);
-    setShowActionsModal(false);
     setShowModal(true);
-  };
-
-  const handleOpenActions = (order) => {
-    setSelectedOrder(order);
-    setShowActionsModal(true);
   };
 
   const handleUpdateStatus = (orderId, newStatus) => {
@@ -172,27 +165,27 @@ const OrderManagement = () => {
       <div className="stats-grid">
         <div className="stat-card-mini">
           <p>Total</p>
-          <h3 style={{ color: '#4CAF50' }}>{stats.total}</h3>
+          <h3 style={{ color: '#16a34a' }}>{stats.total}</h3>
         </div>
         <div className="stat-card-mini">
           <p>Pendientes</p>
-          <h3 style={{ color: '#ffc107' }}>{stats.pending}</h3>
+          <h3 style={{ color: '#f59e0b' }}>{stats.pending}</h3>
         </div>
         <div className="stat-card-mini">
           <p>Procesando</p>
-          <h3 style={{ color: '#0dcaf0' }}>{stats.processing}</h3>
+          <h3 style={{ color: '#06b6d4' }}>{stats.processing}</h3>
         </div>
         <div className="stat-card-mini">
           <p>Completadas</p>
-          <h3 style={{ color: '#198754' }}>{stats.completed}</h3>
+          <h3 style={{ color: '#16a34a' }}>{stats.completed}</h3>
         </div>
       </div>
 
       {/* Filtros y búsqueda */}
       <div className="admin-filters">
-        <Row className="g-3">
-          <Col md={8}>
-            <Form.Group>
+        <Row className="g-4 align-items-center">
+          <Col lg={8} md={12}>
+            <Form.Group className="mb-0">
               <div className="search-input-wrapper">
                 <Search className="search-icon" />
                 <Form.Control
@@ -205,7 +198,7 @@ const OrderManagement = () => {
               </div>
             </Form.Group>
           </Col>
-          <Col md={4}>
+          <Col lg={4} md={12}>
             <Form.Select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
@@ -241,16 +234,16 @@ const OrderManagement = () => {
               const statusBadge = getStatusBadge(order.status);
               return (
                 <tr key={order.id}>
-                  <td style={{ fontWeight: 700, color: '#4CAF50' }}>#{order.id}</td>
+                  <td style={{ fontWeight: 700, color: '#16a34a' }}>#{order.id}</td>
                   <td style={{ fontWeight: 600 }}>{order.customerName}</td>
-                  <td style={{ fontSize: '0.9rem', color: '#64748b' }}>{order.customerEmail}</td>
+                  <td style={{ fontSize: '0.875rem', color: '#6b7280' }}>{order.customerEmail}</td>
                   <td>{new Date(order.date).toLocaleDateString('es-ES')}</td>
                   <td>
                     <Badge bg="secondary" className="badge-custom">
                       {order.items} items
                     </Badge>
                   </td>
-                  <td style={{ fontWeight: 700, color: '#0f172a' }}>
+                  <td style={{ fontWeight: 700, color: '#111827' }}>
                     ${order.total.toLocaleString()}
                   </td>
                   <td>
@@ -261,10 +254,10 @@ const OrderManagement = () => {
                   <td className="actions-cell">
                     <Button 
                       size="sm" 
-                      onClick={() => handleOpenActions(order)}
+                      onClick={() => handleViewOrder(order)}
                       className="action-btn action-btn-view"
                     >
-                      <MoreVert fontSize="small" /> Acciones
+                      <Visibility fontSize="small" /> Ver Detalles
                     </Button>
                   </td>
                 </tr>
@@ -283,110 +276,210 @@ const OrderManagement = () => {
         </div>
       )}
 
-      {/* Modal de Acciones */}
-      <Modal show={showActionsModal} onHide={() => setShowActionsModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Acciones - Orden #{selectedOrder?.id}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="d-grid gap-2">
-            <Button 
-              variant="outline-primary"
-              onClick={() => handleViewOrder(selectedOrder)}
-              className="d-flex align-items-center justify-content-center gap-2 py-3"
-              style={{ borderRadius: '10px', fontWeight: 600 }}
-            >
-              <Visibility /> Ver Detalles de la Orden
-            </Button>
-          </div>
-        </Modal.Body>
-      </Modal>
-
       {/* Modal de detalles de orden */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Detalles de Orden #{selectedOrder?.id}</Modal.Title>
+      <Modal 
+        show={showModal} 
+        onHide={() => setShowModal(false)} 
+        size="lg" 
+        centered
+        backdrop="static"
+      >
+        <Modal.Header closeButton style={{ 
+          borderBottom: '2px solid #f3f4f6',
+          padding: '24px',
+          background: 'linear-gradient(135deg, #f9fafb 0%, #ffffff 100%)',
+          borderTopLeftRadius: '16px',
+          borderTopRightRadius: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px'
+        }}>
+          <div style={{
+            minWidth: '56px',
+            height: '48px',
+            borderRadius: '14px',
+            background: 'linear-gradient(135deg, #16a34a 0%, #22c55e 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontSize: '1.15rem',
+            fontWeight: 700,
+            boxShadow: '0 2px 8px rgba(22,163,74,0.12)',
+            padding: '0 12px',
+            letterSpacing: '1px',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}>
+            #{selectedOrder?.id}
+          </div>
+          <Modal.Title style={{ 
+            fontSize: '1.35rem',
+            fontWeight: 700,
+            color: '#111827',
+            margin: 0
+          }}>
+            Detalles de la Orden
+          </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body style={{ padding: '28px' }}>
           {selectedOrder && (
             <>
-              <Row className="mb-4">
-                <Col md={6}>
-                  <h6 style={{ color: '#4CAF50', marginBottom: '1rem', fontWeight: 700 }}>Información del Cliente</h6>
-                  <p><strong>Nombre:</strong> {selectedOrder.customerName}</p>
-                  <p><strong>Email:</strong> {selectedOrder.customerEmail}</p>
-                  <p><strong>Dirección:</strong> {selectedOrder.shippingAddress}</p>
-                </Col>
-                <Col md={6}>
-                  <h6 style={{ color: '#4CAF50', marginBottom: '1rem', fontWeight: 700 }}>Información de la Orden</h6>
-                  <p><strong>Fecha:</strong> {new Date(selectedOrder.date).toLocaleDateString('es-ES')}</p>
-                  <p><strong>Total Items:</strong> {selectedOrder.items}</p>
-                  <p><strong>Total:</strong> <span style={{ color: '#4CAF50', fontWeight: 700 }}>${selectedOrder.total.toLocaleString()}</span></p>
-                </Col>
-              </Row>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                <div style={{ background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '20px' }}>
+                  <h6 style={{ color: '#16a34a', fontWeight: 700, fontSize: '1.05rem', marginBottom: '12px' }}>Información del Cliente</h6>
+                  <div style={{ fontSize: '0.97rem', color: '#374151', marginBottom: '6px' }}><strong style={{ color: '#16a34a' }}>Nombre:</strong> {selectedOrder.customerName}</div>
+                  <div style={{ fontSize: '0.97rem', color: '#374151', marginBottom: '6px' }}><strong style={{ color: '#16a34a' }}>Email:</strong> {selectedOrder.customerEmail}</div>
+                  <div style={{ fontSize: '0.97rem', color: '#374151' }}><strong style={{ color: '#16a34a' }}>Dirección:</strong> {selectedOrder.shippingAddress}</div>
+                </div>
+                <div style={{ background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '20px' }}>
+                  <h6 style={{ color: '#16a34a', fontWeight: 700, fontSize: '1.05rem', marginBottom: '12px' }}>Información de la Orden</h6>
+                  <div style={{ fontSize: '0.97rem', color: '#374151', marginBottom: '6px' }}><strong style={{ color: '#16a34a' }}>Fecha:</strong> {new Date(selectedOrder.date).toLocaleDateString('es-ES')}</div>
+                  <div style={{ fontSize: '0.97rem', color: '#374151', marginBottom: '6px' }}><strong style={{ color: '#16a34a' }}>Total Items:</strong> {selectedOrder.items}</div>
+                  <div style={{ fontSize: '0.97rem', color: '#16a34a', fontWeight: 700 }}><strong>Total:</strong> ${selectedOrder.total.toLocaleString()}</div>
+                </div>
+                <div style={{ background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '20px' }}>
+                  <h6 style={{ color: '#16a34a', fontWeight: 700, fontSize: '1.05rem', marginBottom: '12px' }}>Productos de la Orden</h6>
+                  <Table hover responsive style={{ marginBottom: '0' }}>
+                    <thead style={{ background: '#f9fafb' }}>
+                      <tr>
+                        <th style={{ fontWeight: 600, fontSize: '0.8125rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '12px 14px', borderBottom: '2px solid #e5e7eb' }}>Producto</th>
+                        <th style={{ fontWeight: 600, fontSize: '0.8125rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '12px 14px', borderBottom: '2px solid #e5e7eb' }}>Cantidad</th>
+                        <th style={{ fontWeight: 600, fontSize: '0.8125rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '12px 14px', borderBottom: '2px solid #e5e7eb' }}>Precio Unit.</th>
+                        <th style={{ fontWeight: 600, fontSize: '0.8125rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '12px 14px', borderBottom: '2px solid #e5e7eb' }}>Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedOrder.products.map((product, index) => (
+                        <tr key={index}>
+                          <td style={{ padding: '14px', fontSize: '0.9375rem', color: '#374151', fontWeight: 500 }}>{product.name}</td>
+                          <td style={{ padding: '14px', fontSize: '0.9375rem', color: '#374151' }}>{product.quantity}</td>
+                          <td style={{ padding: '14px', fontSize: '0.9375rem', color: '#374151' }}>${product.price.toLocaleString()}</td>
+                          <td style={{ padding: '14px', fontSize: '0.9375rem', color: '#16a34a', fontWeight: 600 }}>${(product.price * product.quantity).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+              </div>
 
-              <h6 style={{ color: '#4CAF50', marginBottom: '1rem', fontWeight: 700 }}>Productos</h6>
-              <Table bordered size="sm">
-                <thead>
-                  <tr>
-                    <th>Producto</th>
-                    <th>Cantidad</th>
-                    <th>Precio Unit.</th>
-                    <th>Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedOrder.products.map((product, index) => (
-                    <tr key={index}>
-                      <td>{product.name}</td>
-                      <td>{product.quantity}</td>
-                      <td>${product.price.toLocaleString()}</td>
-                      <td>${(product.price * product.quantity).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-
-              <h6 style={{ color: '#4CAF50', marginTop: '2rem', marginBottom: '1rem', fontWeight: 700 }}>Actualizar Estado</h6>
-              <div className="d-flex gap-2 flex-wrap">
-                <Button 
-                  size="sm" 
-                  onClick={() => handleUpdateStatus(selectedOrder.id, 'pending')}
-                  disabled={selectedOrder.status === 'pending'}
-                  className="btn-modal-warning"
-                >
-                  ⏳ Pendiente
-                </Button>
-                <Button 
-                  size="sm" 
-                  onClick={() => handleUpdateStatus(selectedOrder.id, 'processing')}
-                  disabled={selectedOrder.status === 'processing'}
-                  className="btn-modal-info"
-                >
-                  📦 Procesando
-                </Button>
-                <Button 
-                  size="sm" 
-                  onClick={() => handleUpdateStatus(selectedOrder.id, 'completed')}
-                  disabled={selectedOrder.status === 'completed'}
-                  className="btn-modal-success"
-                >
-                  ✅ Completada
-                </Button>
-                <Button 
-                  size="sm" 
-                  onClick={() => handleUpdateStatus(selectedOrder.id, 'cancelled')}
-                  disabled={selectedOrder.status === 'cancelled'}
-                  className="btn-modal-danger"
-                >
-                  ❌ Cancelar
-                </Button>
+              <div style={{
+                background: '#ffffff',
+                padding: '20px',
+                borderRadius: '12px',
+                border: '1px solid #e5e7eb',
+                marginTop: '20px'
+              }}>
+                <h6 style={{ 
+                  color: '#16a34a', 
+                  marginBottom: '16px', 
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <span style={{
+                    width: '4px',
+                    height: '20px',
+                    background: '#16a34a',
+                    borderRadius: '2px'
+                  }}></span>
+                  Actualizar Estado de la Orden
+                </h6>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <Button 
+                    size="sm" 
+                    onClick={() => handleUpdateStatus(selectedOrder.id, 'pending')}
+                    disabled={selectedOrder.status === 'pending'}
+                    style={{
+                      background: selectedOrder.status === 'pending' ? '#d1d5db' : 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      color: 'white',
+                      cursor: selectedOrder.status === 'pending' ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    ⏳ Pendiente
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    onClick={() => handleUpdateStatus(selectedOrder.id, 'processing')}
+                    disabled={selectedOrder.status === 'processing'}
+                    style={{
+                      background: selectedOrder.status === 'processing' ? '#d1d5db' : 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      color: 'white',
+                      cursor: selectedOrder.status === 'processing' ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    📦 Procesando
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    onClick={() => handleUpdateStatus(selectedOrder.id, 'completed')}
+                    disabled={selectedOrder.status === 'completed'}
+                    style={{
+                      background: selectedOrder.status === 'completed' ? '#d1d5db' : 'linear-gradient(135deg, #16a34a 0%, #22c55e 100%)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      color: 'white',
+                      cursor: selectedOrder.status === 'completed' ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    ✅ Completada
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    onClick={() => handleUpdateStatus(selectedOrder.id, 'cancelled')}
+                    disabled={selectedOrder.status === 'cancelled'}
+                    style={{
+                      background: selectedOrder.status === 'cancelled' ? '#d1d5db' : 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      color: 'white',
+                      cursor: selectedOrder.status === 'cancelled' ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    ❌ Cancelar
+                  </Button>
+                </div>
               </div>
             </>
           )}
         </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={() => setShowModal(false)} className="btn-modal-secondary">
+        <Modal.Footer style={{ 
+          borderTop: '2px solid #f3f4f6',
+          padding: '20px 24px',
+          background: '#f9fafb'
+        }}>
+          <Button 
+            onClick={() => setShowModal(false)}
+            style={{
+              background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '10px 24px',
+              fontWeight: 600,
+              fontSize: '0.9375rem',
+              color: 'white',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+            }}
+          >
             Cerrar
           </Button>
         </Modal.Footer>

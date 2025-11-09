@@ -11,6 +11,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Evitar scroll horizontal ocasionado por offcanvas o sombras fuera del viewport */
+  overflow-x: hidden;
 }
 
 code {

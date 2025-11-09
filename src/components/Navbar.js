@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { FormControl } from 'react-bootstrap';
 import { IconButton, Badge } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import SearchIcon from '@mui/icons-material/Search';
+import './Navbar.css';
 
 const menuLinks = [
   { label: 'Inicio', to: '/' },
@@ -16,10 +16,17 @@ const menuLinks = [
 
 const Navbar = () => {
   const { getTotalItems, toggleCart } = useCart();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+
+  // UI state
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [adminBrowsing, setAdminBrowsing] = useState(false);
 
   useEffect(() => {
@@ -30,180 +37,103 @@ const Navbar = () => {
       setAdminBrowsing(false);
     }
   }, [location]);
+ 
 
-  const handleSearchSubmit = (e) => {
+  // Manejar scroll para efectos del header
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (isMenuOpen && !e.target.closest('.main-nav') && !e.target.closest('.hamburger')) {
+        setIsMenuOpen(false);
+      }
+      if (isUserMenuOpen && !e.target.closest('.user-profile')) {
+        setIsUserMenuOpen(false);
+      }
+      if (showSearchDropdown && !e.target.closest('.search-bar')) {
+        setShowSearchDropdown(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isMenuOpen, isUserMenuOpen, showSearchDropdown]);
+
+  // Prevenir scroll cuando el menú está abierto
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.classList.add('menu-open');
+    } else {
+      document.body.classList.remove('menu-open');
+    }
+  }, [isMenuOpen]);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const toggleUserMenu = () => {
+    setIsUserMenuOpen(!isUserMenuOpen);
+  };
+
+  const handleSearch = (e) => {
     e.preventDefault();
-    if (searchTerm.trim()) {
-      navigate(`/productos?search=${searchTerm}`);
-      setSearchTerm('');
+    if (searchQuery.trim()) {
+      navigate(`/productos?search=${encodeURIComponent(searchQuery)}`);
+      setShowSearchDropdown(false);
+      setSearchQuery('');
     }
   };
 
-  const isActive = (path) => location.pathname === path;
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    setShowSearchDropdown(value.length > 0);
+  };
+
+  const handleLogoutLocal = () => {
+    // useAuth provider also exposes logout; call it if available
+    try { if (logout) logout(); } catch (e) {}
+    setIsUserMenuOpen(false);
+    navigate('/');
+  };
+
+  const suggestions = [
+    'Tomate orgánico',
+    'Lechuga fresca',
+    'Zanahoria orgánica',
+    'Manzana roja',
+    'Quinua orgánica'
+  ];
+
+  const filteredSuggestions = suggestions.filter(s => 
+    s.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <header className="main-header" style={{ 
-      backgroundColor: '#ffffff', 
-      borderBottom: '1px solid #e5e7eb',
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-      position: 'sticky',
-      top: 0,
-      zIndex: 1000
-    }}>
-      <div className="header-content" style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between',
-        padding: '16px 40px',
-        maxWidth: '1400px',
-        margin: '0 auto',
-        gap: '60px'
-      }}>
-        
-        {/* Logo Container */}
-        <Link to="/" className="logo-container" style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          textDecoration: 'none',
-          gap: '12px',
-          flexShrink: 0
-        }}>
-          <img 
-            src={process.env.PUBLIC_URL + '/img/Logo_HuertoHogar_Web.png'} 
-            alt="HuertoHogar - Del Campo al Hogar" 
-            className="logo"
-            width="42"
-            height="42"
-            style={{ borderRadius: '6px' }}
-          />
-          <h2 style={{ 
-            margin: 0,
-            fontSize: '1.4rem', 
-            fontWeight: '700', 
-            color: '#8B4513',
-            fontFamily: 'Playfair Display, serif',
-            letterSpacing: '-0.5px'
-          }}>
-            Huerto<span style={{ color: '#2E8B57' }}>Hogar</span>
-          </h2>
-        </Link>
+    <>
+      {/* Barra de información superior */}
 
-        {/* Main Nav */}
-        <nav className="main-nav" style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
-          <div className="nav-links" style={{ display: 'flex', gap: '36px' }}>
-            {menuLinks.map(link => (
-              <Link
-                key={link.to}
-                to={link.to}
-                style={{
-                  color: isActive(link.to) ? '#2E8B57' : '#666666',
-                  fontWeight: isActive(link.to) ? '600' : '500',
-                  fontSize: '0.95rem',
-                  textDecoration: 'none',
-                  padding: '8px 0',
-                  borderBottom: isActive(link.to) ? '2px solid #2E8B57' : '2px solid transparent',
-                  transition: 'all 0.2s ease',
-                  whiteSpace: 'nowrap',
-                  fontFamily: 'Montserrat, Arial, sans-serif'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive(link.to)) {
-                    e.target.style.color = '#2E8B57';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive(link.to)) {
-                    e.target.style.color = '#666666';
-                  }
-                }}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        </nav>
 
-        {/* Header Actions */}
-        <div className="header-actions" style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '16px',
-          flexShrink: 0
-        }}>
-          {/* Search Bar */}
-          <div className="search-bar" style={{ position: 'relative' }}>
-            <SearchIcon 
-              sx={{ 
-                position: 'absolute', 
-                left: '14px', 
-                top: '50%', 
-                transform: 'translateY(-50%)', 
-                color: '#9ca3af',
-                fontSize: 19
-              }} 
+      {/* Header principal */}
+      <header className={`main-header ${isScrolled ? 'scrolled' : ''}`}>
+        <div className="header-content">
+          {/* Logo HuertoHogar */}
+          <Link to="/" className="logo-container">
+            <img 
+              src="/img/Logo_HuertoHogar_Web.png" 
+              alt="HuertoHogar - Del Campo al Hogar" 
+              className="logo"
             />
-            <FormControl
-              type="text"
-              placeholder="Buscar productos..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearchSubmit(e);
-                }
-              }}
-              style={{
-                paddingLeft: '42px',
-                paddingRight: '16px',
-                borderRadius: '8px',
-                border: '1px solid #e5e7eb',
-                fontSize: '0.9rem',
-                height: '40px',
-                width: '240px',
-                backgroundColor: '#f9fafb',
-                fontFamily: 'Roboto, Arial, sans-serif',
-                transition: 'all 0.2s ease'
-              }}
-              onFocus={(e) => {
-                e.target.style.backgroundColor = '#ffffff';
-                e.target.style.borderColor = '#2E8B57';
-              }}
-              onBlur={(e) => {
-                e.target.style.backgroundColor = '#f9fafb';
-                e.target.style.borderColor = '#e5e7eb';
-              }}
-            />
-          </div>
-
-          {/* Login Link */}
-          <Link 
-            to="/login" 
-            className="login-link"
-            style={{
-              color: '#333333',
-              textDecoration: 'none',
-              fontSize: '0.9rem',
-              fontWeight: '500',
-              whiteSpace: 'nowrap',
-              padding: '9px 20px',
-              border: '1px solid #e0e0e0',
-              borderRadius: '8px',
-              transition: 'all 0.2s ease',
-              fontFamily: 'Montserrat, Arial, sans-serif',
-              backgroundColor: '#ffffff'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#f9fafb';
-              e.target.style.borderColor = '#2E8B57';
-              e.target.style.color = '#2E8B57';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#ffffff';
-              e.target.style.borderColor = '#e0e0e0';
-              e.target.style.color = '#333333';
-            }}
-          >
-            Ingresar
+            <h2 className="logo-title">HuertoHogar</h2>
           </Link>
           
           {/* Si el admin está navegando la tienda mostramos botón para volver al panel */}
@@ -228,39 +158,141 @@ const Navbar = () => {
             </button>
           ) : null}
 
-          {/* Cart Button */}
-          <IconButton
-            onClick={toggleCart}
-            className="cart-button"
-            sx={{
-              color: '#2E8B57',
-              position: 'relative',
-              bgcolor: '#f0fdf4',
-              border: '1px solid rgba(33, 145, 80, 0.2)',
-              '&:hover': { 
-                bgcolor: '#dcfce7',
-                borderColor: 'rgba(33, 145, 80, 0.3)'
-              }
-            }}
+          {/* Menú hamburguesa (móvil) */}
+          <button 
+            className={`hamburger ${isMenuOpen ? 'open' : ''}`}
+            onClick={toggleMenu}
+            aria-label="Menú"
           >
-            <Badge 
-              badgeContent={getTotalItems()} 
-              color="success"
-              sx={{
-                '& .MuiBadge-badge': {
-                  backgroundColor: '#2E8B57',
-                  color: '#fff',
-                  fontWeight: '600',
-                  fontSize: '0.7rem'
-                }
-              }}
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+
+          {/* Navegación principal */}
+          <nav className={`main-nav ${isMenuOpen ? 'open' : ''}`}>
+            <Link to="/" onClick={() => setIsMenuOpen(false)}>
+              <i className="fas fa-home"></i> Inicio
+            </Link>
+            <Link to="/productos" onClick={() => setIsMenuOpen(false)}>
+              <i className="fas fa-shopping-basket"></i> Productos
+            </Link>
+            <Link to="/nosotros" onClick={() => setIsMenuOpen(false)}>
+              <i className="fas fa-leaf"></i> Nosotros
+            </Link>
+            <Link to="/blog" onClick={() => setIsMenuOpen(false)}>
+              <i className="fas fa-newspaper"></i> Blog
+            </Link>
+            
+          </nav>
+
+          {/* Acciones del header */}
+          <div className="header-actions">
+            {/* Barra de búsqueda */}
+            <form className="search-bar" onSubmit={handleSearch}>
+              <i className="fas fa-search"></i>
+              <input 
+                type="text" 
+                placeholder="Buscar productos..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onFocus={() => searchQuery && setShowSearchDropdown(true)}
+              />
+              
+              {/* Dropdown de búsqueda */}
+              {showSearchDropdown && filteredSuggestions.length > 0 && (
+                <div className="search-dropdown show">
+                  {filteredSuggestions.map((suggestion, index) => (
+                    <div 
+                      key={index}
+                      className="suggestion-text"
+                      onClick={() => {
+                        setSearchQuery(suggestion);
+                        setShowSearchDropdown(false);
+                        navigate(`/productos?search=${encodeURIComponent(suggestion)}`);
+                      }}
+                    >
+                      {suggestion}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </form>
+
+            {/* Usuario / Login */}
+            {user ? (
+              <div className="user-profile">
+                <span 
+                  className="user-name"
+                  onClick={toggleUserMenu}
+                >
+                  {user.name || user.email}
+                </span>
+                <div className={`user-menu ${isUserMenuOpen ? 'show' : ''}`}>
+                  <Link to="/perfil" className="user-menu-item">
+                    <i className="fas fa-user"></i> Mi Perfil
+                  </Link>
+                  <Link to="/mis-pedidos" className="user-menu-item">
+                    <i className="fas fa-box"></i> Mis Pedidos
+                  </Link>
+                  <button 
+                    className="user-menu-item logout-btn"
+                    onClick={handleLogout}
+                  >
+                    <i className="fas fa-sign-out-alt"></i> Cerrar Sesión
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button 
+                className="login-link"
+                onClick={() => navigate('/login')}
+              >
+                <i className="fas fa-user"></i> Iniciar Sesión
+              </button>
+            )}
+
+            {/* Carrito */}
+            <button 
+              className="cart-button"
+              onClick={() => setCartDrawerOpen(true)}
+              aria-label="Carrito de compras"
             >
-              <ShoppingCartIcon sx={{ fontSize: 22 }} />
-            </Badge>
-          </IconButton>
+              <ShoppingCartIcon style={{ fontSize: '1.7rem' }} />
+              {cartItemsCount > 0 && (
+                <span className="cart-counter">{cartItemsCount}</span>
+              )}
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+        {/* Drawer lateral del carrito */}
+        {cartDrawerOpen && (
+          <div className="cart-drawer-overlay" onClick={() => setCartDrawerOpen(false)}></div>
+        )}
+        <aside className={`cart-drawer${cartDrawerOpen ? ' open' : ''}`}>
+          <div className="cart-drawer-header-gradient">
+            <h2 className="cart-title">Tu Carrito</h2>
+            <button className="close-cart" onClick={() => setCartDrawerOpen(false)} aria-label="Cerrar carrito">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div className="cart-drawer-content">
+            <div className="cart-empty">
+              <svg className="cart-empty-icon" width="80" height="80" viewBox="0 0 24 24" fill="none"><path d="M7 18c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm10 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm1.83-2l1.72-7.45A1 1 0 0 0 19.56 7H6.21l-.94-2H2v2h2l3.6 7.59-1.35 2.44A1.992 1.992 0 0 0 7 20h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 16h7.45c.75 0 1.41-.41 1.75-1.03z" fill="#d1d5db"/></svg>
+              <h3 className="cart-empty-title">Tu carrito está vacío</h3>
+              <p className="cart-empty-sub">Agrega algunos productos para comenzar</p>
+            </div>
+          </div>
+          <div className="cart-drawer-footer">
+            <div className="cart-subtotal-box">
+              <span className="cart-subtotal-label">Subtotal</span>
+              <span className="cart-subtotal-value">$0 CLP</span>
+            </div>
+            <button className="cart-checkout-btn" disabled>Finalizar Compra</button>
+          </div>
+        </aside>
+      </header>
+    </>
   );
 };
 

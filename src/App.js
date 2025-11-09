@@ -1,5 +1,4 @@
 import React from 'react';
-// Asegúrate de importar BrowserRouter como Router
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -18,50 +17,43 @@ import Checkout from './components/Checkout';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import ProductDetails from './components/ProductDetails';
-import Login from './components/Login'; // Importación del componente Login
+import Login from './components/Login';
+import Registro from './components/Registro'; // ✅ AGREGADO
 
 // Contextos
 import { CartProvider } from './context/CartContext';
-// ¡IMPORTACIÓN CLAVE!
 import { AuthProvider, useAuth } from './context/AuthContext'; 
 
-// Componentes Admin (Asegúrate de que estas rutas sean correctas)
+// Componentes Admin
 import AdminLayout from './components/Admin/AdminLayout';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import OrderManagement from './components/Admin/OrderManagement';
 import ProductManagement from './components/Admin/ProductManagement';
 import UserManagement from './components/Admin/UserManagement';
+import AdminCategories from './components/Admin/AdminCategories';
+import AdminReports from './components/Admin/AdminReports';
+import AdminProfile from './components/Admin/AdminProfile';
 
-// ===================================================================
-// COMPONENTE DE RUTA PROTEGIDA (Protege el acceso al Admin Layout)
-// ===================================================================
+// COMPONENTE DE RUTA PROTEGIDA
 const AdminRoute = () => {
-    // Usamos useAuth para verificar si el rol es 'admin'
-    // Esto funciona porque <AdminRoute> está dentro de <AuthProvider>
     const { isAdmin } = useAuth(); 
     
-    // Si el usuario NO es admin, lo redirige a la página de login
     if (!isAdmin) {
         return <Navigate to="/login" replace />; 
     }
     
-    // Si es admin, permite que se renderice el contenido anidado (AdminLayout)
     return <Outlet />; 
 };
 
-
 function App() {
     return (
-        // 1. <Router> DEBE envolver a AuthProvider
         <Router>
-            {/* 2. <AuthProvider> DEBE envolver a CartProvider y Routes */}
             <AuthProvider> 
                 <CartProvider>
                     <ScrollToTop />
                     <div className="App" style={{ background: '#F7F7F7', minHeight: '100vh' }}>
-                        {/* 3. <Routes> DEBE estar dentro de AuthProvider */}
                         <Routes>
-                            {/* ========== RUTAS PÚBLICAS (con Navbar y Footer) ========== */}
+                            {/* ========== RUTAS PÚBLICAS ========== */}
                             <Route path="/" element={
                                 <>
                                     <Navbar />
@@ -74,9 +66,11 @@ function App() {
                                 </>
                             } />
 
-                            {/* Ruta de Login (Renderiza el componente Login) */}
-                            {/* Esto funciona porque <Login> está dentro de <AuthProvider> */}
+                            {/* Ruta de Login */}
                             <Route path="/login" element={<Login />} />
+                            
+                            {/* Ruta de Registro ✅ AGREGADA */}
+                            <Route path="/registro" element={<Registro />} />
                             
                             {/* Rutas de Contenido de la Tienda */}
                             <Route path="/productos" element={<><Navbar /><ProductList /><Footer /></>} />
@@ -88,22 +82,20 @@ function App() {
                             <Route path="/blog" element={<><Navbar /><Blog /><Footer /></>} />
 
                             {/* ========== RUTAS DE ADMINISTRADOR (PROTEGIDAS) ========== */}
-                            {/* Usa AdminRoute como elemento para proteger todas las rutas anidadas */}
                             <Route path="/admin" element={<AdminRoute />}>
-                                {/* El contenido de AdminLayout se renderiza si el AdminRoute permite el acceso */}
                                 <Route element={<AdminLayout />}> 
                                     <Route index element={<AdminDashboard />} />
                                     <Route path="dashboard" element={<AdminDashboard />} />
                                     <Route path="ordenes" element={<OrderManagement />} />
                                     <Route path="productos" element={<ProductManagement />} />
                                     <Route path="usuarios" element={<UserManagement />} />
-                                    <Route path="categorias" element={<div style={{padding: '20px'}}>Categorías - Próximamente</div>} />
-                                    <Route path="reportes" element={<div style={{padding: '20px'}}>Reportes - Próximamente</div>} />
-                                    <Route path="perfil" element={<div style={{padding: '20px'}}>Perfil - Próximamente</div>} />
+                                    <Route path="categorias" element={<AdminCategories />} />
+                                    <Route path="reportes" element={<AdminReports />} />
+                                    <Route path="perfil" element={<AdminProfile />} />
                                 </Route>
                             </Route>
 
-                            {/* Ruta antigua de admin panel (opcional - puedes eliminarla) */}
+                            {/* Ruta antigua de admin panel */}
                             <Route path="/admin-old" element={
                                 <>
                                     <Navbar />
@@ -113,7 +105,7 @@ function App() {
                             } />
                         </Routes>
                         
-                        {/* Cart Offcanvas - Always available */}
+                        {/* Cart Offcanvas */}
                         <Cart />
                     </div>
                 </CartProvider>
@@ -123,4 +115,3 @@ function App() {
 }
 
 export default App;
-

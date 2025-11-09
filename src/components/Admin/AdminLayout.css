@@ -1,8 +1,8 @@
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8f0f7 100%);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  background: #f9fafb;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   position: relative;
 }
 
@@ -11,7 +11,7 @@
   margin-left: 260px;
   min-height: 100vh;
   overflow-x: hidden;
-  padding: 32px;
+  padding: 24px;
   transition: margin-left 0.3s ease;
   width: calc(100% - 260px);
   box-sizing: border-box;

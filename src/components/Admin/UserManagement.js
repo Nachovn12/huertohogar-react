@@ -14,7 +14,6 @@ const UserManagement = () => {
   ]);
 
   const [showModal, setShowModal] = useState(false);
-  const [showActionsModal, setShowActionsModal] = useState(false);
   const [modalMode, setModalMode] = useState('add');
   const [currentUser, setCurrentUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,13 +48,12 @@ const UserManagement = () => {
       role: user.role,
       status: user.status
     });
-    setShowActionsModal(false);
     setShowModal(true);
   };
 
   const handleOpenActions = (user) => {
-    setCurrentUser(user);
-    setShowActionsModal(true);
+    // Abrir edición directamente (sin modal de acciones intermedio)
+    handleEditUser(user);
   };
 
   const handleDeleteUser = (userId) => {
@@ -187,100 +185,82 @@ const UserManagement = () => {
         </div>
       )}
 
-      {/* Modal de Acciones */}
-      <Modal show={showActionsModal} onHide={() => setShowActionsModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Acciones - {currentUser?.name}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="d-grid gap-2">
-            <Button 
-              variant="outline-primary"
-              onClick={() => handleEditUser(currentUser)}
-              className="d-flex align-items-center justify-content-center gap-2 py-3"
-              style={{ borderRadius: '10px', fontWeight: 600 }}
-            >
-              <Edit /> Editar Usuario
-            </Button>
-            <Button 
-              variant="outline-danger"
-              onClick={() => {
-                setShowActionsModal(false);
-                handleDeleteUser(currentUser.id);
-              }}
-              className="d-flex align-items-center justify-content-center gap-2 py-3"
-              style={{ borderRadius: '10px', fontWeight: 600 }}
-            >
-              <Delete /> Eliminar Usuario
-            </Button>
+      {/* Eliminado modal de acciones: abrimos edición directamente */}
+
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <div className="modal-content">
+          <div className="modal-header">
+            {modalMode === 'edit' && currentUser && (
+              <span className="modal-product-id">{currentUser.id}</span>
+            )}
+            <h4 style={{ fontWeight: 700, margin: 0 }}>
+              {modalMode === 'add' ? 'Agregar Nuevo Usuario' : 'Editar Usuario'}
+            </h4>
+            <button type="button" className="btn-close" aria-label="Cerrar" onClick={() => setShowModal(false)} />
           </div>
-        </Modal.Body>
-      </Modal>
-
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            {modalMode === 'add' ? 'Agregar Nuevo Usuario' : 'Editar Usuario'}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
           <Form onSubmit={handleSaveUser}>
-            <Form.Group className="mb-3">
-              <Form.Label>Nombre Completo *</Form.Label>
-              <Form.Control
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                placeholder="Juan Pérez"
-              />
-            </Form.Group>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px', marginBottom: 12 }}>
+              <div>
+                <Form.Label>Nombre Completo *</Form.Label>
+                <Form.Control
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  placeholder="Juan Pérez"
+                />
+              </div>
+              <div>
+                <Form.Label>Email *</Form.Label>
+                <Form.Control
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  placeholder="usuario@email.com"
+                />
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
+              <div>
+                <Form.Label>Rol *</Form.Label>
+                <Form.Select
+                  required
+                  value={formData.role}
+                  onChange={(e) => setFormData({...formData, role: e.target.value})}
+                >
+                  <option value="customer">Cliente</option>
+                  <option value="admin">Administrador</option>
+                </Form.Select>
+              </div>
+              <div>
+                <Form.Label>Estado *</Form.Label>
+                <Form.Select
+                  required
+                  value={formData.status}
+                  onChange={(e) => setFormData({...formData, status: e.target.value})}
+                >
+                  <option value="active">Activo</option>
+                  <option value="inactive">Inactivo</option>
+                </Form.Select>
+              </div>
+            </div>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Email *</Form.Label>
-              <Form.Control
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                placeholder="usuario@email.com"
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Rol *</Form.Label>
-              <Form.Select
-                required
-                value={formData.role}
-                onChange={(e) => setFormData({...formData, role: e.target.value})}
-              >
-                <option value="customer">Cliente</option>
-                <option value="admin">Administrador</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Estado *</Form.Label>
-              <Form.Select
-                required
-                value={formData.status}
-                onChange={(e) => setFormData({...formData, status: e.target.value})}
-              >
-                <option value="active">Activo</option>
-                <option value="inactive">Inactivo</option>
-              </Form.Select>
-            </Form.Group>
-
-            <div className="d-flex justify-content-end gap-2 mt-4">
-              <Button onClick={() => setShowModal(false)} className="btn-modal-secondary">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: 18 }}>
+              <Button onClick={() => setShowModal(false)} className="btn-modal-cancel">
                 Cancelar
               </Button>
-              <Button type="submit" className="btn-modal-primary">
+              <Button type="submit" className="btn-modal-success">
                 {modalMode === 'add' ? 'Agregar Usuario' : 'Guardar Cambios'}
               </Button>
+              {modalMode === 'edit' && currentUser && (
+                <Button onClick={() => handleDeleteUser(currentUser.id)} className="btn-modal-danger">
+                  <Delete style={{ fontSize: '18px', marginRight: 8 }} /> Eliminar
+                </Button>
+              )}
             </div>
           </Form>
-        </Modal.Body>
+        </div>
       </Modal>
     </div>
   );
