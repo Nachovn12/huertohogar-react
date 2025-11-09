@@ -29,6 +29,9 @@ const Navbar = () => {
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [adminBrowsing, setAdminBrowsing] = useState(false);
 
+  // total items in cart
+  const cartItemsCount = getTotalItems ? getTotalItems() : 0;
+
   useEffect(() => {
     try {
       const flag = localStorage.getItem('adminBrowsing') === 'true';
@@ -237,7 +240,7 @@ const Navbar = () => {
                   </Link>
                   <button 
                     className="user-menu-item logout-btn"
-                    onClick={handleLogout}
+                    onClick={handleLogoutLocal}
                   >
                     <i className="fas fa-sign-out-alt"></i> Cerrar Sesión
                   </button>
