@@ -5,17 +5,20 @@ import ProductCard from '../components/ProductCard';
 import { Product } from '../types'; 
 import CartContext from '../context/CartContext';
 
-describe('ProductCard Component (Test 4/10) - JASMINE', () => {
+describe('Componente ProductCard - Pruebas de Renderizado, Props y Eventos', () => {
   
-  // --- Mocks con JASMINE ---
-  const mockAddToCart = jasmine.createSpy('addToCart');
-  const mockRemoveFromCart = jasmine.createSpy('removeFromCart');
-  const mockClearCart = jasmine.createSpy('clearCart');
-  const mockToggleCart = jasmine.createSpy('toggleCart');
-  const mockOpenCart = jasmine.createSpy('openCart');
+  // ========== Mocks con JASMINE ==========
+  // Creamos espías (spies) de Jasmine para simular las funciones del carrito
+  // Esto nos permite verificar si las funciones fueron llamadas sin ejecutarlas realmente
+  const mockAgregarAlCarrito = jasmine.createSpy('addToCart');
+  const mockEliminarDelCarrito = jasmine.createSpy('removeFromCart');
+  const mockLimpiarCarrito = jasmine.createSpy('clearCart');
+  const mockToggleCarrito = jasmine.createSpy('toggleCart');
+  const mockAbrirCarrito = jasmine.createSpy('openCart');
 
-  // Mock de producto base (Manzanas Fuji)
-  const mockProduct: Product = {
+  // Producto de prueba basado en el caso de HuertoHogar (Manzanas Fuji)
+  // Este es el producto base que usaremos en la mayoría de las pruebas
+  const productoMock: Product = {
     id: 'FR001',
     name: 'Manzanas Fuji',
     price: 1200,
@@ -31,20 +34,21 @@ describe('ProductCard Component (Test 4/10) - JASMINE', () => {
     reviews: 89,
   };
 
-  // Función helper para renderizar con todos los providers necesarios
-  const renderWithProviders = (component: React.ReactElement) => {
+  // Función auxiliar para renderizar el componente con todos los providers necesarios
+  // Esto evita repetir código en cada test
+  const renderizarConProviders = (component: React.ReactElement) => {
     return render(
       <MemoryRouter>
         <CartContext.Provider value={{
           items: [],
           cart: [],
           isCartOpen: false,
-          addToCart: mockAddToCart,
-          removeFromCart: mockRemoveFromCart,
+          addToCart: mockAgregarAlCarrito,
+          removeFromCart: mockEliminarDelCarrito,
           updateQuantity: jasmine.createSpy('updateQuantity'),
-          clearCart: mockClearCart,
-          toggleCart: mockToggleCart,
-          openCart: mockOpenCart,
+          clearCart: mockLimpiarCarrito,
+          toggleCart: mockToggleCarrito,
+          openCart: mockAbrirCarrito,
           closeCart: jasmine.createSpy('closeCart'),
           getTotalItems: () => 0,
           getTotalPrice: () => 0,
@@ -55,63 +59,95 @@ describe('ProductCard Component (Test 4/10) - JASMINE', () => {
     );
   };
 
-  // Limpieza de Spies de Jasmine
+  // beforeEach se ejecuta antes de cada test individual
+  // Limpiamos el historial de llamadas de los espías para que cada test empiece limpio
   beforeEach(() => {
-    mockAddToCart.calls.reset();
-    mockRemoveFromCart.calls.reset();
-    mockClearCart.calls.reset();
-    mockToggleCart.calls.reset();
-    mockOpenCart.calls.reset();
+    mockAgregarAlCarrito.calls.reset();
+    mockEliminarDelCarrito.calls.reset();
+    mockLimpiarCarrito.calls.reset();
+    mockToggleCarrito.calls.reset();
+    mockAbrirCarrito.calls.reset();
   });
 
-  // --- PRUEBA 1: Renderizado y Props ---
-  it('renders product information correctly (Happy Path)', () => {
-    renderWithProviders(<ProductCard product={mockProduct} />);
+  // ========== PRUEBA 1: Renderizado y Props (Caso Feliz) ==========
+  // Verificamos que el componente renderice correctamente toda la información del producto
+  it('debería renderizar correctamente toda la información del producto', () => {
+    renderizarConProviders(<ProductCard product={productoMock} />);
     
+    // Verificamos que el nombre del producto esté visible
     expect(screen.getByText('Manzanas Fuji')).toBeInTheDocument();
+    
+    // Verificamos que el precio se muestre con formato chileno (punto como separador de miles)
     expect(screen.getByText('$1.200')).toBeInTheDocument();
+    
+    // Verificamos que la categoría se muestre correctamente
     expect(screen.getByText('Frutas Frescas')).toBeInTheDocument();
+    
+    // Verificamos que el origen del producto se muestre
+    // Usamos regex /i para que no importe mayúsculas/minúsculas
     expect(screen.getByText(/Región Valle del Maule/i)).toBeInTheDocument();
+    
+    // Verificamos que la etiqueta de temporada aparezca (porque seasonal = true)
     expect(screen.getByText('TEMPORADA')).toBeInTheDocument();
   });
 
-  // --- PRUEBA 2: Evento onClick (Agregar al Carrito) ---
-  it('calls addToCart when "Agregar al Carrito" button is clicked', () => {
-    renderWithProviders(<ProductCard product={mockProduct} />);
+  // ========== PRUEBA 2: Evento onClick (Agregar al Carrito) ==========
+  // Verificamos que al hacer clic en el botón se llame a la función addToCart correctamente
+  it('debería llamar a la función addToCart cuando se hace clic en el botón "Agregar al Carrito"', () => {
+    renderizarConProviders(<ProductCard product={productoMock} />);
     
-    const addButton = screen.getByRole('button', { name: /agregar al carrito/i });
-    fireEvent.click(addButton);
+    // Buscamos el botón por su rol y texto
+    const botonAgregar = screen.getByRole('button', { name: /agregar al carrito/i });
     
-    // Verificamos que el espía fue llamado (Jasmine)
-    expect(mockAddToCart).toHaveBeenCalledTimes(1);
-    expect(mockAddToCart).toHaveBeenCalledWith(mockProduct);
+    // Simulamos un clic en el botón
+    fireEvent.click(botonAgregar);
+    
+    // Verificamos que el espía fue llamado exactamente 1 vez
+    expect(mockAgregarAlCarrito).toHaveBeenCalledTimes(1);
+    
+    // Verificamos que se pasó el producto correcto como argumento
+    expect(mockAgregarAlCarrito).toHaveBeenCalledWith(productoMock);
   });
 
-  // --- PRUEBA 3: Renderizado Condicional (Stock Cero) ---
-  it('disables button and shows "Agotado" when stock is 0', () => {
-    const outOfStockProduct = { ...mockProduct, stock: 0 };
-    renderWithProviders(<ProductCard product={outOfStockProduct} />);
+  // ========== PRUEBA 3: Renderizado Condicional (Sin Stock) ==========
+  // Verificamos que cuando el stock es 0, el botón se deshabilite y muestre "Agotado"
+  it('debería deshabilitar el botón y mostrar "Agotado" cuando el stock es 0', () => {
+    // Creamos una copia del producto pero con stock en 0
+    // Usamos spread operator para copiar todas las propiedades
+    const productoSinStock = { ...productoMock, stock: 0 };
     
+    renderizarConProviders(<ProductCard product={productoSinStock} />);
+    
+    // Verificamos que el texto "Agotado" aparezca
     expect(screen.getByText('Agotado')).toBeInTheDocument();
     
-    // Verificamos el estado 'disabled' (Jasmine)
-    const addButton = screen.getByRole('button', { name: /agregar al carrito/i });
-    expect(addButton).toBeDisabled();
+    // Verificamos que el botón esté deshabilitado
+    // toBeDisabled es un matcher personalizado que agregamos en test-utils.js
+    const botonAgregar = screen.getByRole('button', { name: /agregar al carrito/i });
+    expect(botonAgregar).toBeDisabled();
   });
 
-  // --- PRUEBA 4: Renderizado Condicional (Oferta) ---
-  it('renders offer price and badge when on offer', () => {
-    const offerProduct = { 
-      ...mockProduct, 
-      offer: true, 
-      offerPrice: 1000, 
-      discount: 17 
+  // ========== PRUEBA 4: Renderizado Condicional (Producto en Oferta) ==========
+  // Verificamos que cuando un producto está en oferta, se muestren el precio rebajado y la etiqueta de descuento
+  it('debería renderizar el precio de oferta y la etiqueta de descuento cuando el producto está en oferta', () => {
+    // Creamos una copia del producto pero con oferta activa
+    const productoEnOferta = { 
+      ...productoMock, 
+      offer: true,           // Activamos la oferta
+      offerPrice: 1000,      // Precio rebajado
+      discount: 17           // Porcentaje de descuento
     };
     
-    renderWithProviders(<ProductCard product={offerProduct} />);
+    renderizarConProviders(<ProductCard product={productoEnOferta} />);
     
+    // Verificamos que el precio de oferta se muestre
     expect(screen.getByText('$1.000')).toBeInTheDocument();
+    
+    // Verificamos que el precio original se muestre tachado con "Antes:"
+    // Usamos regex porque el punto del precio necesita ser escapado (\.)
     expect(screen.getByText(/Antes: \$1\.200/i)).toBeInTheDocument();
+    
+    // Verificamos que la etiqueta de descuento aparezca
     expect(screen.getByText(/-17% OFF/i)).toBeInTheDocument();
   });
 

@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -7,6 +8,7 @@ import Container from '@mui/material/Container';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 
 const Mission: FC = () => {
+  const navigate = useNavigate();
   return (
     <Box sx={{ 
       bgcolor: '#f0f9f4',
@@ -157,6 +159,7 @@ const Mission: FC = () => {
                   },
                   transition: 'all 0.3s ease'
                 }}
+                onClick={() => navigate('/nosotros')}
               >
                 Conoce Más Sobre Nosotros
               </Button>

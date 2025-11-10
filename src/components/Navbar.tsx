@@ -28,6 +28,7 @@ const Navbar: React.FC = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   
   const [adminBrowsing, setAdminBrowsing] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   // total items in cart
   const cartItemsCount = getTotalItems ? getTotalItems() : 0;
@@ -50,6 +51,14 @@ const Navbar: React.FC = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Detect mobile breakpoint to hide desktop search input when on small screens
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 768);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   // Cerrar menú al hacer clic fuera
@@ -93,6 +102,12 @@ const Navbar: React.FC = () => {
       navigate(`/productos?search=${encodeURIComponent(searchQuery)}`);
       setShowSearchDropdown(false);
       setSearchQuery('');
+      // If we're on a small screen, close the hamburger menu after searching
+      try {
+        if (window.innerWidth <= 768) setIsMenuOpen(false);
+      } catch (err) {
+        // ignore in SSR or environments without window
+      }
     }
   };
 
@@ -184,41 +199,56 @@ const Navbar: React.FC = () => {
             <Link to="/blog" onClick={() => setIsMenuOpen(false)}>
               <i className="fas fa-newspaper"></i> Blog
             </Link>
-            
+              {/* Mobile search shown inside hamburger menu on small screens - render only when menu is open to avoid duplicate on desktop */}
+              {isMenuOpen && (
+                <div className="mobile-search">
+                  <form className="search-bar" onSubmit={handleSearch}>
+                    <i className="fas fa-search"></i>
+                    <input
+                      type="text"
+                      placeholder="Buscar productos..."
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                    />
+                  </form>
+                </div>
+              )}
           </nav>
 
           {/* Acciones del header */}
           <div className="header-actions">
-            {/* Barra de búsqueda */}
-            <form className="search-bar" onSubmit={handleSearch}>
-              <i className="fas fa-search"></i>
-              <input 
-                type="text" 
-                placeholder="Buscar productos..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                onFocus={() => searchQuery && setShowSearchDropdown(true)}
-              />
+            {/* Barra de búsqueda (solo desktop) */}
+            {!isMobile && (
+              <form className="search-bar" onSubmit={handleSearch}>
+                <i className="fas fa-search"></i>
+                <input 
+                  type="text" 
+                  placeholder="Buscar productos..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  onFocus={() => searchQuery && setShowSearchDropdown(true)}
+                />
               
-              {/* Dropdown de búsqueda */}
-              {showSearchDropdown && filteredSuggestions.length > 0 && (
-                <div className="search-dropdown show">
-                  {filteredSuggestions.map((suggestion, index) => (
-                    <div 
-                      key={index}
-                      className="suggestion-text"
-                      onClick={() => {
-                        setSearchQuery(suggestion);
-                        setShowSearchDropdown(false);
-                        navigate(`/productos?search=${encodeURIComponent(suggestion)}`);
-                      }}
-                    >
-                      {suggestion}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </form>
+                {/* Dropdown de búsqueda */}
+                {showSearchDropdown && filteredSuggestions.length > 0 && (
+                  <div className="search-dropdown show">
+                    {filteredSuggestions.map((suggestion, index) => (
+                      <div 
+                        key={index}
+                        className="suggestion-text"
+                        onClick={() => {
+                          setSearchQuery(suggestion);
+                          setShowSearchDropdown(false);
+                          navigate(`/productos?search=${encodeURIComponent(suggestion)}`);
+                        }}
+                      >
+                        {suggestion}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </form>
+            )}
 
             {/* Usuario / Login */}
             {user ? (
