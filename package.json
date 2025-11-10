@@ -6,20 +6,23 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "karma start",
     "eject": "react-scripts eject",
-    "test:coverage": "react-scripts test --coverage --watchAll=false",
-    "test:ci": "react-scripts test --coverage --watchAll=false --ci"
+    "test:coverage": "karma start --single-run --browsers ChromeHeadless --reporters coverage --reporters spec",
+    "test:ci": "karma start --single-run --browsers ChromeHeadless"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.5",
     "@mui/material": "^7.3.4",
-    "bootstrap": "^5.3.0",
+    "@types/leaflet": "^1.9.21",
+    "bootstrap": "^5.3.8",
+    "leaflet": "^1.9.4",
     "react": "^18.2.0",
-    "react-bootstrap": "^2.8.0",
+    "react-bootstrap": "^2.10.10",
     "react-dom": "^18.2.0",
+    "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.8.0",
     "react-scripts": "^5.0.1",
     "swiper": "^12.0.3"
@@ -33,12 +36,14 @@
     "babel-loader": "^9.1.0",
     "jasmine": "^4.5.0",
     "jasmine-core": "^4.5.0",
-    "jest": "^27.5.1",
     "karma": "^6.4.0",
     "karma-chrome-launcher": "^3.1.1",
     "karma-coverage": "^2.2.0",
+    "karma-html-reporter": "^0.2.7",
     "karma-jasmine": "^5.1.0",
+    "karma-sourcemap-loader": "^0.4.0",
     "karma-webpack": "^5.0.0",
+    "typescript": "^4.9.5",
     "webpack": "^5.75.0"
   },
   "browserslist": {

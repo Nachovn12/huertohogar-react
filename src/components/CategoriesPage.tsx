@@ -1,0 +1,171 @@
+import React, { useState, useMemo } from 'react';
+import { Container, Row, Col, Nav, Badge } from 'react-bootstrap';
+import ProductCard from './ProductCard';
+import { products } from '../data/products';
+import { Product } from '../types';
+
+const CategoriesPage: React.FC = () => {
+  // Obtener todas las categorías únicas
+  const allCategories = useMemo(() => {
+    const categories = [...new Set(products.map((p: Product) => p.category || 'Sin categoría'))];
+    return categories.sort();
+  }, []);
+
+  const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
+
+  // Filtrar productos por categoría
+  const filteredProducts = useMemo(() => {
+    if (selectedCategory === 'Todas') {
+      return products;
+    }
+    return products.filter((p: Product) => p.category === selectedCategory);
+  }, [selectedCategory]);
+
+  // Contar productos por categoría
+  const getCategoryCount = (category: string) => {
+    if (category === 'Todas') return products.length;
+    return products.filter((p: Product) => p.category === category).length;
+  };
+
+  return (
+    <div style={{ background: '#f7faf7', minHeight: '100vh', paddingTop: '2rem', paddingBottom: '4rem' }}>
+      <Container>
+        {/* Header de Categorías */}
+        <div className="text-center mb-5">
+          <Badge bg="success" className="mb-3" style={{ fontSize: '1.1rem', padding: '0.6rem 1.5rem' }}>
+            📂 Nuestras Categorías
+          </Badge>
+          <h1 style={{
+            fontFamily: 'Playfair Display, serif',
+            fontWeight: 700,
+            color: '#2E8B57',
+            fontSize: '3rem',
+            marginBottom: '1rem'
+          }}>
+            Explora por Categorías
+          </h1>
+          <p style={{
+            fontSize: '1.2rem',
+            color: '#666',
+            maxWidth: '700px',
+            margin: '0 auto'
+          }}>
+            Encuentra fácilmente los productos que necesitas navegando por nuestras categorías organizadas.
+          </p>
+        </div>
+
+        {/* Navegación de Categorías */}
+        <div className="mb-5" style={{
+          background: 'white',
+          borderRadius: '16px',
+          padding: '2rem',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+        }}>
+          <h5 style={{
+            color: '#2E8B57',
+            fontWeight: 700,
+            marginBottom: '1.5rem',
+            textAlign: 'center'
+          }}>
+            Selecciona una categoría
+          </h5>
+          <Nav
+            variant="pills"
+            className="flex-wrap justify-content-center gap-2"
+            activeKey={selectedCategory}
+          >
+            {/* Botón "Todas" */}
+            <Nav.Item>
+              <Nav.Link
+                eventKey="Todas"
+                onClick={() => setSelectedCategory('Todas')}
+                style={{
+                  borderRadius: '12px',
+                  padding: '0.8rem 1.5rem',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  border: '2px solid #e0e0e0',
+                  background: selectedCategory === 'Todas' ? '#2E8B57' : 'white',
+                  color: selectedCategory === 'Todas' ? 'white' : '#2E8B57',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer'
+                }}
+                className={selectedCategory === 'Todas' ? '' : 'hover-category-btn'}
+              >
+                Todas <Badge bg="light" text="dark" className="ms-2">{getCategoryCount('Todas')}</Badge>
+              </Nav.Link>
+            </Nav.Item>
+
+            {/* Botones de categorías */}
+            {allCategories.map((category) => (
+              <Nav.Item key={category}>
+                <Nav.Link
+                  eventKey={category}
+                  onClick={() => setSelectedCategory(category)}
+                  style={{
+                    borderRadius: '12px',
+                    padding: '0.8rem 1.5rem',
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    border: '2px solid #e0e0e0',
+                    background: selectedCategory === category ? '#2E8B57' : 'white',
+                    color: selectedCategory === category ? 'white' : '#2E8B57',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer'
+                  }}
+                  className={selectedCategory === category ? '' : 'hover-category-btn'}
+                >
+                  {category} <Badge bg="light" text="dark" className="ms-2">{getCategoryCount(category)}</Badge>
+                </Nav.Link>
+              </Nav.Item>
+            ))}
+          </Nav>
+        </div>
+
+        {/* Contador de productos */}
+        <div className="text-center mb-4">
+          <h5 style={{ color: '#2E8B57', fontWeight: 600 }}>
+            {filteredProducts.length} {filteredProducts.length === 1 ? 'producto' : 'productos'}
+            {selectedCategory !== 'Todas' && ` en ${selectedCategory}`}
+          </h5>
+        </div>
+
+        {/* Grid de productos */}
+        <Row className="g-4">
+          {filteredProducts.map((product: Product) => (
+            <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
+              <ProductCard product={product} />
+            </Col>
+          ))}
+        </Row>
+
+        {/* Banner informativo */}
+        <div className="mt-5 p-4" style={{
+          background: 'linear-gradient(135deg, #2E8B57 0%, #3CB371 100%)',
+          borderRadius: '16px',
+          color: 'white',
+          textAlign: 'center'
+        }}>
+          <h4 style={{ marginBottom: '0.5rem' }}>
+            🌿 ¿No encuentras lo que buscas?
+          </h4>
+          <p style={{ marginBottom: 0, fontSize: '1.1rem' }}>
+            Contáctanos y te ayudaremos a encontrar el producto perfecto para ti
+          </p>
+        </div>
+      </Container>
+
+      {/* Estilos adicionales para hover */}
+      <style>{`
+        .hover-category-btn:hover {
+          background: #e6f4ea !important;
+          border-color: #2E8B57 !important;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(46, 139, 87, 0.2);
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default CategoriesPage;
