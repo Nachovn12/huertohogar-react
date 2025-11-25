@@ -44,6 +44,7 @@ const AdminRoute: React.FC = () => {
 const App: React.FC = () => {
   return (
     <Router>
+      {/* App Refresh Trigger - Force HMR */}
       <AuthProvider>
         <CartProvider>
           <ScrollToTop />

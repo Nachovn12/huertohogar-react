@@ -33,4 +33,10 @@ export interface User {
   isAdmin?: boolean;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+}
+
 export default {};

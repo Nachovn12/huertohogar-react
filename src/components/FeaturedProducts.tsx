@@ -3,6 +3,9 @@ import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import { useProducts, useProductsOnOffer } from '../hooks/useApi';
+import { Product } from '../types';
+import { CircularProgress, Box } from '@mui/material';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -12,50 +15,16 @@ import 'swiper/css/autoplay';
 
 const FeaturedProducts: React.FC = () => {
   const { addToCart } = useCart();
+  const { products: offerProducts, loading: loadingOffers } = useProductsOnOffer();
+  const { products: allProducts, loading: loadingAll } = useProducts();
+  
+  // Usar productos en oferta, o si no hay, los primeros 8 productos
+  const featuredProducts = React.useMemo(() => {
+    if (offerProducts.length >= 4) return offerProducts;
+    return allProducts.slice(0, 8);
+  }, [offerProducts, allProducts]);
 
-  const featuredProducts = [
-    {
-      id: "VR001",
-      name: "Zanahorias Orgánicas",
-      price: 900,
-      image: "https://png.pngtree.com/png-vector/20241225/ourmid/pngtree-fresh-organic-carrots-in-a-neat-stack-png-image_14812590.png",
-      unit: "kilos"
-    },
-    {
-      id: "VR002",
-      name: "Espinacas Frescas",
-      price: 700,
-      image: "https://pngimg.com/uploads/spinach/spinach_PNG45.png",
-      unit: "bolsas de 500g"
-    },
-    {
-      id: "VR003",
-      name: "Pimientos Tricolores",
-      price: 1230,
-      originalPrice: 1500,
-      discount: 18,
-      savings: 270,
-      image: "https://png.pngtree.com/png-vector/20241212/ourmid/pngtree-colored-paprica-raw-paprika-fruit-png-image_14613829.png",
-      unit: "kilos"
-    },
-    {
-      id: "FR001",
-      name: "Manzanas Fuji",
-      price: 1020,
-      originalPrice: 1200,
-      discount: 15,
-      savings: 180,
-      image: "https://santaisabel.vtexassets.com/arquivos/ids/174684-900-900?width=200&height=200&aspect=true",
-      unit: "kilos"
-    },
-    {
-      id: "FR002",
-      name: "Naranjas Valencia", 
-      price: 1000,
-      image: "https://static.vecteezy.com/system/resources/previews/022/825/544/non_2x/orange-fruit-orange-on-transparent-background-free-png.png",
-      unit: "kilos"
-    }
-  ];
+  const loading = loadingOffers || loadingAll;
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-CL', {
@@ -66,11 +35,11 @@ const FeaturedProducts: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (product: Product) => {
     addToCart(product);
   };
 
-  const handleViewDetails = (product: any) => {
+  const handleViewDetails = (product: Product) => {
     navigate(`/productos/${product.id}`);
   };
 
@@ -87,6 +56,14 @@ const FeaturedProducts: React.FC = () => {
 
   const baseDurationPerCard = 4; // seconds per card approx
   const duration = Math.max(12, featuredProducts.length * baseDurationPerCard);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+        <CircularProgress sx={{ color: '#2E8B57' }} />
+      </Box>
+    );
+  }
 
   return (
     <section style={{ 
@@ -153,7 +130,13 @@ const FeaturedProducts: React.FC = () => {
               onMouseEnter={() => trackRef.current && (trackRef.current.style.animationPlayState = 'paused')}
               onMouseLeave={() => trackRef.current && (trackRef.current.style.animationPlayState = 'running')}
             >
-              {duplicated.map((product, idx) => (
+              {duplicated.map((product, idx) => {
+                const isOffer = product.offer && product.offerPrice && product.offerPrice < product.price;
+                const currentPrice = isOffer ? product.offerPrice : product.price;
+                const originalPrice = isOffer ? product.price : null;
+                const savings = isOffer ? (product.price - (product.offerPrice || 0)) : 0;
+
+                return (
                 <div className="ch-slide" key={`${product.id}-${idx}`}>
                   {/* Reuse same markup for product card */}
                   <div className="ch-card">
@@ -165,13 +148,13 @@ const FeaturedProducts: React.FC = () => {
                     </div>
                     <h5 className="ch-name">{product.name}</h5>
                     <div className="ch-price">
-                      <span className="ch-price-main">{formatPrice(product.price)}</span>
+                      <span className="ch-price-main">{formatPrice(currentPrice || 0)}</span>
                       <span className="ch-unit">{product.unit}</span>
                     </div>
-                    {product.originalPrice ? (
+                    {originalPrice ? (
                       <div className="ch-savings">
-                        <span className="ch-strike">{formatPrice(product.originalPrice)}</span>
-                        <span className="ch-save">Ahorras {formatPrice(product.savings)}</span>
+                        <span className="ch-strike">{formatPrice(originalPrice)}</span>
+                        <span className="ch-save">Ahorras {formatPrice(savings)}</span>
                       </div>
                     ) : (
                       <div style={{ height: 32 }} />
@@ -182,7 +165,7 @@ const FeaturedProducts: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
         ) : (
@@ -233,7 +216,13 @@ const FeaturedProducts: React.FC = () => {
             paddingRight: '4px'
           }}
         >
-          {featuredProducts.map((product) => (
+          {featuredProducts.map((product) => {
+            const isOffer = product.offer && product.offerPrice && product.offerPrice < product.price;
+            const currentPrice = isOffer ? product.offerPrice : product.price;
+            const originalPrice = isOffer ? product.price : null;
+            const savings = isOffer ? (product.price - (product.offerPrice || 0)) : 0;
+
+            return (
             <SwiperSlide key={product.id}>
               <div style={{ 
                 background: '#fff', 
@@ -328,7 +317,7 @@ const FeaturedProducts: React.FC = () => {
                     display: 'block',
                     marginBottom: '1px'
                   }}>
-                    {formatPrice(product.price)}
+                    {formatPrice(currentPrice || 0)}
                   </span>
                   <span style={{ 
                     color: '#9ca3af', 
@@ -338,7 +327,7 @@ const FeaturedProducts: React.FC = () => {
                     {product.unit}
                   </span>
                 </div>
-                {product.originalPrice ? (
+                {originalPrice ? (
                   <div style={{ 
                     marginBottom: 6, 
                     textAlign: 'center', 
@@ -356,7 +345,7 @@ const FeaturedProducts: React.FC = () => {
                       display: 'block',
                       marginBottom: '2px'
                     }}>
-                      {formatPrice(product.originalPrice)}
+                      {formatPrice(originalPrice)}
                     </span>
                     <span style={{ 
                       color: '#2E8B57', 
@@ -364,7 +353,7 @@ const FeaturedProducts: React.FC = () => {
                       fontSize: '0.7rem',
                       display: 'inline-block'
                     }}>
-                      Ahorras {formatPrice(product.savings)}
+                      Ahorras {formatPrice(savings)}
                     </span>
                   </div>
                 ) : (
@@ -418,7 +407,7 @@ const FeaturedProducts: React.FC = () => {
                 </div>
               </div>
             </SwiperSlide>
-          ))}
+          )})}
         </Swiper>
         )}
       </div>

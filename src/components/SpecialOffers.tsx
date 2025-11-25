@@ -1,33 +1,28 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { products } from '../data/products';
-import { Box, Typography, Card, CardContent, Button } from '@mui/material';
-import { useCart } from '../context/CartContext';
 import { Product } from '../types';
+import { Box, Typography, Card, CardContent, Button, CircularProgress } from '@mui/material';
+import { useCart } from '../context/CartContext';
+import { useProductsOnOffer } from '../hooks/useApi';
 
 const formatPrice = (value: number) => `${value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
 
 const SpecialOffers: React.FC = () => {
   const { addToCart } = useCart() as { addToCart: (p: Product) => void };
+  const { products, loading } = useProductsOnOffer();
   
-  const declaredOffers = [
-    { id: 'PO001', discount: 25 },
-    { id: 'PO003', discount: 20 },
-    { id: 'FR001', discount: 15 },
-    { id: 'VR003', discount: 18 }
-  ];
+  // Mostrar loading
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
+        <CircularProgress sx={{ color: '#2E8B57' }} />
+      </Box>
+    );
+  }
 
-  const offers = declaredOffers
-    .map(o => {
-      const p = (products as Product[]).find(prod => prod.id === o.id);
-      if (!p) return null;
-      return {
-        ...p,
-        discount: o.discount,
-        discountedPrice: Math.round(p.price * (1 - o.discount / 100))
-      } as Product & { discountedPrice: number; discount: number };
-    })
-    .filter(Boolean) as (Product & { discountedPrice: number; discount: number })[];
+  // Usar directamente los productos que vienen del hook (ya filtrados por oferta en la API/adaptador)
+  // Tomamos solo los primeros 4 para mostrar en esta sección
+  const offers = products.slice(0, 4);
 
   return (
     <Box sx={{ 
@@ -62,7 +57,7 @@ const SpecialOffers: React.FC = () => {
                 <Typography variant="body2" sx={{ color: '#10b981', fontSize: { xs: '0.7rem', md: '0.8rem' }, fontWeight: 600, textTransform: 'uppercase', mb: { xs: 0.5, md: 1 } }}>{item.unit}</Typography>
                 <Box sx={{ mb: { xs: 1, md: 1.5 }, bgcolor: '#f0fdf4', py: { xs: 1, md: 1.2 }, px: { xs: 1.5, md: 2 }, borderRadius: 2, border: '1px dashed #bbf7d0' }}>
                   <Typography variant="caption" sx={{ color: '#6b7280', display: 'block', mb: 0.5 }}>Precio Especial</Typography>
-                  <Typography variant="h5" sx={{ color: '#2E8B57', fontWeight: 800 }}>${formatPrice(item.discountedPrice)}</Typography>
+                  <Typography variant="h5" sx={{ color: '#2E8B57', fontWeight: 800 }}>${formatPrice(item.offerPrice || item.price)}</Typography>
                   <Typography variant="body2" sx={{ textDecoration: 'line-through', color: '#9ca3af', mt: 0.5 }}>Antes: ${formatPrice(item.price)}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 0.8, md: 1 }, mt: 'auto', width: '100%' }}>

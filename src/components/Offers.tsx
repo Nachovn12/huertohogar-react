@@ -1,11 +1,20 @@
 import React from 'react';
-import { Container } from '@mui/material';
+import { Container, CircularProgress, Box } from '@mui/material';
 import ProductCard from './ProductCard';
-import { products } from '../data/products';
+import { useProductsOnOffer } from '../hooks/useApi';
 
 const Offers: React.FC = () => {
-  // Filtrar productos en oferta
-  const offerProducts = (products as any[]).filter((product) => product.offer === true);
+  // Cargar productos en oferta desde API
+  const { products: offerProducts, loading } = useProductsOnOffer();
+
+  // Mostrar loading
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <CircularProgress sx={{ color: '#2E8B57' }} size={60} />
+      </Box>
+    );
+  }
 
   return (
     <div style={{ background: '#f7faf7', minHeight: '100vh', paddingTop: '2rem', paddingBottom: '4rem' }}>

@@ -1,16 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { Container, Row, Col, Nav, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Nav, Badge, Spinner, Alert } from 'react-bootstrap';
 import ProductCard from './ProductCard';
-import { products } from '../data/products';
-import { Product } from '../types';
+import { Product, Category } from '../types';
+import { useProducts, useAvailableCategories } from '../hooks/useApi';
 
 const CategoriesPage: React.FC = () => {
-  // Obtener todas las categorías únicas
-  const allCategories = useMemo(() => {
-    const categories = [...new Set(products.map((p: Product) => p.category || 'Sin categoría'))];
-    return categories.sort();
-  }, []);
-
+  const { products, loading: loadingProducts, error: errorProducts } = useProducts();
+  const { categories: allCategories, loading: loadingCategories, error: errorCategories } = useAvailableCategories();
+  
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
 
   // Filtrar productos por categoría
@@ -19,13 +16,36 @@ const CategoriesPage: React.FC = () => {
       return products;
     }
     return products.filter((p: Product) => p.category === selectedCategory);
-  }, [selectedCategory]);
+  }, [selectedCategory, products]);
 
   // Contar productos por categoría
   const getCategoryCount = (category: string) => {
     if (category === 'Todas') return products.length;
     return products.filter((p: Product) => p.category === category).length;
   };
+
+  // Mostrar spinner mientras carga
+  if (loadingProducts || loadingCategories) {
+    return (
+      <Container className="text-center py-5" style={{ minHeight: '100vh' }}>
+        <Spinner animation="border" variant="success" style={{ width: '3rem', height: '3rem' }} />
+        <p className="mt-3" style={{ color: '#2E8B57', fontSize: '1.2rem' }}>Cargando productos...</p>
+      </Container>
+    );
+  }
+
+  // Mostrar error si hay alguno
+  if (errorProducts || errorCategories) {
+    return (
+      <Container className="py-5" style={{ minHeight: '100vh' }}>
+        <Alert variant="danger">
+          <Alert.Heading>Error al cargar datos</Alert.Heading>
+          <p>{errorProducts?.message || errorCategories?.message}</p>
+          <p className="mb-0">Usando datos locales como respaldo.</p>
+        </Alert>
+      </Container>
+    );
+  }
 
   return (
     <div style={{ background: '#f7faf7', minHeight: '100vh', paddingTop: '2rem', paddingBottom: '4rem' }}>
@@ -98,24 +118,24 @@ const CategoriesPage: React.FC = () => {
 
             {/* Botones de categorías */}
             {allCategories.map((category) => (
-              <Nav.Item key={category}>
+              <Nav.Item key={category.id}>
                 <Nav.Link
-                  eventKey={category}
-                  onClick={() => setSelectedCategory(category)}
+                  eventKey={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
                   style={{
                     borderRadius: '12px',
                     padding: '0.8rem 1.5rem',
                     fontWeight: 600,
                     fontSize: '1rem',
                     border: '2px solid #e0e0e0',
-                    background: selectedCategory === category ? '#2E8B57' : 'white',
-                    color: selectedCategory === category ? 'white' : '#2E8B57',
+                    background: selectedCategory === category.id ? '#2E8B57' : 'white',
+                    color: selectedCategory === category.id ? 'white' : '#2E8B57',
                     transition: 'all 0.3s ease',
                     cursor: 'pointer'
                   }}
-                  className={selectedCategory === category ? '' : 'hover-category-btn'}
+                  className={selectedCategory === category.id ? '' : 'hover-category-btn'}
                 >
-                  {category} <Badge bg="light" text="dark" className="ms-2">{getCategoryCount(category)}</Badge>
+                  {category.name} <Badge bg="light" text="dark" className="ms-2">{getCategoryCount(category.id)}</Badge>
                 </Nav.Link>
               </Nav.Item>
             ))}

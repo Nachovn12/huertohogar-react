@@ -1,7 +1,10 @@
 import React from 'react';
 import { Box, Typography, Card, CardContent, Button, Chip, Container } from '@mui/material';
 
-interface Category {
+import { useAvailableCategories, useProducts } from '../hooks/useApi';
+import { CircularProgress } from '@mui/material';
+
+interface CategoryDisplay {
   id: string;
   title: string;
   description: string;
@@ -11,48 +14,35 @@ interface Category {
 }
 
 const Categories: React.FC = () => {
-  // Orden y cantidad de categorías igual al sitio original
-  const categories: Category[] = [
-    {
-      id: 'frutas',
-      title: 'Frutas Frescas',
-      description:
-        'Nuestra selección de frutas frescas ofrece una experiencia directa del campo a tu hogar. Estas frutas se cultivan y cosechan en el punto óptimo de madurez para asegurar su sabor y frescura.',
-      features: ['Fresco', 'De Temporada', 'Nutritivo'],
-      productCount: 3,
-      image:
-        'https://media.istockphoto.com/id/467652436/es/foto/mezcla-de-frutas-frescas.jpg?s=612x612&w=0&k=20&c=CJEx3NOdOKNzJ_1XokafBhz84h8_J6OOXvp1cfmIogQ='
-    },
-    {
-      id: 'verduras',
-      title: 'Verduras Orgánicas',
-      description:
-        'Descubre nuestra gama de verduras orgánicas, cultivadas sin el uso de pesticidas ni químicos, garantizando un sabor auténtico y natural.',
-      features: ['Orgánico', 'Sin Pesticidas', 'Sostenible'],
-      productCount: 3,
-      image:
-        'https://media.istockphoto.com/id/1203599923/es/foto/fondo-gastron%C3%B3mico-con-surtido-de-verduras-org%C3%A1nicas-frescas.jpg?s=170667a&w=0&k=20&c=1VdiE2kPhNDVbws9bEanQA2JEMR6xrBjrq1PHvkhLp0='
-    },
-    {
-      id: 'organicos',
-      title: 'Productos Orgánicos',
-      description:
-        'Nuestros productos orgánicos están elaborados con ingredientes naturales y procesados de manera responsable para mantener sus beneficios saludables.',
-      features: ['Natural', 'Responsable', 'Saludable'],
-      productCount: 2,
-      image: 'https://natureganix.store/cdn/shop/articles/Natural_1024x.jpg?v=1618006760'
-    },
-    {
-      id: 'lacteos',
-      title: 'Productos Lácteos',
-      description:
-        'Los productos lácteos de HuertoHogar provienen de granjas locales que se dedican a la producción responsable y de calidad.',
-      features: ['Local', 'Fresco', 'Nutritivo'],
-      productCount: 1,
-      image:
-        'https://images.ecestaticos.com/5R1YUlQPhHlncdmKDsmSByzzAD4=/42x19:661x483/1200x899/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2F773%2F094%2F19d%2F77309419d4585c2d4a3590623d2e9170.jpg'
-    }
-  ];
+  const { categories: apiCategories, loading: loadingCategories } = useAvailableCategories();
+  const { products: apiProducts, loading: loadingProducts } = useProducts();
+
+  const categories: CategoryDisplay[] = React.useMemo(() => {
+    if (!apiCategories.length) return [];
+
+    return apiCategories.slice(0, 4).map(cat => {
+      // Encontrar productos de esta categoría para obtener imagen y conteo
+      const catProducts = apiProducts.filter(p => p.category === cat.id);
+      const firstProduct = catProducts[0];
+      
+      return {
+        id: cat.id,
+        title: cat.name.charAt(0).toUpperCase() + cat.name.slice(1),
+        description: cat.description || `Explora nuestra selección de ${cat.name} con la mejor calidad y frescura garantizada.`,
+        features: ['Calidad Premium', 'Mejor Precio', 'Stock Disponible'],
+        productCount: catProducts.length,
+        image: firstProduct?.image || 'https://via.placeholder.com/400x300?text=No+Image'
+      };
+    });
+  }, [apiCategories, apiProducts]);
+
+  if (loadingCategories || loadingProducts) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+        <CircularProgress sx={{ color: '#2E8B57' }} />
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -191,7 +181,7 @@ const Categories: React.FC = () => {
                   justifyContent: 'center',
                   alignItems: 'center',
                   position: 'relative',
-                  bgcolor: '#000'
+                  bgcolor: '#ffffff' // Fondo blanco para resaltar el producto
                 }}
               >
                 <Box
@@ -202,23 +192,24 @@ const Categories: React.FC = () => {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    background: 'linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%)',
-                    opacity: 0.5,
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.05) 100%)', // Overlay muy sutil
+                    opacity: 1,
                     transition: 'opacity 0.4s ease',
                     zIndex: 1
                   }}
                 />
-                <img
-                  src={category.image}
-                  alt={category.title}
-                  className="category-image"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
-                />
+                  <img
+                    src={category.image}
+                    alt={category.title}
+                    className="category-image"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain', // Cambiado de cover a contain para ver la imagen completa
+                      padding: '10px', // Espacio para que no toque los bordes
+                      transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
+                  />
                 {/* Badge de contador flotante */}
                 <Box
                   sx={{

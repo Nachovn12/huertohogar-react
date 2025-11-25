@@ -57,5 +57,11 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "overrides": {
+    "lodash": "^4.17.21",
+    "glob": "^10.4.6",
+    "nth-check": "^2.1.1",
+    "postcss": "^8.4.31"
   }
 }

@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from './ProductCard';
-import { products } from '../data/products';
 import { Product } from '../types';
-import { Box, Typography, Grid, Button, Container } from '@mui/material';
+import { Box, Typography, Grid, Button, Container, CircularProgress, Alert } from '@mui/material';
+import { useProducts, useCategories } from '../hooks/useApi';
 
 const ProductList: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filter, setFilter] = useState<string>(searchParams.get('categoria') || 'all');
+  
+  // Cargar productos y categorías desde API
+  const { products, loading: loadingProducts, error: errorProducts } = useProducts();
+  const { categories: apiCategories, loading: loadingCategories } = useCategories();
 
   useEffect(() => {
     const categoria = searchParams.get('categoria');
@@ -25,17 +29,40 @@ const ProductList: React.FC = () => {
     }
   };
 
+  // Construir categorías dinámicamente desde la API
   const categories = [
     { key: 'all', label: 'Todos' },
-    { key: 'frutas', label: 'Frutas Frescas' },
-    { key: 'verduras', label: 'Verduras Orgánicas' },
-    { key: 'organicos', label: 'Productos Orgánicos' },
-    { key: 'lacteos', label: 'Productos Lácteos' }
+    ...apiCategories.map(cat => ({
+      key: cat.id,
+      label: cat.name
+    }))
   ];
 
   const filteredProducts: Product[] = filter === 'all'
     ? products
     : products.filter(product => product.category === filter);
+
+  // Mostrar loading
+  if (loadingProducts || loadingCategories) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <CircularProgress sx={{ color: '#2E8B57' }} size={60} />
+      </Box>
+    );
+  }
+
+  // Mostrar error
+  if (errorProducts) {
+    return (
+      <Container sx={{ py: 5 }}>
+        <Alert severity="warning">
+          <Typography variant="h6">Error al cargar productos</Typography>
+          <Typography>{errorProducts.message}</Typography>
+          <Typography variant="body2" sx={{ mt: 1 }}>Usando datos locales como respaldo.</Typography>
+        </Alert>
+      </Container>
+    );
+  }
 
   return (
     <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#F7F7F7', minHeight: '100vh' }}>

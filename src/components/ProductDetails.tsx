@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Container, Typography, Button, Rating, Chip, Divider } from '@mui/material';
+import { Box, Container, Typography, Button, Rating, Chip, Divider, CircularProgress } from '@mui/material';
 import { useCart } from '../context/CartContext';
-import { products } from '../data/products';
+import { Product } from '../types';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import VerifiedOutlinedIcon from '@mui/icons-material/VerifiedOutlined';
@@ -10,7 +10,7 @@ import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import { Product } from '../types';
+import { useProduct } from '../hooks/useApi';
 
 const formatPrice = (price: number) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(price);
 
@@ -18,9 +18,28 @@ const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart, openCart } = useCart();
-  const product = products.find((p) => p.id === id) as Product | undefined;
+  
+  // Cargar producto desde API
+  const { product, loading } = useProduct(id);
+  
   const [qty, setQty] = useState<number>(1);
-  const [mainImage, setMainImage] = useState<string>((product && (product.image || (product as any).images && (product as any).images[0])) || '');
+  const [mainImage, setMainImage] = useState<string>('');
+
+  // Actualizar imagen principal cuando carga el producto
+  React.useEffect(() => {
+    if (product) {
+      setMainImage(product.image || (product as any).images?.[0] || '');
+    }
+  }, [product]);
+
+  // Mostrar loading
+  if (loading) {
+    return (
+      <Container sx={{ py: 8, textAlign: 'center', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress sx={{ color: '#2E8B57' }} size={60} />
+      </Container>
+    );
+  }
 
   if (!product) {
     return (
@@ -63,12 +82,24 @@ const ProductDetails: React.FC = () => {
                   <Box className="pd-discount-badge"><Typography sx={{ fontWeight: 700, fontSize: '1.1rem' }}>-{product.discount}%</Typography></Box>
                 )}
                 <Box className="pd-main-image-container">
-                  <img src={mainImage} alt={product.name} onError={(e:any) => (e.target.style.display = 'none')} />
+                  <img 
+                    key={mainImage} // Forzar re-render al cambiar la URL para limpiar display:none
+                    src={mainImage} 
+                    alt={product.name} 
+                    onError={(e:any) => {
+                      e.target.onerror = null; 
+                      e.target.src = 'https://via.placeholder.com/500x500?text=No+Image';
+                    }} 
+                  />
                 </Box>
                 <Box className="pd-thumbnails-container">
                   {(((product as any).images && (product as any).images.length) ? (product as any).images : [product.image]).map((img: string, i: number) => (
                     <button key={i} className={`pd-thumb-btn ${img === mainImage ? 'active' : ''}`} onClick={() => setMainImage(img)}>
-                      <img src={img} alt={`${product.name} ${i}`} onError={(e:any) => (e.target.style.display = 'none')} />
+                      <img 
+                        src={img} 
+                        alt={`${product.name} ${i}`} 
+                        onError={(e:any) => e.target.style.display = 'none'} 
+                      />
                     </button>
                   ))}
                 </Box>

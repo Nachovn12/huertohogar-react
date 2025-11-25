@@ -1,0 +1,22 @@
+[
+  {
+    "id": "frutas",
+    "name": "Frutas",
+    "description": "Frutas frescas y de temporada"
+  },
+  {
+    "id": "verduras",
+    "name": "Verduras",
+    "description": "Verduras orgánicas y frescas"
+  },
+  {
+    "id": "organicos",
+    "name": "Orgánicos",
+    "description": "Productos 100% orgánicos certificados"
+  },
+  {
+    "id": "lacteos",
+    "name": "Lácteos",
+    "description": "Productos lácteos frescos"
+  }
+]

@@ -1,18 +1,29 @@
-import React, { useState } from 'react';
-import { Table, Button, Modal, Form, Badge, Row, Col, Alert } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Table, Button, Modal, Form, Badge, Row, Col, Alert, Spinner } from 'react-bootstrap';
 import { Edit, Delete, Add, Search, MoreVert } from '@mui/icons-material';
-import { products as initialProducts } from '../../data/products';
+import { Product } from '../../types';
+import { useProducts, useCategories } from '../../hooks/useApi';
 
 const ProductManagement = () => {
-  const [products, setProducts] = useState(initialProducts.slice(0, 10)); // Primeros 10 para demo
+  const { products: apiProducts, loading, error } = useProducts();
+  const { categories: apiCategories } = useCategories();
+  
+  const [products, setProducts] = useState<Product[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showActionsModal, setShowActionsModal] = useState(false);
   const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
-  const [currentProduct, setCurrentProduct] = useState(null);
+  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('success');
+
+  // Cargar productos cuando la API responda
+  useEffect(() => {
+    if (apiProducts.length > 0) {
+      setProducts(apiProducts);
+    }
+  }, [apiProducts]);
 
   // Estado del formulario
   const [formData, setFormData] = useState({
@@ -43,14 +54,14 @@ const ProductManagement = () => {
     setShowModal(true);
   };
 
-  const handleEditProduct = (product) => {
+  const handleEditProduct = (product: Product) => {
     setModalMode('edit');
     setCurrentProduct(product);
     setFormData({
       name: product.name || '',
-      price: product.price || '',
+      price: String(product.price || ''),
       category: product.category || '',
-      stock: product.stock || '',
+      stock: String(product.stock || ''),
       unit: product.unit || '',
       description: product.description || '',
       image: product.image || '',
@@ -59,23 +70,23 @@ const ProductManagement = () => {
     setShowModal(true);
   };
 
-  const handleOpenActions = (product) => {
+  const handleOpenActions = (product: Product) => {
     // For now open edit directly
     handleEditProduct(product);
   };
 
-  const handleDeleteProduct = (productId) => {
+  const handleDeleteProduct = (productId: string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
       setProducts(products.filter(p => p.id !== productId));
       showAlertMessage('Producto eliminado exitosamente', 'danger');
     }
   };
 
-  const handleSaveProduct = (e) => {
+  const handleSaveProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (modalMode === 'add') {
       // Generar un id simple
-      const newProduct = {
+      const newProduct: Product = {
         id: `PR${Date.now().toString().slice(-5)}`,
         ...formData,
         price: Number(formData.price) || 0,
@@ -84,13 +95,15 @@ const ProductManagement = () => {
       setProducts(prev => [...prev, newProduct]);
       showAlertMessage('Producto agregado exitosamente', 'success');
     } else {
-      setProducts(prev => prev.map(p => p.id === currentProduct.id ? { ...p, ...formData, price: Number(formData.price) || 0, stock: Number(formData.stock) || 0 } : p));
-      showAlertMessage('Producto actualizado exitosamente', 'info');
+      if (currentProduct) {
+        setProducts(prev => prev.map(p => p.id === currentProduct.id ? { ...p, ...formData, price: Number(formData.price) || 0, stock: Number(formData.stock) || 0 } : p));
+        showAlertMessage('Producto actualizado exitosamente', 'info');
+      }
     }
     setShowModal(false);
   };
 
-  const showAlertMessage = (message, type = 'success') => {
+  const showAlertMessage = (message: string, type = 'success') => {
     setAlertMessage(message);
     setAlertType(type);
     setShowAlert(true);
@@ -102,6 +115,16 @@ const ProductManagement = () => {
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (product.category || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <Spinner animation="border" variant="success" />
+        <p className="mt-3">Cargando productos...</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="admin-page-header">
@@ -158,7 +181,7 @@ const ProductManagement = () => {
                 </td>
                 <td style={{ fontWeight: 700, color: '#0f172a' }}>${product.price.toLocaleString()}</td>
                 <td>
-                  <Badge bg={product.stock > 20 ? 'success' : product.stock > 10 ? 'warning' : 'danger'} className="badge-custom">
+                  <Badge bg={(product.stock || 0) > 20 ? 'success' : (product.stock || 0) > 10 ? 'warning' : 'danger'} className="badge-custom">
                     {product.stock}
                   </Badge>
                 </td>
@@ -223,12 +246,9 @@ const ProductManagement = () => {
                   onChange={(e) => setFormData({...formData, category: e.target.value})}
                 >
                   <option value="">Seleccionar categoría</option>
-                  <option value="Verduras">Verduras</option>
-                  <option value="Frutas">Frutas</option>
-                  <option value="Lácteos">Lácteos</option>
-                  <option value="Carnes">Carnes</option>
-                  <option value="Pescados">Pescados</option>
-                  <option value="Abarrotes">Abarrotes</option>
+                  {apiCategories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
                 </Form.Select>
               </div>
               <div>

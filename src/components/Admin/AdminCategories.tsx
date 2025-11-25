@@ -1,65 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Table, Form, Badge, Modal } from 'react-bootstrap';
-import { products } from '../../data/products';
-
-const STORAGE_KEY = 'adminCategories_v1';
-
-// Build default categories dynamically from products data
-const defaultCategories = (() => {
-  try {
-    const map = {};
-    products.forEach(p => {
-      const key = (p.category || 'sin_categoria').toString().toLowerCase();
-      if (!map[key]) map[key] = { id: `CAT_${key.toUpperCase()}`, name: capitalize(key), products: 0 };
-      map[key].products += 1;
-    });
-    return Object.values(map);
-  } catch (e) {
-    // fallback static list
-    return [
-      { id: 'C001', name: 'Frutas', products: 24 },
-      { id: 'C002', name: 'Verduras', products: 18 },
-      { id: 'C003', name: 'Lácteos', products: 6 },
-      { id: 'C004', name: 'Abarrotes', products: 42 }
-    ];
-  }
-})();
-
-function capitalize(s) {
-  if (!s) return s;
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
+import { Button, Table, Form, Badge, Modal, Spinner } from 'react-bootstrap';
+import { useCategories, useProducts } from '../../hooks/useApi';
+import { Category } from '../../types';
 
 const AdminCategories = () => {
-  const [categories, setCategories] = useState([]);
+  const { categories: apiCategories, loading: loadingCategories } = useCategories();
+  const { products: apiProducts, loading: loadingProducts } = useProducts();
+  
+  const [categories, setCategories] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('add');
-  const [current, setCurrent] = useState(null);
+  const [current, setCurrent] = useState<any>(null);
   const [formName, setFormName] = useState('');
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        // If stored is a non-empty array, respect it. If it's empty, fall back to product-derived categories.
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCategories(parsed);
-          return;
-        }
-      } catch (e) {
-        // continue to fallback
-      }
+    if (apiCategories.length > 0) {
+      // Mapear categorías y contar productos
+      const categoriesWithCount = apiCategories.map(cat => {
+        const count = apiProducts.filter(p => p.category === cat.id).length;
+        return {
+          id: cat.id,
+          name: cat.name,
+          products: count
+        };
+      });
+      setCategories(categoriesWithCount);
     }
-
-    // If no stored categories or stored was empty, build from products data (actual site data)
-    setCategories(defaultCategories);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(categories));
-  }, [categories]);
+  }, [apiCategories, apiProducts]);
 
   const openAdd = () => {
     setModalMode('add');
@@ -68,14 +36,14 @@ const AdminCategories = () => {
     setShowModal(true);
   };
 
-  const openEdit = (cat) => {
+  const openEdit = (cat: any) => {
     setModalMode('edit');
     setCurrent(cat);
     setFormName(cat.name);
     setShowModal(true);
   };
 
-  const handleSave = (e) => {
+  const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     const name = formName.trim();
     if (!name) return;
@@ -90,12 +58,21 @@ const AdminCategories = () => {
     setShowModal(false);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     if (!window.confirm('Eliminar categoría?')) return;
     setCategories(prev => prev.filter(c => c.id !== id));
   };
 
   const filtered = categories.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.id.toLowerCase().includes(search.toLowerCase()));
+
+  if (loadingCategories || loadingProducts) {
+    return (
+      <div className="text-center py-5">
+        <Spinner animation="border" variant="success" />
+        <p className="mt-3">Cargando categorías...</p>
+      </div>
+    );
+  }
 
   return (
     <div>
