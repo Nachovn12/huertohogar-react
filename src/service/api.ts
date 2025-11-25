@@ -5,17 +5,13 @@ import categoriesData from '../data/categories.json';
 // ============================================
 // 🔧 CONFIGURACIÓN - Cambia aquí tu API
 // ============================================
+// El helper para detectar conexión a internet ha sido eliminado porque es innecesario en una SPA
 const API_URL = 'https://fakestoreapi.com'; // ← Cambia esta URL por la de tu API
-const USE_API = true; // ← true = usar API, false = usar datos locales
+const USE_API = false; // ← true = usar API, false = usar datos locales
 
 // Datos locales como fallback
 const localProducts = productsData as Product[];
 const localCategories = categoriesData as Category[];
-
-// Helper para detectar si hay conexión a internet
-const isOnline = (): boolean => {
-  return navigator.onLine;
-};
 
 // Helper para manejar errores de fetch con fallback automático
 const handleResponse = async <T,>(response: Response): Promise<T> => {
@@ -37,11 +33,7 @@ const fetchWithFallback = async <T,>(
     return Promise.resolve(fallbackData);
   }
 
-  // Si no hay conexión a internet, usar datos locales
-  if (!isOnline()) {
-    console.warn('📡 No internet connection detected, using local data');
-    return Promise.resolve(fallbackData);
-  }
+  // El chequeo de conexión a internet ha sido eliminado
 
   // Intentar fetch con timeout
   try {
@@ -128,7 +120,7 @@ export const api = {
   getProductById: async (id: string): Promise<Product | undefined> => {
     const fallback = localProducts.find(p => p.id === id);
     
-    if (!USE_API || !isOnline()) {
+    if (!USE_API) {
       return Promise.resolve(fallback);
     }
 
@@ -259,7 +251,7 @@ export const api = {
   getCategoryById: async (id: string): Promise<Category | undefined> => {
     const fallback = localCategories.find(c => c.id === id);
     
-    if (!USE_API || !isOnline()) {
+    if (!USE_API) {
       return Promise.resolve(fallback);
     }
 
