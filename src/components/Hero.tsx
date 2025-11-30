@@ -37,7 +37,7 @@ const Hero: React.FC = () => (
         willChange: 'opacity'
       }}
     >
-      <source src="/img/hero-background.mp4" type="video/mp4" />
+      <source src={`${process.env.PUBLIC_URL}/img/hero-background.mp4`} type="video/mp4" />
     </Box>
     
     {/* Capa overlay con gradiente para legibilidad del texto */}
