@@ -83,7 +83,16 @@ export const authService = {
   // Login con validación contra API de usuarios
   login: async (credentials: { email: string; password: string }) => {
     try {
-      const response = await api.get('/api/usuarios');
+      // Determinar URL base dependiendo del entorno para evitar CORS en producción
+      let url = `${API_BASE_URL}/api/usuarios`;
+      
+      // Si estamos en producción (GitHub Pages), usar un proxy CORS
+      if (process.env.NODE_ENV === 'production') {
+        console.log('🌍 Entorno de producción detectado en Login: Usando Proxy CORS');
+        url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+      }
+
+      const response = await axios.get(url);
       const usuarios = response.data as any[];
       
       // Buscar usuario por email
