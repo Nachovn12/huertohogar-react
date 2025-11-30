@@ -108,7 +108,7 @@ const Navbar: React.FC = () => {
           {/* Logo HuertoHogar */}
           <Link to="/" className="logo-container">
             <img 
-              src="/img/Logo_HuertoHogar_Web.png" 
+              src={`${process.env.PUBLIC_URL}/img/Logo_HuertoHogar_Web.png`} 
               alt="HuertoHogar - Del Campo al Hogar" 
               className="logo"
             />
