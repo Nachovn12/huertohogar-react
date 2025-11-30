@@ -28,7 +28,7 @@ const ProductDetails: React.FC = () => {
   // Actualizar imagen principal cuando carga el producto
   React.useEffect(() => {
     if (product) {
-      setMainImage(product.image || (product as any).images?.[0] || '');
+      setMainImage(product.imagen || (product as any).images?.[0] || '');
     }
   }, [product]);
 
@@ -50,7 +50,7 @@ const ProductDetails: React.FC = () => {
     );
   }
 
-  const isOffer = product.offer && product.offerPrice && product.offerPrice < product.price;
+  const isOffer = product.oferta && product.offerPrice && product.offerPrice < product.precio;
 
   const handleAddToCart = () => {
     addToCart(product, qty);
@@ -70,7 +70,7 @@ const ProductDetails: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, ml: 0.5 }}>
             <Typography onClick={() => navigate('/productos')} sx={{ color: '#94a3b8', cursor: 'pointer' }}>Productos</Typography>
             <Typography sx={{ color: '#cbd5e1' }}>/</Typography>
-            <Typography sx={{ color: '#2E8B57' }}>{product.name}</Typography>
+            <Typography sx={{ color: '#2E8B57' }}>{product.nombre}</Typography>
           </Box>
         </Box>
 
@@ -79,13 +79,13 @@ const ProductDetails: React.FC = () => {
             <Box>
               <Box className="pd-image-section">
                 {isOffer && (
-                  <Box className="pd-discount-badge"><Typography sx={{ fontWeight: 700, fontSize: '1.1rem' }}>-{product.discount}%</Typography></Box>
+                  <Box className="pd-discount-badge"><Typography sx={{ fontWeight: 700, fontSize: '1.1rem' }}>-{product.descuento}%</Typography></Box>
                 )}
                 <Box className="pd-main-image-container">
                   <img 
                     key={mainImage} // Forzar re-render al cambiar la URL para limpiar display:none
                     src={mainImage} 
-                    alt={product.name} 
+                    alt={product.nombre} 
                     onError={(e:any) => {
                       e.target.onerror = null; 
                       e.target.src = 'https://via.placeholder.com/500x500?text=No+Image';
@@ -93,11 +93,11 @@ const ProductDetails: React.FC = () => {
                   />
                 </Box>
                 <Box className="pd-thumbnails-container">
-                  {(((product as any).images && (product as any).images.length) ? (product as any).images : [product.image]).map((img: string, i: number) => (
+                  {(((product as any).images && (product as any).images.length) ? (product as any).images : [product.imagen]).map((img: string, i: number) => (
                     <button key={i} className={`pd-thumb-btn ${img === mainImage ? 'active' : ''}`} onClick={() => setMainImage(img)}>
                       <img 
                         src={img} 
-                        alt={`${product.name} ${i}`} 
+                        alt={`${product.nombre} ${i}`} 
                         onError={(e:any) => e.target.style.display = 'none'} 
                       />
                     </button>
@@ -109,14 +109,13 @@ const ProductDetails: React.FC = () => {
             <Box>
               <Box className="pd-product-info">
                 <Box sx={{ mb: 2 }}>
-                  <Chip label={product.category} size="small" sx={{ bgcolor: '#e8f5e9', color: '#2E8B57', fontWeight: 600, fontSize: '0.75rem', height: '24px' }} />
+                  <Chip label={product.categoria} size="small" sx={{ bgcolor: '#e8f5e9', color: '#2E8B57', fontWeight: 600, fontSize: '0.75rem', height: '24px' }} />
                 </Box>
 
-                <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: '#1e293b', mb: 2 }}>{product.name}</Typography>
+                <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: '#1e293b', mb: 2 }}>{product.nombre}</Typography>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                  <Rating value={5} readOnly size="small" sx={{ color: '#facc15' }} />
-                  <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>({product.reviews || 0} reseñas)</Typography>
+                  {/* Eliminar reviews, no existe en Product */}
                 </Box>
 
                 <Box sx={{ mb: 3 }}>
@@ -124,24 +123,24 @@ const ProductDetails: React.FC = () => {
                     <Box>
                       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2, mb: 1 }}>
                         <Typography variant="h3" sx={{ color: '#2E8B57', fontWeight: 800 }}>{formatPrice(product.offerPrice!)}</Typography>
-                        <Typography variant="h6" sx={{ textDecoration: 'line-through', color: '#94a3b8', fontWeight: 500 }}>{formatPrice(product.price)}</Typography>
+                        <Typography variant="h6" sx={{ textDecoration: 'line-through', color: '#94a3b8', fontWeight: 500 }}>{formatPrice(product.precio)}</Typography>
                       </Box>
                     </Box>
                   ) : (
-                    <Typography variant="h3" sx={{ color: '#2E8B57', fontWeight: 800 }}>{formatPrice(product.price)}</Typography>
+                    <Typography variant="h3" sx={{ color: '#2E8B57', fontWeight: 800 }}>{formatPrice(product.precio)}</Typography>
                   )}
                 </Box>
 
                 <Divider sx={{ my: 3 }} />
 
-                <Typography variant="body1" sx={{ color: '#475569', lineHeight: 1.8, mb: 3 }}>{product.description}</Typography>
+                <Typography variant="body1" sx={{ color: '#475569', lineHeight: 1.8, mb: 3 }}>{product.descripcion}</Typography>
 
                 <Box className="pd-info-cards">
                   <Box className="pd-info-card-item">
                     <PublicOutlinedIcon sx={{ fontSize: 22, color: '#2E8B57' }} />
                     <Box>
                       <Typography className="pd-info-label">Origen</Typography>
-                      <Typography className="pd-info-value">{product.origin || 'Chile'}</Typography>
+                      <Typography className="pd-info-value">{product.origen || 'Chile'}</Typography>
                     </Box>
                   </Box>
 
@@ -153,30 +152,10 @@ const ProductDetails: React.FC = () => {
                     </Box>
                   </Box>
 
-                  {product.certification && (
-                    <Box className="pd-info-card-item">
-                      <VerifiedOutlinedIcon sx={{ fontSize: 22, color: '#2E8B57' }} />
-                      <Box>
-                        <Typography className="pd-info-label">Certificación</Typography>
-                        <Typography className="pd-info-value">{product.certification}</Typography>
-                      </Box>
-                    </Box>
-                  )}
+                  {/* Eliminar certification, no existe en Product */}
                 </Box>
 
-                {product.benefits && product.benefits.length > 0 && (
-                  <Box className="pd-benefits-box">
-                    <Typography className="pd-benefits-title">✨ Beneficios principales</Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      {product.benefits.map((benefit, i) => (
-                        <Box key={i} className="pd-benefit-item">
-                          <Box className="pd-benefit-check">✓</Box>
-                          <Typography className="pd-benefit-text">{benefit}</Typography>
-                        </Box>
-                      ))}
-                    </Box>
-                  </Box>
-                )}
+                {/* Eliminar benefits, no existe en Product */}
 
                 <Divider sx={{ my: 3 }} />
 

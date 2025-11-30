@@ -15,13 +15,13 @@ const CategoriesPage: React.FC = () => {
     if (selectedCategory === 'Todas') {
       return products;
     }
-    return products.filter((p: Product) => p.category === selectedCategory);
+    return products.filter((p: Product) => String(p.categoria) === String(selectedCategory));
   }, [selectedCategory, products]);
 
   // Contar productos por categoría
   const getCategoryCount = (category: string) => {
     if (category === 'Todas') return products.length;
-    return products.filter((p: Product) => p.category === category).length;
+    return products.filter((p: Product) => String(p.categoria) === String(category)).length;
   };
 
   // Mostrar spinner mientras carga
@@ -121,21 +121,21 @@ const CategoriesPage: React.FC = () => {
               <Nav.Item key={category.id}>
                 <Nav.Link
                   eventKey={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
+                   onClick={() => setSelectedCategory(String(category.id))}
                   style={{
                     borderRadius: '12px',
                     padding: '0.8rem 1.5rem',
                     fontWeight: 600,
                     fontSize: '1rem',
                     border: '2px solid #e0e0e0',
-                    background: selectedCategory === category.id ? '#2E8B57' : 'white',
-                    color: selectedCategory === category.id ? 'white' : '#2E8B57',
+                    background: String(selectedCategory) === String(category.id) ? '#2E8B57' : 'white',
+                    color: String(selectedCategory) === String(category.id) ? 'white' : '#2E8B57',
                     transition: 'all 0.3s ease',
                     cursor: 'pointer'
                   }}
-                  className={selectedCategory === category.id ? '' : 'hover-category-btn'}
+                  className={String(selectedCategory) === String(category.id) ? '' : 'hover-category-btn'}
                 >
-                  {category.name} <Badge bg="light" text="dark" className="ms-2">{getCategoryCount(category.id)}</Badge>
+                  {category.nombre} <Badge bg="light" text="dark" className="ms-2">{getCategoryCount(String(category.id))}</Badge>
                 </Nav.Link>
               </Nav.Item>
             ))}

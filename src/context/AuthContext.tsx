@@ -1,86 +1,127 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '../types';
+import { authService, setAuthToken } from '../service/api';
+import { User, LoginCredentials, RegisterData, AuthResponse } from '../types';
 
-interface AuthResult {
-  success: boolean;
-  user?: User;
-  message?: string;
-  redirectTo?: string; // Informa a dónde redirigir
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  register: (data: RegisterData) => Promise<void>;
+  logout: () => void;
+  hasRole: (roles: string[]) => boolean;
 }
 
-interface AuthContextValue {
-  user: User | null;
-  isAdmin: boolean;
-  login: (payload: { username: string; password: string; role: string }) => AuthResult; // Tipo de retorno actualizado
-  logout: () => void;
-}
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// 1. Definición del Contexto (NO se exporta aquí)
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+// Claves para sessionStorage
+const SESSION_USER_KEY = 'huertohogar_user';
+const SESSION_TOKEN_KEY = 'huertohogar_token';
 
-// 2. Hook para usar el Contexto (NO se exporta aquí)
-const useAuth = (): AuthContextValue => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Al cargar la app, restaurar la sesión desde sessionStorage
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        // Intentar recuperar token y usuario de sessionStorage
+        const storedToken = sessionStorage.getItem(SESSION_TOKEN_KEY);
+        const storedUser = sessionStorage.getItem(SESSION_USER_KEY);
+
+        if (storedToken && storedUser) {
+          setAuthToken(storedToken);
+          // Restaurar usuario con tipado correcto
+          const parsedUser = JSON.parse(storedUser) as User;
+          setUser(parsedUser);
+          
+          // NOTA: No llamamos a getCurrentUser() aquí porque la API no tiene endpoint /me real
+          // y el mock sobrescribiría al usuario Admin con un usuario Cliente genérico.
+          // Confiamos en los datos de sessionStorage hasta que expire la sesión.
+        }
+      } catch (error) {
+        console.error('Error al restaurar sesión:', error);
+        // Limpiar sesión corrupta
+        sessionStorage.removeItem(SESSION_TOKEN_KEY);
+        sessionStorage.removeItem(SESSION_USER_KEY);
+        setAuthToken(null);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    initAuth();
+  }, []);
+
+  const login = async (credentials: LoginCredentials) => {
+    setIsLoading(true);
+    try {
+      const response = await authService.login(credentials);
+      // Validar que la respuesta tiene token y user
+      const { token, user } = response as AuthResponse;
+      setAuthToken(token);
+      sessionStorage.setItem(SESSION_TOKEN_KEY, token);
+      setUser(user);
+      sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
+      console.log('Login exitoso:', user);
+    } catch (error: any) {
+      console.error('Error al iniciar sesión:', error);
+      sessionStorage.removeItem(SESSION_TOKEN_KEY);
+      sessionStorage.removeItem(SESSION_USER_KEY);
+      setAuthToken(null);
+      setUser(null);
+      throw new Error(error.response?.data?.message || 'Error al iniciar sesión');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const register = async (data: RegisterData) => {
+    setIsLoading(true);
+    try {
+      await authService.register(data);
+      // Después del registro, hacer login automáticamente
+      await login({ email: data.email, password: data.password });
+    } catch (error: any) {
+      console.error('Error al registrarse:', error);
+      throw new Error(error.response?.data?.message || 'Error al registrarse');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const logout = () => {
+    authService.logout();
+    setAuthToken(null);
+    sessionStorage.removeItem(SESSION_TOKEN_KEY);
+    sessionStorage.removeItem(SESSION_USER_KEY);
+    setUser(null);
+    console.log('Sesión cerrada correctamente');
+  };
+
+  const hasRole = (roles: string[]): boolean => {
+    if (!user) return false;
+    return roles.includes(user.rol);
+  };
+
+  const value: AuthContextType = {
+    user,
+    isAuthenticated: !!user,
+    isLoading,
+    login,
+    register,
+    logout,
+    hasRole,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// 3. Componente Provider (NO se exporta aquí, se exporta al final)
-const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const storedRole = localStorage.getItem('userRole');
-    if (storedRole) {
-      // Simula la carga del usuario desde localStorage
-      const storedUser: User = {
-        id: 'local-' + storedRole,
-        name: storedRole,
-        email: `${storedRole}@local`,
-        isAdmin: storedRole === 'admin'
-      };
-      setUser(storedUser);
-    }
-  }, []);
-
-  const login = ({ username, password, role }: { username: string; password: string; role: string }): AuthResult => {
-    if (role === 'Administrador' && username === 'admin' && password === 'admin') {
-      const adminUser: User = { id: 'admin', name: 'Admin', email: 'admin@local', isAdmin: true };
-      setUser(adminUser);
-      localStorage.setItem('userRole', 'admin');
-      
-      // Devuelve el éxito y la ruta de redirección
-      return { success: true, user: adminUser, redirectTo: '/admin/dashboard' };
-    }
-
-    if (role === 'Cliente') {
-      if (username === 'cliente' && password === 'cliente') {
-        const clientUser: User = { id: 'client', name: 'Cliente', email: 'cliente@local', isAdmin: false };
-        setUser(clientUser);
-        localStorage.setItem('userRole', 'client');
-        
-        // Devuelve el éxito y la ruta de redirección
-        return { success: true, user: clientUser, redirectTo: '/' };
-      }
-    }
-
-    return { success: false, message: 'Credenciales incorrectas.' };
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('adminBrowsing');
-    // La navegación ahora se maneja en el componente que llama a logout (ej. un Navbar)
-  };
-
-  const isAdmin = !!(user && user.isAdmin);
-
-  return (
-    <AuthContext.Provider value={{ user, isAdmin, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth debe usarse dentro de un AuthProvider');
+  }
+  return context;
 };
-
-export { AuthProvider, useAuth, AuthContext };

@@ -9,7 +9,7 @@ const FeaturedCategories: React.FC = () => {
 
   // Contar productos por categoría
   const getCategoryCount = (categoryId: string) => {
-    return products.filter(p => p.category === categoryId).length;
+    return products.filter(p => String(p.categoria) === String(categoryId)).length;
   };
 
   if (loadingCategories || loadingProducts) {
@@ -74,14 +74,14 @@ const FeaturedCategories: React.FC = () => {
                       fontSize: '1.5rem',
                       marginBottom: '1rem'
                     }}>
-                      {category.name}
+                      {category.nombre}
                     </Card.Title>
                     <Card.Text style={{
                       color: '#666',
                       fontSize: '1rem',
                       marginBottom: '1.5rem'
                     }}>
-                      {category.description}
+                      {category.descripcion}
                     </Card.Text>
                     <div style={{
                       display: 'flex',
@@ -96,7 +96,7 @@ const FeaturedCategories: React.FC = () => {
                           padding: '0.5rem 1rem'
                         }}
                       >
-                        {getCategoryCount(category.id)} productos
+                        {getCategoryCount(String(category.id))} productos
                       </Badge>
                     </div>
                   </Card.Body>

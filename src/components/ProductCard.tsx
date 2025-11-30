@@ -29,7 +29,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
     }).format(price);
   };
 
-  const isOffer = product.offer && product.offerPrice && product.offerPrice < product.price;
+  const isOffer = product.oferta && product.offerPrice && product.offerPrice < product.precio;
   
   const categoryNames: { [k: string]: string } = {
     'frutas': 'Frutas Frescas',
@@ -61,7 +61,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
       }
     }}>
       {/* Badge de oferta o temporada */}
-      {isOffer ? (
+      {isOffer && (
         <Box sx={{ 
           position: 'absolute', 
           top: 8, 
@@ -83,77 +83,41 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           textTransform: 'uppercase'
         }}>
           <LocalOfferIcon sx={{ fontSize: 12 }} />
-          -{product.discount}% OFF
+          -{product.descuento}% OFF
         </Box>
-      ) : product.seasonal && (
-        <Chip
-          label="TEMPORADA"
-          sx={{
-            position: 'absolute',
-            top: 8,
-            left: 12,
-            zIndex: 3,
-            bgcolor: '#16a34a',
-            color: '#fff',
-            fontWeight: 700,
-            fontSize: '0.7rem',
-            height: '26px',
-            borderRadius: 3,
-            boxShadow: '0 4px 12px rgba(22, 163, 74, 0.4)',
-            '& .MuiChip-label': {
-              px: 1.5,
-              fontFamily: 'Montserrat, Arial, sans-serif'
-            }
-          }}
-        />
-      )}
-      
-      {isOffer && product.seasonal && (
-        <Chip
-          label="POPULAR"
-          sx={{
-            position: 'absolute',
-            top: 8,
-            right: 12,
-            zIndex: 3,
-            bgcolor: '#eab308',
-            color: '#fff',
-            fontWeight: 700,
-            fontSize: '0.7rem',
-            height: '26px',
-            borderRadius: 3,
-            boxShadow: '0 4px 12px rgba(234, 179, 8, 0.4)',
-            '& .MuiChip-label': {
-              px: 1.5,
-              fontFamily: 'Montserrat, Arial, sans-serif'
-            }
-          }}
-        />
       )}
       
       {/* Imagen del producto */}
       <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        bgcolor: '#fafafa', 
-        height: 180,
-        minHeight: 180,
-        maxHeight: 180,
-        p: 2.5,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        bgcolor: '#fff',
+        height: 240,
+        minHeight: 240,
+        maxHeight: 240,
+        p: 0,
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        borderRadius: 4,
       }}>
         <img
-          src={product.image}
-          alt={product.name}
+          src={product.imagen}
+          alt={product.nombre}
           className="product-image"
-          style={{ 
-            maxWidth: '100%', 
-            maxHeight: '100%', 
+          style={{
+            width: '100%',
+            height: '100%',
             objectFit: 'contain',
-            transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+            borderRadius: '16px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            background: '#f3f4f6',
+            border: '1px solid #e5e7eb',
+            transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            display: 'block',
+            margin: '0 auto',
           }}
+          onError={e => { e.currentTarget.src = '/img/placeholder.png'; }}
         />
       </Box>
       
@@ -183,7 +147,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
             mb: 0.5
           }}
         >
-          {product.name}
+          {product.nombre}
         </Typography>
         
         {/* Categoría */}
@@ -193,7 +157,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           mb: 0.5
         }}>
           <Chip 
-            label={categoryNames[product.category] || product.category}
+            label={categoryNames[product.categoria] || product.categoria}
             size="small"
             sx={{
               bgcolor: '#f0f9f4',
@@ -212,7 +176,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
         </Box>
         
         {/* Región de origen */}
-        {product.origin && (
+        {product.origen && (
           <Box sx={{
             display: 'flex',
             alignItems: 'center',
@@ -232,7 +196,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
                 fontFamily: 'Montserrat, Arial, sans-serif'
               }}
             >
-              Región {product.origin}
+              Región {product.origen}
             </Typography>
           </Box>
         )}
@@ -245,26 +209,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           gap: 0.5,
           my: 0.5
         }}>
-          {[...Array(5)].map((_, index) => (
-            <StarIcon 
-              key={index}
-              sx={{ 
-                fontSize: 14, 
-                color: index < (product.rating || 4) ? '#fbbf24' : '#e5e7eb'
-              }} 
-            />
-          ))}
-          <Typography
-            variant="caption"
-            sx={{
-              color: '#999',
-              fontSize: '0.7rem',
-              ml: 0.5,
-              fontFamily: 'Montserrat, Arial, sans-serif'
-            }}
-          >
-            ({product.reviews || '89'} reseñas)
-          </Typography>
+          {/* Eliminar rating y reviews, no existen en Product */}
         </Box>
         
         {/* Precios */}
@@ -301,7 +246,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
                   fontFamily: 'Montserrat, Arial, sans-serif'
                 }}
               >
-                Antes: {formatPrice(product.price)}
+                Antes: {formatPrice(product.precio)}
               </Typography>
               <Typography 
                 variant="h5" 
@@ -329,7 +274,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
                   fontWeight: 600
                 }}
               >
-                {product.unit ? `POR ${String(product.unit).toUpperCase()}` : 'POR KILO'}
+                {product.unidad ? `POR ${String(product.unidad).toUpperCase()}` : 'POR KILO'}
               </Typography>
               <Typography 
                 variant="h5" 
@@ -341,7 +286,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
                   letterSpacing: '-0.5px'
                 }}
               >
-                {formatPrice(product.price)}
+                {formatPrice(product.precio)}
               </Typography>
             </>
           )}

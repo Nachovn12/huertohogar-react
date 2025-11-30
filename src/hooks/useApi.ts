@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../service/api';
+import { productService, categoryService } from '../service/api';
 import { Product, Category } from '../types';
 
 /**
@@ -14,8 +14,8 @@ export const useProducts = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const data = await api.getProducts();
-        setProducts(data);
+        const data = await productService.getAll();
+        setProducts(data as Product[]);
         setError(null);
       } catch (err) {
         setError(err as Error);
@@ -47,8 +47,8 @@ export const useProduct = (id: string | undefined) => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const data = await api.getProductById(id);
-        setProduct(data);
+        const data = await productService.getById(id);
+        setProduct(data as Product);
         setError(null);
       } catch (err) {
         setError(err as Error);
@@ -80,8 +80,12 @@ export const useProductsByCategory = (categoryId: string | undefined) => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const data = await api.getProductsByCategory(categoryId);
-        setProducts(data);
+        const data = await productService.getAll();
+        // Filtrar productos por categoría localmente
+        const filtered = (data as Product[]).filter(
+          (p: Product) => p.categoria === categoryId || p.categoriaId?.toString() === categoryId
+        );
+        setProducts(filtered);
         setError(null);
       } catch (err) {
         setError(err as Error);
@@ -114,8 +118,9 @@ export const useProductSearch = () => {
     try {
       setLoading(true);
       setQuery(searchQuery);
-      const data = await api.searchProducts(searchQuery);
-      setResults(data);
+      // Si tienes un endpoint de búsqueda en productService, úsalo aquí
+      // const data = await productService.search(searchQuery);
+      setResults([]); // Implementar si existe en el servicio
       setError(null);
     } catch (err) {
       setError(err as Error);
@@ -139,8 +144,8 @@ export const useProductsOnOffer = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const data = await api.getProductsOnOffer();
-        setProducts(data);
+        // Si tienes un endpoint de ofertas en productService, úsalo aquí
+        setProducts([]); // Implementar si existe en el servicio
         setError(null);
       } catch (err) {
         setError(err as Error);
@@ -167,8 +172,8 @@ export const useCategories = () => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const data = await api.getCategories();
-        setCategories(data);
+        const data = await categoryService.getAll();
+        setCategories(data as Category[]);
         setError(null);
       } catch (err) {
         setError(err as Error);
@@ -200,8 +205,8 @@ export const useCategory = (id: string | undefined) => {
     const fetchCategory = async () => {
       try {
         setLoading(true);
-        const data = await api.getCategoryById(id);
-        setCategory(data);
+        const data = await categoryService.getById(id);
+        setCategory(data as Category);
         setError(null);
       } catch (err) {
         setError(err as Error);
@@ -228,8 +233,8 @@ export const useAvailableCategories = () => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const data = await api.getAvailableCategories();
-        setCategories(data);
+        // Si tienes la función en categoryService, úsala aquí
+        setCategories([]); // Implementar si existe en el servicio
         setError(null);
       } catch (err) {
         setError(err as Error);

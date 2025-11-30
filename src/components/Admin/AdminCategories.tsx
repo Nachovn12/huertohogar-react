@@ -18,10 +18,10 @@ const AdminCategories = () => {
     if (apiCategories.length > 0) {
       // Mapear categorías y contar productos
       const categoriesWithCount = apiCategories.map(cat => {
-        const count = apiProducts.filter(p => p.category === cat.id).length;
+        const count = apiProducts.filter(p => String(p.categoria) === String(cat.id)).length;
         return {
           id: cat.id,
-          name: cat.name,
+          nombre: cat.nombre,
           products: count
         };
       });
@@ -39,7 +39,7 @@ const AdminCategories = () => {
   const openEdit = (cat: any) => {
     setModalMode('edit');
     setCurrent(cat);
-    setFormName(cat.name);
+    setFormName(cat.nombre || cat.name || '');
     setShowModal(true);
   };
 
@@ -50,9 +50,9 @@ const AdminCategories = () => {
 
     if (modalMode === 'add') {
       const nextId = `C${String(Date.now()).slice(-6)}`;
-      setCategories(prev => [...prev, { id: nextId, name, products: 0 }]);
+      setCategories(prev => [...prev, { id: nextId, nombre: name, products: 0 }]);
     } else if (modalMode === 'edit' && current) {
-      setCategories(prev => prev.map(c => c.id === current.id ? { ...c, name } : c));
+      setCategories(prev => prev.map(c => c.id === current.id ? { ...c, nombre: name } : c));
     }
 
     setShowModal(false);
@@ -63,7 +63,12 @@ const AdminCategories = () => {
     setCategories(prev => prev.filter(c => c.id !== id));
   };
 
-  const filtered = categories.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.id.toLowerCase().includes(search.toLowerCase()));
+  const filtered = categories.filter(c => {
+    const nombre = c.nombre || c.name || '';
+    const id = String(c.id || '');
+    const searchLower = search.toLowerCase();
+    return nombre.toLowerCase().includes(searchLower) || id.toLowerCase().includes(searchLower);
+  });
 
   if (loadingCategories || loadingProducts) {
     return (
@@ -103,7 +108,7 @@ const AdminCategories = () => {
             {filtered.map(cat => (
               <tr key={cat.id}>
                 <td style={{ color: '#64748b' }}>{cat.id}</td>
-                <td style={{ fontWeight: 600 }}>{cat.name}</td>
+                <td style={{ fontWeight: 600 }}>{cat.nombre || cat.name}</td>
                 <td><Badge bg="secondary">{cat.products}</Badge></td>
                 <td>
                   <Button size="sm" onClick={() => openEdit(cat)} className="action-btn action-btn-edit" style={{ marginRight: 8 }}>Editar</Button>

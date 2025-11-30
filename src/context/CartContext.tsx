@@ -20,13 +20,13 @@ type CartAction =
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'ADD_TO_CART': {
-      const existingItem = state.items.find(item => item.id === action.payload.id);
+      const existingItem = state.items.find(item => String(item.id) === String(action.payload.id));
       const qtyToAdd = action.payload.quantity && action.payload.quantity > 0 ? action.payload.quantity : 1;
       if (existingItem) {
         return {
           ...state,
           items: state.items.map(item =>
-            item.id === action.payload.id ? { ...item, quantity: item.quantity + qtyToAdd } : item
+            String(item.id) === String(action.payload.id) ? { ...item, quantity: item.quantity + qtyToAdd } : item
           ),
           isCartOpen: true
         };
@@ -41,20 +41,20 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
     case 'REMOVE_FROM_CART':
       return {
         ...state,
-        items: state.items.filter(item => item.id !== action.payload)
+        items: state.items.filter(item => String(item.id) !== String(action.payload))
       };
 
     case 'UPDATE_QUANTITY':
       if (action.payload.quantity <= 0) {
         return {
           ...state,
-          items: state.items.filter(item => item.id !== action.payload.id)
+          items: state.items.filter(item => String(item.id) !== String(action.payload.id))
         };
       }
       return {
         ...state,
         items: state.items.map(item =>
-          item.id === action.payload.id ? { ...item, quantity: Math.max(1, action.payload.quantity) } : item
+          String(item.id) === String(action.payload.id) ? { ...item, quantity: Math.max(1, action.payload.quantity) } : item
         )
       };
 
@@ -97,7 +97,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [state, dispatch] = useReducer(cartReducer, { items: [], isCartOpen: false });
 
   const addToCart = (product: Product, quantity = 1) => {
-    const discountedPrice = product.offer ? (product.offerPrice ?? Math.round(product.price * (1 - (product.discount ?? 0) / 100))) : undefined;
+    const discountedPrice = product.oferta ? (product.offerPrice ?? Math.round(product.precio * (1 - (product.descuento ?? 0) / 100))) : undefined;
     dispatch({ type: 'ADD_TO_CART', payload: { ...product, quantity, discountedPrice } as CartEntry });
   };
 
@@ -110,7 +110,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const getTotalItems = () => state.items.reduce((total, item) => total + item.quantity, 0);
   const getTotalPrice = () => state.items.reduce((total, item) => {
-    const price = (item.discountedPrice ?? item.offerPrice ?? item.price) as number;
+    const price = (item.discountedPrice ?? item.offerPrice ?? item.precio) as number;
     return total + price * item.quantity;
   }, 0);
 

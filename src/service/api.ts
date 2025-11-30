@@ -1,299 +1,573 @@
-import { Product, Category } from '../types';
+import axios from 'axios';
 import productsData from '../data/products.json';
 import categoriesData from '../data/categories.json';
 
-// ============================================
-// 🔧 CONFIGURACIÓN - Cambia aquí tu API
-// ============================================
-const API_URL = 'https://fakestoreapi.com'; // ← Cambia esta URL por la de tu API
-const USE_API = true; // ← true = usar API, false = usar datos locales
+// Configuración base de la API
+const API_BASE_URL = 'https://api-dfs2-dm-production.up.railway.app';
 
-// Datos locales como fallback
-const localProducts = productsData as Product[];
-const localCategories = categoriesData as Category[];
+// Crear instancia de axios
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 15000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-// Helper para detectar si hay conexión a internet
-const isOnline = (): boolean => {
-  return navigator.onLine;
+// Variable para almacenar el token JWT en memoria
+let authToken: string | null = null;
+
+// Variable para rastrear si estamos en modo mock
+let isUsingMockMode = false;
+
+// Función para establecer el token
+export const setAuthToken = (token: string | null) => {
+  authToken = token;
 };
 
-// Helper para manejar errores de fetch con fallback automático
-const handleResponse = async <T,>(response: Response): Promise<T> => {
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  return response.json();
+// Función para obtener el token actual
+export const getAuthToken = () => authToken;
+
+// Función para verificar si estamos en modo mock
+export const isMockMode = () => isUsingMockMode;
+
+// Función para establecer modo mock
+export const setMockMode = (useMock: boolean) => {
+  isUsingMockMode = useMock;
 };
 
-// Helper para hacer fetch con timeout y fallback
-const fetchWithFallback = async <T,>(
-  url: string,
-  fallbackData: T,
-  timeout: number = 5000
-): Promise<T> => {
-  // Si está configurado para usar datos locales, retornar inmediatamente
-  if (!USE_API) {
-    console.log('📁 Using local data (USE_API = false)');
-    return Promise.resolve(fallbackData);
+// Interceptor de REQUEST - Agregar JWT a todas las peticiones
+api.interceptors.request.use(
+  (config) => {
+    if (authToken) {
+      config.headers.Authorization = `Bearer ${authToken}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
+);
 
-  // Si no hay conexión a internet, usar datos locales
-  if (!isOnline()) {
-    console.warn('📡 No internet connection detected, using local data');
-    return Promise.resolve(fallbackData);
-  }
-
-  // Intentar fetch con timeout
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-    const response = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeoutId);
-
-    const data = await handleResponse<T>(response);
-    console.log(`✅ Data loaded from API: ${url}`);
-    return data;
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.name === 'AbortError') {
-        console.warn(`⏱️ Request timeout for ${url}, using local data`);
-      } else {
-        console.warn(`❌ Error fetching from API: ${error.message}, using local data`);
+// Interceptor de RESPONSE - Manejo centralizado de errores
+api.interceptors.response.use(
+  (response) => response,
+  (error: any) => {
+    if (error.response) {
+      switch (error.response.status) {
+        case 401:
+          console.error('No autorizado - Token inválido');
+          setAuthToken(null);
+          break;
+        case 403:
+          console.error('Acceso prohibido');
+          break;
+        case 404:
+          console.error('Recurso no encontrado');
+          break;
+        case 500:
+          console.error('Error del servidor');
+          break;
+        default:
+          console.error('Error en la petición:', error.response.status);
       }
     }
-    return fallbackData;
+    return Promise.reject(error);
   }
-};
+);
 
-// Adaptador para transformar datos de APIs externas al formato de la app
-const adaptExternalProduct = (externalProduct: any): Product => {
-  // Simular oferta para algunos productos (ej: IDs pares o aleatorio determinista)
-  // Usamos el ID para que sea consistente (siempre el mismo producto es oferta)
-  const idNum = Number(externalProduct.id) || 0;
-  const isOffer = externalProduct.offer || (idNum % 3 === 0); // 1 de cada 3 productos es oferta
-  const price = Number(externalProduct.price || 0);
-  const discount = isOffer ? 20 : 0;
-  const offerPrice = isOffer ? Math.round(price * 0.8) : undefined;
+// ==================== SERVICIOS ====================
 
-  return {
-    id: String(externalProduct.id || externalProduct._id || Math.random()),
-    name: externalProduct.name || externalProduct.title || 'Producto sin nombre',
-    price: price, // Usar precio exacto de la API
-    image: externalProduct.image || externalProduct.images?.[0] || externalProduct.thumbnail || '',
-    description: externalProduct.description || '',
-    category: externalProduct.category || 'general',
-    stock: externalProduct.stock || externalProduct.quantity || 100,
-    unit: externalProduct.unit || 'unidad',
-    reviews: externalProduct.reviews || externalProduct.rating?.count || 0,
-    offer: isOffer,
-    offerPrice: offerPrice,
-    discount: discount,
-    rating: externalProduct.rating?.rate || externalProduct.rating || 4.5
-  };
-};
-
-export const api = {
-  // ==================== PRODUCTOS ====================
-  
-  /**
-   * Obtener todos los productos
-   */
-  getProducts: async (): Promise<Product[]> => {
+// 🔐 AUTENTICACIÓN - Sistema Híbrido
+export const authService = {
+  // Login con validación contra API de usuarios
+  login: async (credentials: { email: string; password: string }) => {
     try {
-      const data = await fetchWithFallback<any[]>(
-        `${API_URL}/products`,
-        localProducts
-      );
+      const response = await api.get('/api/usuarios');
+      const usuarios = response.data as any[];
       
-      // Si los datos vienen de la API externa, adaptarlos
-      if (data && data.length > 0 && data !== localProducts) {
-        // Verificar si necesita adaptación (si tiene 'title' en lugar de 'name')
-        if (data[0].title && !data[0].name) {
-          console.log('🔄 Adapting external API data to app format');
-          return data.map(adaptExternalProduct);
+      // Buscar usuario por email
+      const user = usuarios.find((u: any) => u.email === credentials.email);
+      
+      if (user) {
+        // Validar password según el email (temporal hasta que la API tenga endpoint de login)
+        const passwordsValidas: any = {
+          'admin@huertohogar.com': 'admin123',
+          'vendedor@huertohogar.com': 'vendedor123',
+          'cliente@huertohogar.com': 'cliente123'
+        };
+        
+        const passwordEsperada = passwordsValidas[credentials.email];
+        
+        if (credentials.password === passwordEsperada) {
+          const token = `token-${user.id}-${Date.now()}`;
+          setAuthToken(token);
+          setMockMode(false);
+          console.log('✅ Login exitoso con API REAL');
+          
+          // Asignar rol y nombre basado en el email (la API no tiene campo rol y nombres genéricos)
+          let rol = 'Cliente';
+          let nombreDisplay = user.nombre || user.name || 'Usuario';
+
+          if (credentials.email === 'admin@huertohogar.com') {
+            rol = 'Admin';
+            nombreDisplay = 'Administrador';
+          } else if (credentials.email === 'vendedor@huertohogar.com') {
+            rol = 'Vendedor';
+            nombreDisplay = 'Vendedor';
+          }
+          
+          return {
+            token,
+            user: {
+              id: user.id,
+              nombre: nombreDisplay,
+              email: user.email,
+              rol: rol, // Rol asignado según email
+              direccion: user.direccion || user.address,
+              telefono: user.telefono || user.phone
+            }
+          };
         }
       }
       
-      return data as Product[];
-    } catch (error) {
-      console.warn('Error in getProducts, using local data:', error);
-      return localProducts;
+      throw new Error('Credenciales inválidas');
+    } catch (error: any) {
+      console.error('Error en login con API:', error);
+      throw new Error('Credenciales inválidas');
     }
   },
 
-  /**
-   * Obtener un producto por ID
-   */
-  getProductById: async (id: string): Promise<Product | undefined> => {
-    const fallback = localProducts.find(p => p.id === id);
+  register: async (userData: { nombre: string; email: string; password: string; rol?: string }) => {
+    try {
+      // Intentar crear usuario en la API
+      const response = await api.post('/api/usuarios', {
+        nombre: userData.nombre,
+        email: userData.email,
+        rol: userData.rol || 'Cliente',
+        direccion: '',
+        telefono: ''
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error en registro:', error);
+      // Mock: Simular registro exitoso
+      return {
+        id: Math.floor(Math.random() * 1000),
+        nombre: userData.nombre,
+        email: userData.email,
+        rol: 'Cliente'
+      };
+    }
+  },
+
+  logout: () => {
+    setAuthToken(null);
+  },
+
+  getCurrentUser: async () => {
+    const token = getAuthToken();
     
-    if (!USE_API || !isOnline()) {
-      return Promise.resolve(fallback);
+    if (!token) {
+      throw new Error('No hay token');
     }
 
-    try {
-      const data = await fetchWithFallback<any>(
-        `${API_URL}/products/${id}`,
-        fallback
-      );
+    // Mock: Retornar usuario basado en el token
+    if (token.includes('admin')) {
+      return {
+        id: 1,
+        nombre: 'Administrador HuertoHogar',
+        email: 'admin@admin.com',
+        rol: 'Admin' as const
+      };
+    } else if (token.includes('vendedor')) {
+      return {
+        id: 2,
+        nombre: 'Vendedor HuertoHogar',
+        email: 'vendedor@vendedor.com',
+        rol: 'Vendedor' as const
+      };
+    }
+    
+    return {
+      id: 3,
+      nombre: 'Cliente HuertoHogar',
+      email: 'cliente@cliente.com',
+      rol: 'Cliente' as const
+    };
+  },
 
-      if (data && data !== fallback) {
-        // Si tiene title pero no name, adaptar
-        if (data.title && !data.name) {
-          return adaptExternalProduct(data);
+  updateProfile: async (id: string | number, userData: any) => {
+    try {
+      const response = await api.put(`/api/usuarios/${id}`, userData);
+      return response.data;
+    } catch (error) {
+      console.error('Error actualizando perfil:', error);
+      throw error;
+    }
+  },
+
+  getAllUsers: async () => {
+    try {
+      const response = await api.get('/api/usuarios');
+      return response.data;
+    } catch (error) {
+      console.error('Error obteniendo usuarios:', error);
+      return [];
+    }
+  },
+
+  deleteUser: async (id: string | number) => {
+    try {
+      const response = await api.delete(`/api/usuarios/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error eliminando usuario:', error);
+      throw error;
+    }
+  },
+};
+
+// 🛍️ PRODUCTOS (HuertoHogar) - API REAL
+export const productService = {
+  getAll: async () => {
+    try {
+      console.log('🔄 Cargando productos desde API Pública (/api/productos)...');
+      
+      // Usar el endpoint público /api/productos
+      const response = await axios.get(`${API_BASE_URL}/api/productos`, {
+        timeout: 15000,
+        headers: {
+          'Content-Type': 'application/json'
         }
-        // Si ya tiene el formato correcto o es el fallback
-        return data as Product;
+      });
+      
+      const productos = response.data;
+      
+      if (!productos || !Array.isArray(productos) || productos.length === 0) {
+        console.warn('⚠️ No se recibieron productos de la API');
+        return [];
       }
       
-      return data as Product;
-    } catch (error) {
-      console.warn(`Error getting product ${id}, using local data:`, error);
-      return fallback;
+      console.log(`📦 API devolvió ${productos.length} productos brutos`);
+
+      // FILTRO ESTRICTO: Solo productos de "Huerto Orgánico del Profesor"
+      const productosFinales = productos.filter((p: any) => {
+        return p.tienda_slug === 'huerto' || p.tienda_nombre === 'Huerto Orgánico del Profesor';
+      });
+      
+      console.log(`🎯 Filtrados ${productosFinales.length} productos de HuertoHogar`);
+      
+      // Adaptar estructura de la API al formato de la aplicación
+      const productosAdaptados = productosFinales.map((p: any) => ({
+        id: p.id,
+        nombre: p.nombre || 'Producto sin nombre',
+        descripcion: p.descripcion || 'Sin descripción',
+        precio: parseFloat(p.precio) || 0,
+        categoria: p.categoria_nombre || p.categoria || 'General',
+        categoriaId: p.categoria_id || p.categoriaId || 1,
+        imagen: p.imagen || 'https://via.placeholder.com/150',
+        stock: p.stock || 10,
+        unidad: p.unidad || 'unidad',
+        oferta: p.destacado || p.oferta || false,
+        tiendaId: p.tienda_id || p.tiendaId,
+        tiendaNombre: p.tienda_nombre || p.tiendaNombre || 'Tienda General'
+      }));
+      
+      console.log(`✅ ${productosAdaptados.length} productos cargados y adaptados desde API Pública`);
+      return productosAdaptados;
+    } catch (error: any) {
+      console.error('❌ Error obteniendo productos de la API:', error.message);
+      return [];
     }
   },
 
-  /**
-   * Obtener productos por categoría
-   */
-  getProductsByCategory: async (category: string): Promise<Product[]> => {
-    const fallback = localProducts.filter(p => p.category === category);
-    
-    return fetchWithFallback<Product[]>(
-      `${API_URL}/products/category/${category}`,
-      fallback
-    );
-  },
-
-  /**
-   * Buscar productos por término de búsqueda
-   */
-  searchProducts: async (query: string): Promise<Product[]> => {
-    const lowerQuery = query.toLowerCase();
-    const fallback = localProducts.filter(p => 
-      p.name.toLowerCase().includes(lowerQuery) ||
-      p.description?.toLowerCase().includes(lowerQuery) ||
-      p.category?.toLowerCase().includes(lowerQuery)
-    );
-    
-    return fetchWithFallback<Product[]>(
-      `${API_URL}/products/search?q=${encodeURIComponent(query)}`,
-      fallback
-    );
-  },
-
-  /**
-   * Obtener productos en oferta
-   */
-  getProductsOnOffer: async (): Promise<Product[]> => {
-    // FakeStoreAPI no tiene endpoint de ofertas, así que obtenemos todos y filtramos
-    // La lógica de "qué es oferta" ya está en adaptExternalProduct
-    const allProducts = await api.getProducts();
-    return allProducts.filter(p => p.offer === true);
-  },
-
-  // ==================== CATEGORÍAS ====================
-  
-  /**
-   * Obtener todas las categorías
-   */
-  getCategories: async (): Promise<Category[]> => {
+  getById: async (id: string | number) => {
     try {
-      // Primero intentar obtener categorías desde el endpoint de categorías
-      const categoriesFromAPI = await fetchWithFallback<any[]>(
-        `${API_URL}/categories`,
-        []
-      );
+      const response = await api.get(`/api/huerto/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error obteniendo producto:', error);
+      throw error;
+    }
+  },
 
-      // Si la API devuelve categorías, adaptarlas
-      if (categoriesFromAPI && categoriesFromAPI.length > 0 && categoriesFromAPI !== localCategories) {
-        console.log('✅ Using categories from API');
-        
-        // Si son strings simples (como FakeStoreAPI), convertirlos a objetos Category
-        if (typeof categoriesFromAPI[0] === 'string') {
-          return categoriesFromAPI.map((cat: string) => ({
-            id: cat.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-            name: cat.charAt(0).toUpperCase() + cat.slice(1),
-            description: `Productos de ${cat}`
-          }));
+  create: async (productData: any) => {
+    try {
+      const response = await api.post('/api/productos', productData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creando producto:', error);
+      throw error;
+    }
+  },
+
+  update: async (id: string | number, productData: any) => {
+    try {
+      console.log('🔄 Actualizando producto en API:', id, productData);
+      
+      // Adaptar datos para la API (camelCase -> snake_case)
+      // Aseguramos enviar TODOS los campos requeridos
+      const dataToSend = {
+        nombre: productData.nombre,
+        descripcion: productData.descripcion || '',
+        precio: Number(productData.precio),
+        categoria_id: productData.categoriaId || productData.categoria_id || 1,
+        imagen: productData.imagen,
+        stock: Number(productData.stock),
+        unidad: productData.unidad || 'unidad',
+        destacado: productData.oferta || false,
+        tienda_id: productData.tiendaId || productData.tienda_id || 1
+      };
+
+      // Usar axios directo para evitar problemas con tokens mock
+      const response = await axios.put(`${API_BASE_URL}/api/productos/${id}`, dataToSend, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      console.log('✅ Producto actualizado exitosamente en API');
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Error actualizando producto:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  delete: async (id: string | number) => {
+    try {
+      const response = await api.delete(`/api/productos/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error eliminando producto:', error);
+      throw error;
+    }
+  },
+
+  updateStock: async (id: string | number, stock: number) => {
+    try {
+      const response = await api.put(`/api/productos/${id}/stock`, { stock });
+      return response.data;
+    } catch (error) {
+      console.error('Error actualizando stock:', error);
+      throw error;
+    }
+  },
+};
+
+// 📁 CATEGORÍAS - API REAL
+export const categoryService = {
+  getAll: async () => {
+    try {
+      console.log('🔄 Cargando categorías desde API (sin autenticación)...');
+      
+      // Crear instancia de axios SIN el token de autenticación
+      const response = await axios.get(`${API_BASE_URL}/api/categorias`, {
+        timeout: 15000,
+        headers: {
+          'Content-Type': 'application/json'
         }
-        
-        // Si ya son objetos, adaptarlos si es necesario
-        return categoriesFromAPI.map((cat: any) => ({
-          id: cat.id || cat.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'unknown',
-          name: cat.name || cat.title || cat.id || 'Sin nombre',
-          description: cat.description || `Categoría ${cat.name || cat.id}`
-        }));
-      }
-
-      // Si no hay categorías desde la API, generarlas desde los productos
-      const products = await api.getProducts();
+      });
       
-      if (products && products.length > 0 && products !== localProducts) {
-        console.log('🔄 Generating categories from API products');
-        
-        // Extraer categorías únicas de los productos
-        const uniqueCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
-        
-        return uniqueCategories.map(cat => ({
-          id: cat!,
-          name: cat!.charAt(0).toUpperCase() + cat!.slice(1),
-          description: `Productos de ${cat}`
-        }));
-      }
-
-      // Fallback a categorías locales
-      console.log('📁 Using local categories');
-      return localCategories;
+      console.log(`✅ ${(response.data as any[]).length} categorías cargadas desde API`);
       
-    } catch (error) {
-      console.warn('Error getting categories, using local data:', error);
-      return localCategories;
+      // FILTRO ESTRICTO: Solo categorías de "Huerto Orgánico del Profesor"
+      const categoriasFiltradas = (response.data as any[]).filter((c: any) => {
+        return c.tienda_slug === 'huerto' || c.tienda_nombre === 'Huerto Orgánico del Profesor';
+      });
+      
+      console.log(`🎯 Filtradas ${categoriasFiltradas.length} categorías de HuertoHogar`);
+      
+      return categoriasFiltradas;
+    } catch (error: any) {
+      console.error('❌ Error obteniendo categorías de la API:', error.message);
+      console.log('⚠️ Retornando array vacío - No hay categorías disponibles');
+      return [];
     }
   },
 
-  /**
-   * Obtener una categoría por ID
-   */
-  getCategoryById: async (id: string): Promise<Category | undefined> => {
-    const fallback = localCategories.find(c => c.id === id);
-    
-    if (!USE_API || !isOnline()) {
-      return Promise.resolve(fallback);
-    }
-
+  getById: async (id: string | number) => {
     try {
-      return await fetchWithFallback<Category>(
-        `${API_URL}/categories/${id}`,
-        fallback as Category
-      );
-    } catch {
-      return fallback;
+      const response = await api.get(`/api/categorias/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error obteniendo categoría:', error);
+      throw error;
     }
   },
 
-  /**
-   * Obtener categorías que tienen productos disponibles
-   */
-  getAvailableCategories: async (): Promise<Category[]> => {
-    const [categories, products] = await Promise.all([
-      api.getCategories(),
-      api.getProducts()
-    ]);
-    
-    return categories.filter(cat => 
-      products.some(p => p.category === cat.id)
-    );
+  create: async (categoryData: { nombre: string; descripcion?: string }) => {
+    try {
+      const response = await api.post('/api/categorias', categoryData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creando categoría:', error);
+      throw error;
+    }
   },
 
-  /**
-   * Obtener conteo de productos por categoría
-   */
-  getCategoryProductCount: async (categoryId: string): Promise<number> => {
-    const products = await api.getProductsByCategory(categoryId);
-    return products.length;
-  }
+  update: async (id: string | number, categoryData: any) => {
+    try {
+      const response = await api.put(`/api/categorias/${id}`, categoryData);
+      return response.data;
+    } catch (error) {
+      console.error('Error actualizando categoría:', error);
+      throw error;
+    }
+  },
+
+  delete: async (id: string | number) => {
+    try {
+      const response = await api.delete(`/api/categorias/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error eliminando categoría:', error);
+      throw error;
+    }
+  },
+};
+
+// 🛒 CARRITO - API REAL
+export const cartService = {
+  getCart: async () => {
+    try {
+      const response = await api.get('/api/carritos');
+      return response.data;
+    } catch (error) {
+      console.error('Error obteniendo carrito:', error);
+      return { items: [], total: 0 };
+    }
+  },
+
+  addItem: async (item: { productoId: number; cantidad: number }) => {
+    try {
+      const response = await api.post('/api/carritos', item);
+      return response.data;
+    } catch (error) {
+      console.error('Error agregando al carrito:', error);
+      throw error;
+    }
+  },
+
+  updateItem: async (id: string | number, cantidad: number) => {
+    try {
+      const response = await api.put(`/api/carritos/${id}`, { cantidad });
+      return response.data;
+    } catch (error) {
+      console.error('Error actualizando carrito:', error);
+      throw error;
+    }
+  },
+
+  removeItem: async (id: string | number) => {
+    try {
+      const response = await api.delete(`/api/carritos/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error eliminando del carrito:', error);
+      throw error;
+    }
+  },
+
+  clearCart: async () => {
+    try {
+      const response = await api.delete('/api/carritos/clear');
+      return response.data;
+    } catch (error) {
+      console.error('Error limpiando carrito:', error);
+      throw error;
+    }
+  },
+};
+
+// � USUARIOS - API REAL
+export const userService = {
+  getAll: async () => {
+    try {
+      console.log('🔄 Cargando usuarios desde API...');
+      const response = await axios.get(`${API_BASE_URL}/api/usuarios`, {
+        timeout: 15000,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // Adaptar estructura de la API
+      const usuariosAdaptados = (response.data as any[]).map((u: any) => ({
+        id: u.id,
+        name: u.nombre || u.name || 'Usuario',
+        email: u.email,
+        role: u.rol || 'customer',
+        status: u.estado || 'active',
+        createdAt: u.fechaRegistro || u.createdAt || new Date().toISOString().split('T')[0]
+      }));
+      
+      console.log(`✅ ${usuariosAdaptados.length} usuarios cargados desde API`);
+      return usuariosAdaptados;
+    } catch (error: any) {
+      console.error('❌ Error obteniendo usuarios de la API:', error.message);
+      console.log('⚠️ Retornando array vacío - No hay usuarios disponibles');
+      return [];
+    }
+  },
+
+  getById: async (id: string | number) => {
+    try {
+      const response = await api.get(`/api/usuarios/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error obteniendo usuario:', error);
+      throw error;
+    }
+  },
+
+  update: async (id: string | number, userData: any) => {
+    try {
+      const response = await api.put(`/api/usuarios/${id}`, userData);
+      return response.data;
+    } catch (error) {
+      console.error('Error actualizando usuario:', error);
+      throw error;
+    }
+  },
+
+  delete: async (id: string | number) => {
+    try {
+      const response = await api.delete(`/api/usuarios/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error eliminando usuario:', error);
+      throw error;
+    }
+  },
+};
+
+// �📦 ÓRDENES - Mock (no hay endpoint en la API aún)
+export const orderService = {
+  create: async (orderData: any) => {
+    console.log('Creando orden:', orderData);
+    return { id: Math.floor(Math.random() * 1000), ...orderData, estado: 'pendiente' };
+  },
+
+  getAll: async () => {
+    return [];
+  },
+
+  getById: async (id: string | number) => {
+    return { id, items: [], total: 0, estado: 'pendiente' };
+  },
+
+  getUserOrders: async () => {
+    return [];
+  },
+
+  updateStatus: async (id: string | number, status: string) => {
+    return { id, status };
+  },
+
+  delete: async (id: string | number) => {
+    return { id };
+  },
 };
 
 export default api;

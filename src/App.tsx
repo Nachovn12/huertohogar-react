@@ -36,14 +36,15 @@ import AdminProfile from './components/Admin/AdminProfile';
 import './styles/App.css';
 
 const AdminRoute: React.FC = () => {
-  const { isAdmin } = useAuth();
+  const { user } = useAuth();
+  const isAdmin = user?.rol === 'Admin';
   if (!isAdmin) return <Navigate to="/login" replace />;
   return <Outlet />;
 };
 
 const App: React.FC = () => {
   return (
-    <Router>
+    <Router basename="/huertohogar-react">
       {/* App Refresh Trigger - Force HMR */}
       <AuthProvider>
         <CartProvider>

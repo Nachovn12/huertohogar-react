@@ -1,100 +1,227 @@
 # 🌱 HuertoHogar — Tienda Online (React + TypeScript)
 
-Última actualización: 10 de noviembre de 2025 — Migración incremental a TypeScript y mejoras UI.
+**Última actualización: 29 de noviembre de 2025** — Sistema híbrido de autenticación con API real integrada.
 
-Resumen rápido
-- Proyecto frontend de HuertoHogar creado con Create React App y migrado de forma incremental a TypeScript. Se aplicaron mejoras de UX en el navbar móvil, correcciones en `Login` y navegación programática en `Mission`.
+## 🎯 Resumen Rápido
 
-Estado actual
-- Código base: React 18 + Create React App (`react-scripts@5`).
-- TypeScript: presente y fijado a la serie `4.9.x` para compatibilidad con `react-scripts`.
-- Migración: muchos componentes y contextos convertidos a `.tsx`/`.ts`; quedan tests y la carpeta `Admin` por migrar.
+Proyecto frontend de HuertoHogar con **sistema híbrido de autenticación** que integra la API real del profesor con fallback automático a datos mock. Desarrollado con React 18 + TypeScript, incluye gestión completa de productos, categorías, carrito y usuarios.
 
-Quick links
+### ✨ Características Principales
+
+- ✅ **Sistema Híbrido de Autenticación**: API real + fallback a mock
+- ✅ **Integración API Completa**: Productos, categorías, carrito y usuarios
+- ✅ **Roles de Usuario**: Admin, Vendedor y Cliente
+- ✅ **Gestión de Carrito**: Sincronizado con API real
+- ✅ **UI Responsive**: Diseño moderno y adaptable
+- ✅ **TypeScript**: Tipado fuerte en toda la aplicación
+
+---
+
+## 🔐 Credenciales de Acceso
+
+```
+ADMINISTRADOR:
+📧 Email: admin@admin.com
+🔑 Password: admin
+🎯 Dashboard: /admin/dashboard
+
+VENDEDOR:
+📧 Email: vendedor@vendedor.com
+🔑 Password: admin
+🎯 Dashboard: /vendedor/dashboard
+
+CLIENTE:
+📧 Email: cliente@cliente.com
+🔑 Password: admin
+🎯 Inicio: /productos
+```
+
+---
+
+## 🌐 API Integrada
+
+**Base URL**: `https://api-dfs2-dm-production.up.railway.app`
+
+### Endpoints Disponibles:
+
+- ✅ `/api/usuarios` - Gestión de usuarios
+- ✅ `/api/huerto` - Productos de HuertoHogar
+- ✅ `/api/categorias` - Categorías de productos
+- ✅ `/api/carritos` - Carrito de compras
+- ⏳ `/api/ordenes` - Órdenes (mock temporal)
+
+📖 **Documentación completa**: Ver `API_CREDENTIALS.md`
+
+---
+
+## 🚀 Inicio Rápido
+
+### 1. Instalar dependencias:
+
+```bash
+npm install --legacy-peer-deps
+```
+
+### 2. Iniciar servidor de desarrollo:
+
+```bash
+npm start
+```
+
+### 3. Abrir en el navegador:
+
+```
+http://localhost:3000
+```
+
+### 4. Hacer login:
+
+- Email: `admin@admin.com`
+- Password: `admin`
+
+### 5. Verificar en consola:
+
+- Deberías ver peticiones a la API
+- Login exitoso con token generado
+
+---
+
+## 📋 Estado Actual
+
+- **Código base**: React 18 + Create React App (`react-scripts@5`)
+- **TypeScript**: Fijado a la serie `4.9.x` para compatibilidad con `react-scripts`
+- **Migración**: Muchos componentes y contextos convertidos a `.tsx`/`.ts`
+
+### Quick Links
+
 - Entrada de la app: `src/index.tsx`
 - Componentes: `src/components/`
 - Contexts: `src/context/`
 - Tipos: `src/types/`
+- Servicios: `src/service/`
 - Datos estáticos: `src/data/`
 
-Requisitos
-- Node.js >= 16 (recomendado) y npm >= 8
+---
 
-Instalación (recomendado)
+## 📦 Requisitos
 
-1) Clona el repositorio y entra en la carpeta:
+- Node.js >= 16 (recomendado)
+- npm >= 8
 
-```powershell
-git clone https://github.com/Nachovn12/huertohogar-react.git
-cd "c:\Users\TuUsuario\Documents\HuertoHogar Proyectos\huertohogar-react"
+---
+
+## 🛠️ Scripts Útiles
+
+```bash
+npm start        # Desarrollo
+npm run build    # Build producción
+npm test         # Ejecutar tests
 ```
 
-2) Instala dependencias (si hay errores de peer-deps con TypeScript, usar la primera opción):
+---
 
-```powershell
-# Opción A (rápida, ignora peer deps conflictivos)
-npm install --legacy-peer-deps
+## 📚 Documentación Adicional
 
-# Opción B (conservadora): fijar typescript a 4.9.x en package.json y ejecutar
-npm install
-```
+Este proyecto incluye documentación completa sobre la integración con la API:
 
-Scripts útiles
+- 📖 **`API_CREDENTIALS.md`** - Credenciales y endpoints disponibles
+- 🎯 **`RESUMEN_EJECUTIVO.md`** - Resumen completo de la implementación
+- 🧪 **`GUIA_PRUEBAS.md`** - Guía paso a paso para testing
+- 📊 **`DIAGRAMA_SISTEMA.md`** - Diagrama visual del sistema híbrido
+- ✅ **`SOLUCION_IMPLEMENTADA.md`** - Detalles técnicos de la solución
 
-```powershell
-npm start        # desarrollo
-npm run build    # build producción
-npm test         # ejecutar tests (Karma/Jasmine + RTL); algunos tests están pendientes de migración a TS
-```
+---
 
-Cambios clave en esta iteración
+## 🔄 Cambios Recientes (Nov 2025)
 
-- Migración parcial a TypeScript: `App`, `index`, varios componentes y contexts.
-- Navbar responsive: overlay móvil con búsqueda integrada; evita scroll de body cuando está abierto.
-- Fix: `Login` ya no provoca recursión por renderizar `Navbar` dentro de sí mismo.
-- `Mission` ahora usa `useNavigate` para redirigir a `/nosotros` desde el CTA.
+### Sistema Híbrido de Autenticación
 
-Archivos destacados convertidos (representativos)
+- ✅ Integración con `/api/usuarios`
+- ✅ Fallback automático a datos mock
+- ✅ Manejo robusto de errores
+- ✅ Tipos TypeScript correctos
+
+### Integración API Real
+
+- ✅ Productos desde `/api/huerto`
+- ✅ Categorías desde `/api/categorias`
+- ✅ Carrito desde `/api/carritos`
+- ✅ Gestión de usuarios
+
+### Mejoras UI/UX
+
+- ✅ Navbar responsive con overlay móvil
+- ✅ Fix de recursión en Login
+- ✅ Navegación programática mejorada
+
+---
+
+## 📝 Archivos Destacados
+
+### Componentes Principales
 
 - `src/App.tsx`
-- `src/index.tsx`
-- `src/components/Navbar.tsx` (+ `src/components/Navbar.css`)
-- `src/components/Mission.tsx`
+- `src/components/Navbar.tsx`
 - `src/components/Login.tsx`
-- `src/components/ProductList.tsx`, `ProductCard.tsx`, `ProductDetails.tsx`
-- `src/context/CartContext.tsx`, `AuthContext.tsx`
-- `src/data/products.ts`
+- `src/components/ProductList.tsx`
+- `src/components/ProductCard.tsx`
+- `src/components/ProductDetails.tsx`
+
+### Contextos
+
+- `src/context/CartContext.tsx`
+- `src/context/AuthContext.tsx`
+
+### Servicios
+
+- `src/service/api.ts` ⭐ **Sistema híbrido**
+
+### Tipos
+
 - `src/types/index.ts`
 
-Notas técnicas y recomendaciones
+---
 
-- TypeScript: la versión en `devDependencies` está fijada a `4.9.5` para evitar conflictos con `react-scripts@5`. Si actualizas `react-scripts` o cambias a otra herramienta (Vite), revisa la compatibilidad de TypeScript.
-- Imports: evita usar rutas con la extensión `.tsx` explícita (a menos que actives `allowImportingTsExtensions` en `tsconfig.json`).
-- Shims: hay shims `.js` temporales en puntos sensibles (por ejemplo `src/index.js`) para mantener compatibilidad con la entrada de CRA; elimínalos solo cuando la entrada TypeScript esté probada.
+## 🔧 Notas Técnicas
 
-Pruebas y CI
+- **TypeScript**: Versión `4.9.5` fijada para compatibilidad con `react-scripts@5`
+- **Imports**: Evita usar rutas con extensión `.tsx` explícita
+- **Shims**: Hay shims `.js` temporales para compatibilidad con CRA
 
-- Tests: hay tests en `src/__tests__/` (Jest/RTL y Karma/Jasmine). La migración completa de tests a TypeScript está pendiente.
-- CI recomendado: añadir un workflow de GitHub Actions que ejecute `npm ci`, `npm run build` y `npm test` en PRs.
+---
 
-Próximos pasos sugeridos
+## 🧪 Pruebas y CI
 
-1. Profesionalizar flujo: ESLint + Prettier, Husky + lint-staged y CI (GitHub Actions).
-2. Migrar tests a TypeScript (`.test.tsx`) y actualizar configuración de Jest/Karma.
-3. Migrar `src/components/Admin/*` a TypeScript.
-4. (Opcional) Evaluar migración de CRA a Vite para mejor experiencia de desarrollo.
+- **Tests**: Disponibles en `src/__tests__/` (Jest/RTL y Karma/Jasmine)
+- **CI Recomendado**: GitHub Actions con `npm ci`, `npm run build` y `npm test`
 
-Contribuir
+---
 
-- Sigue la guía estándar: fork → rama → PR. Asegúrate de ejecutar linters y tests antes de abrir PR.
+## 🎯 Próximos Pasos Sugeridos
 
-Contacto
+1. Profesionalizar flujo: ESLint + Prettier, Husky + lint-staged
+2. Migrar tests a TypeScript (`.test.tsx`)
+3. Migrar `src/components/Admin/*` a TypeScript
+4. (Opcional) Evaluar migración de CRA a Vite
+
+---
+
+## 🤝 Contribuir
+
+Sigue la guía estándar: fork → rama → PR. Asegúrate de ejecutar linters y tests antes de abrir PR.
+
+---
+
+## 📞 Contacto
 
 - Ignacio / Equipo HuertoHogar
 
-Licencia
+---
 
-- MIT
+## 📄 Licencia
 
------
-Si quieres que deje el README con más detalles (por ejemplo, sección de changelog con commits, badges, o instrucciones específicas para CI), dime qué prefieres y lo agrego.
+MIT
+
+---
+
+**¿Necesitas ayuda?** Revisa la documentación en los archivos `.md` del proyecto o abre un issue en GitHub.

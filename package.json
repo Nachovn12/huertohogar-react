@@ -2,6 +2,7 @@
   "name": "huertohogar-tienda-online",
   "version": "1.0.0",
   "description": "Tienda online HuertoHogar - Proyecto React con pruebas unitarias",
+  "homepage": "https://Nachovn12.github.io/huertohogar-react",
   "main": "index.js",
   "scripts": {
     "start": "react-scripts start",
@@ -9,14 +10,18 @@
     "test": "karma start",
     "eject": "react-scripts eject",
     "test:coverage": "karma start --single-run --browsers ChromeHeadless --reporters coverage --reporters spec",
-    "test:ci": "karma start --single-run --browsers ChromeHeadless"
+    "test:ci": "karma start --single-run --browsers ChromeHeadless",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.5",
     "@mui/material": "^7.3.4",
+    "@types/axios": "^0.9.36",
     "@types/leaflet": "^1.9.21",
+    "axios": "^1.13.2",
     "bootstrap": "^5.3.8",
     "leaflet": "^1.9.4",
     "react": "^18.2.0",
@@ -34,6 +39,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
     "babel-loader": "^9.1.0",
+    "gh-pages": "^6.3.0",
     "jasmine": "^4.5.0",
     "jasmine-core": "^4.5.0",
     "karma": "^6.4.0",

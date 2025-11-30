@@ -129,10 +129,14 @@ const OrderManagement = () => {
   };
 
   const filteredOrders = orders.filter(order => {
+    const customerName = order.customerName || '';
+    const customerEmail = order.customerEmail || '';
+    const searchLower = searchTerm.toLowerCase();
+    
     const matchesSearch = 
-      order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customerName.toLowerCase().includes(searchLower) ||
       order.id.toString().includes(searchTerm) ||
-      order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase());
+      customerEmail.toLowerCase().includes(searchLower);
     
     const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
     

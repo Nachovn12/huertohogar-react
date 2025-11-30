@@ -48,17 +48,17 @@ const SpecialOffers: React.FC = () => {
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: { xs: 2, sm: 2, md: 2.5 }, position: 'relative', zIndex: 1, width: '100%', boxSizing: 'border-box' }}>
           {offers.map((item) => (
             <Card key={item.id} elevation={0} sx={{ borderRadius: { xs: 2, md: 3 }, bgcolor: '#fff', border: '1px solid #e5e7eb', position: 'relative', padding: 0, minHeight: { xs: 400, sm: 420, md: 460 }, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <Box sx={{ position: 'absolute', top: { xs: 8, md: 12 }, right: { xs: 8, md: 12 }, bgcolor: '#dc2626', color: '#fff', px: { xs: 1.2, md: 1.5 }, py: { xs: 0.4, md: 0.5 }, borderRadius: 2, fontWeight: 700, fontSize: { xs: '0.75rem', md: '0.85rem' }, zIndex: 10 }}>-{item.discount}% OFF</Box>
+              <Box sx={{ position: 'absolute', top: { xs: 8, md: 12 }, right: { xs: 8, md: 12 }, bgcolor: '#dc2626', color: '#fff', px: { xs: 1.2, md: 1.5 }, py: { xs: 0.4, md: 0.5 }, borderRadius: 2, fontWeight: 700, fontSize: { xs: '0.75rem', md: '0.85rem' }, zIndex: 10 }}>-{item.descuento}% OFF</Box>
               <Box sx={{ position: 'relative', width: '100%', height: { xs: 140, sm: 160, md: 180 }, display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: '#f9fafb', overflow: 'hidden', p: { xs: 1.5, md: 2 } }}>
-                <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                <img src={item.imagen} alt={item.nombre} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </Box>
               <CardContent sx={{ textAlign: 'center', p: { xs: 2, md: 2.5 }, flexGrow: 1, display: 'flex', flexDirection: 'column', gap: { xs: 0.5, md: 1 } }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: { xs: '0.9rem', md: '1rem' }, mb: 0.5 }}>{item.name}</Typography>
-                <Typography variant="body2" sx={{ color: '#10b981', fontSize: { xs: '0.7rem', md: '0.8rem' }, fontWeight: 600, textTransform: 'uppercase', mb: { xs: 0.5, md: 1 } }}>{item.unit}</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: { xs: '0.9rem', md: '1rem' }, mb: 0.5 }}>{item.nombre}</Typography>
+                <Typography variant="body2" sx={{ color: '#10b981', fontSize: { xs: '0.7rem', md: '0.8rem' }, fontWeight: 600, textTransform: 'uppercase', mb: { xs: 0.5, md: 1 } }}>{item.unidad}</Typography>
                 <Box sx={{ mb: { xs: 1, md: 1.5 }, bgcolor: '#f0fdf4', py: { xs: 1, md: 1.2 }, px: { xs: 1.5, md: 2 }, borderRadius: 2, border: '1px dashed #bbf7d0' }}>
                   <Typography variant="caption" sx={{ color: '#6b7280', display: 'block', mb: 0.5 }}>Precio Especial</Typography>
-                  <Typography variant="h5" sx={{ color: '#2E8B57', fontWeight: 800 }}>${formatPrice(item.offerPrice || item.price)}</Typography>
-                  <Typography variant="body2" sx={{ textDecoration: 'line-through', color: '#9ca3af', mt: 0.5 }}>Antes: ${formatPrice(item.price)}</Typography>
+                  <Typography variant="h5" sx={{ color: '#2E8B57', fontWeight: 800 }}>${formatPrice(item.oferta ? item.precio : item.precio)}</Typography>
+                  <Typography variant="body2" sx={{ textDecoration: 'line-through', color: '#9ca3af', mt: 0.5 }}>Antes: ${formatPrice(item.precio)}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 0.8, md: 1 }, mt: 'auto', width: '100%' }}>
                   <Button component={Link} to={`/productos/${item.id}`} variant="outlined" size="small" sx={{ borderRadius: 2, color: '#d97706', fontWeight: 600 }}>Ver Detalles</Button>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Importa useNavigate
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 // Iconos
@@ -11,32 +11,66 @@ import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 
 const Login: React.FC = () => {
     const [role, setRole] = useState('Administrador');
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
 
-    const { login } = useAuth();
-    const navigate = useNavigate(); // Hook para navegar
+    const { login, isLoading } = useAuth();
+    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        try {
-            // Llama a login y recibe el resultado
-            const result = login({ username, password, role } as any); // No necesita 'await' si login no es async
 
-            // Comprueba el resultado y navega si tuvo éxito
-            if (result.success && result.redirectTo) {
-                navigate(result.redirectTo);
-            } else {
-                setError(result.message || 'Credenciales incorrectas');
+        // Validaciones básicas
+        if (!email || !password) {
+            setError('Por favor, completa todos los campos');
+            return;
+        }
+
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            setError('Por favor, ingresa un correo electrónico válido');
+            return;
+        }
+
+        try {
+            await login({ email, password });
+            
+            // Redirección según rol seleccionado
+            switch (role) {
+                case 'Administrador':
+                    navigate('/admin/dashboard');
+                    break;
+                case 'Vendedor':
+                    navigate('/vendedor/dashboard');
+                    break;
+                case 'Cliente':
+                default:
+                    navigate('/productos');
+                    break;
             }
         } catch (err: any) {
-            console.error(err);
-            setError(err.message || 'Ocurrió un error inesperado al iniciar sesión.');
+            console.error('Error en login:', err);
+            setError(err.message || 'Credenciales incorrectas. Por favor, verifica tu email y contraseña.');
         }
     };
+
+    // Obtener credenciales de ejemplo según el rol
+    const getCredentialsExample = () => {
+        switch (role) {
+            case 'Administrador':
+                return { email: 'admin@huertohogar.com', password: 'admin123' };
+            case 'Vendedor':
+                return { email: 'vendedor@huertohogar.com', password: 'vendedor123' };
+            case 'Cliente':
+                return { email: 'cliente@huertohogar.com', password: 'cliente123' };
+            default:
+                return { email: 'admin@huertohogar.com', password: 'admin123' };
+        }
+    };
+
+    const credentials = getCredentialsExample();
 
     return (
         <>
@@ -70,29 +104,30 @@ const Login: React.FC = () => {
                                         className="form-select"
                                         value={role}
                                         onChange={(e) => setRole(e.target.value)}
-                                        // --- AQUÍ ESTÁ LA CORRECCIÓN ---
-                                        // Se añade padding-left para que el texto no se superponga al icono
+                                        disabled={isLoading}
                                         style={{ paddingLeft: '40px' }}
                                     >
                                         <option>Administrador</option>
+                                        <option>Vendedor</option>
                                         <option>Cliente</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="username" className="form-label">
-                                    Usuario
+                                <label htmlFor="email" className="form-label">
+                                    Correo Electrónico
                                 </label>
                                 <div className="input-wrapper">
                                     <AccountCircleIcon className="input-icon" />
                                     <input
-                                        type="text"
-                                        id="username"
+                                        type="email"
+                                        id="email"
                                         className="form-input"
-                                        placeholder="Ingresa tu usuario"
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
+                                        placeholder="tu@email.com"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        disabled={isLoading}
                                         required
                                     />
                                 </div>
@@ -111,12 +146,14 @@ const Login: React.FC = () => {
                                         placeholder="Ingresa tu contraseña"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
+                                        disabled={isLoading}
                                         required
                                     />
                                     <button
                                         type="button"
                                         className="password-toggle"
                                         onClick={() => setShowPassword(!showPassword)}
+                                        disabled={isLoading}
                                         aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                                     >
                                         {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
@@ -124,21 +161,19 @@ const Login: React.FC = () => {
                                 </div>
                             </div>
 
-                            <button type="submit" className="submit-button">
-                                Iniciar Sesión
+                            <button type="submit" className="submit-button" disabled={isLoading}>
+                                {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                             </button>
                         </form>
 
-                        {role === 'Administrador' && (
-                            <div className="credentials-info">
-                                <div>
-                                    <strong>Credenciales de prueba:</strong>
-                                    <div className="credentials-text">
-                                        Usuario: <code>admin</code> | Contraseña: <code>admin</code>
-                                    </div>
+                        <div className="credentials-info">
+                            <div>
+                                <strong>Credenciales de prueba ({role}):</strong>
+                                <div className="credentials-text">
+                                    Email: <code>{credentials.email}</code> | Contraseña: <code>{credentials.password}</code>
                                 </div>
                             </div>
-                        )}
+                        </div>
 
                         <div className="register-section">
                             <span className="register-text">¿No tienes cuenta?</span>

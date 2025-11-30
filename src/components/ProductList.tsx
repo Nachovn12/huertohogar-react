@@ -34,13 +34,20 @@ const ProductList: React.FC = () => {
     { key: 'all', label: 'Todos' },
     ...apiCategories.map(cat => ({
       key: cat.id,
-      label: cat.name
+      label: cat.nombre
     }))
   ];
 
   const filteredProducts: Product[] = filter === 'all'
     ? products
-    : products.filter(product => product.category === filter);
+    : products.filter(product => {
+        // Comparar por ID de categoría (prioridad) o por nombre si el filtro no es numérico
+        if (!isNaN(Number(filter))) {
+          return String(product.categoriaId) === String(filter);
+        }
+        // Fallback por nombre si el filtro fuera un string (ej: URL antigua)
+        return String(product.categoria).toLowerCase() === String(filter).toLowerCase();
+      });
 
   // Mostrar loading
   if (loadingProducts || loadingCategories) {
@@ -128,7 +135,7 @@ const ProductList: React.FC = () => {
                   boxShadow: '0 4px 12px rgba(46, 139, 87, 0.2)'
                 }
               }}
-              onClick={() => handleFilterChange(category.key)}
+              onClick={() => handleFilterChange(String(category.key))}
             >
               {category.label}
             </Button>
@@ -151,27 +158,25 @@ const ProductList: React.FC = () => {
             }}
           >
             {filteredProducts.map((product) => {
-              let orderValue = 1;
-              if (product.id === 'FR001') orderValue = 1;
-              if (product.id === 'OR001') orderValue = 2;
-              if (product.id === 'VR002') orderValue = 3;
-              if (product.id === 'FR003') orderValue = 4;
-              if (product.id === 'LC001') orderValue = 5;
-              if (product.id === 'OR002') orderValue = 6;
-              if (product.id === 'FR002') orderValue = 7;
-              if (product.id === 'VR001') orderValue = 8;
-              if (product.id === 'VR003') orderValue = 9;
-              return (
-                <Box
-                  key={product.id}
-                  sx={{
-                    order: orderValue
-                  }}
-                >
-                  <ProductCard product={product} />
-                </Box>
-              );
-            })}
+               let orderValue = 1;
+               if (String(product.id) === 'FR001') orderValue = 1;
+               if (String(product.id) === 'OR001') orderValue = 2;
+               if (String(product.id) === 'VR002') orderValue = 3;
+               if (String(product.id) === 'FR003') orderValue = 4;
+               if (String(product.id) === 'LC001') orderValue = 5;
+               if (String(product.id) === 'OR002') orderValue = 6;
+               if (String(product.id) === 'FR002') orderValue = 7;
+               if (String(product.id) === 'VR001') orderValue = 8;
+               if (String(product.id) === 'VR003') orderValue = 9;
+               return (
+                 <Box
+                   key={product.id}
+                   sx={{ order: orderValue }}
+                 >
+                   <ProductCard product={product} />
+                 </Box>
+               );
+             })}
           </Grid>
         </Box>
 

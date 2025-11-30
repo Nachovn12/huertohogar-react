@@ -131,25 +131,25 @@ const FeaturedProducts: React.FC = () => {
               onMouseLeave={() => trackRef.current && (trackRef.current.style.animationPlayState = 'running')}
             >
               {duplicated.map((product, idx) => {
-                const isOffer = product.offer && product.offerPrice && product.offerPrice < product.price;
-                const currentPrice = isOffer ? product.offerPrice : product.price;
-                const originalPrice = isOffer ? product.price : null;
-                const savings = isOffer ? (product.price - (product.offerPrice || 0)) : 0;
+                const isOffer = product.oferta && product.offerPrice && product.offerPrice < product.precio;
+                const currentPrice = isOffer ? product.offerPrice : product.precio;
+                const originalPrice = isOffer ? product.precio : null;
+                const savings = isOffer ? (product.precio - (product.offerPrice || 0)) : 0;
 
                 return (
                 <div className="ch-slide" key={`${product.id}-${idx}`}>
                   {/* Reuse same markup for product card */}
                   <div className="ch-card">
-                    {product.discount && (
-                      <span className="ch-badge">-{product.discount}%</span>
+                    {product.descuento && (
+                      <span className="ch-badge">-{product.descuento}%</span>
                     )}
                     <div className="ch-img">
-                      <img src={product.image} alt={product.name} onError={(e: any) => { e.target.style.display = 'none'; }} />
+                      <img src={product.imagen} alt={product.nombre} onError={(e: any) => { e.target.style.display = 'none'; }} />
                     </div>
-                    <h5 className="ch-name">{product.name}</h5>
+                    <h5 className="ch-name">{product.nombre}</h5>
                     <div className="ch-price">
                       <span className="ch-price-main">{formatPrice(currentPrice || 0)}</span>
-                      <span className="ch-unit">{product.unit}</span>
+                      <span className="ch-unit">{product.unidad}</span>
                     </div>
                     {originalPrice ? (
                       <div className="ch-savings">
@@ -217,10 +217,10 @@ const FeaturedProducts: React.FC = () => {
           }}
         >
           {featuredProducts.map((product) => {
-            const isOffer = product.offer && product.offerPrice && product.offerPrice < product.price;
-            const currentPrice = isOffer ? product.offerPrice : product.price;
-            const originalPrice = isOffer ? product.price : null;
-            const savings = isOffer ? (product.price - (product.offerPrice || 0)) : 0;
+            const isOffer = product.oferta && product.offerPrice && product.offerPrice < product.precio;
+            const currentPrice = isOffer ? product.offerPrice : product.precio;
+            const originalPrice = isOffer ? product.precio : null;
+            const savings = isOffer ? (product.precio - (product.offerPrice || 0)) : 0;
 
             return (
             <SwiperSlide key={product.id}>
@@ -252,7 +252,7 @@ const FeaturedProducts: React.FC = () => {
                 (e.currentTarget as HTMLElement).style.borderColor = '#e5e7eb';
               }}
               >
-                {product.discount && (
+                {product.descuento && (
                   <span style={{ 
                     position: 'absolute', 
                     top: 12, 
@@ -266,7 +266,7 @@ const FeaturedProducts: React.FC = () => {
                     letterSpacing: '0.3px',
                     zIndex: 2
                   }}>
-                    -{product.discount}%
+                    -{product.descuento}%
                   </span>
                 )}
                 <div style={{
@@ -282,8 +282,8 @@ const FeaturedProducts: React.FC = () => {
                   border: '1px solid #f3f4f6'
                 }}>
                   <img 
-                    src={product.image} 
-                    alt={product.name}
+                    src={product.imagen} 
+                    alt={product.nombre}
                     style={{ 
                       width: '100%',
                       height: '100%',
@@ -306,7 +306,7 @@ const FeaturedProducts: React.FC = () => {
                   justifyContent: 'center',
                   flexShrink: 0
                 }}>
-                  {product.name}
+                  {product.nombre}
                 </h5>
                 <div style={{ marginBottom: 5, textAlign: 'center', flexShrink: 0 }}>
                   <span style={{ 
@@ -324,7 +324,7 @@ const FeaturedProducts: React.FC = () => {
                     fontSize: '0.75rem',
                     fontWeight: 400
                   }}>
-                    {product.unit}
+                    {product.unidad}
                   </span>
                 </div>
                 {originalPrice ? (

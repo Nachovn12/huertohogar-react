@@ -10,7 +10,7 @@ interface CategoryDisplay {
   description: string;
   features: string[];
   productCount: number;
-  image: string;
+  imagen: string;
 }
 
 const Categories: React.FC = () => {
@@ -22,16 +22,16 @@ const Categories: React.FC = () => {
 
     return apiCategories.slice(0, 4).map(cat => {
       // Encontrar productos de esta categoría para obtener imagen y conteo
-      const catProducts = apiProducts.filter(p => p.category === cat.id);
+      const catProducts = apiProducts.filter(p => String(p.categoria) === String(cat.id));
       const firstProduct = catProducts[0];
-      
+
       return {
-        id: cat.id,
-        title: cat.name.charAt(0).toUpperCase() + cat.name.slice(1),
-        description: cat.description || `Explora nuestra selección de ${cat.name} con la mejor calidad y frescura garantizada.`,
+        id: String(cat.id),
+        title: cat.nombre.charAt(0).toUpperCase() + cat.nombre.slice(1),
+        description: cat.descripcion || `Explora nuestra selección de ${cat.nombre} con la mejor calidad y frescura garantizada.`,
         features: ['Calidad Premium', 'Mejor Precio', 'Stock Disponible'],
         productCount: catProducts.length,
-        image: firstProduct?.image || 'https://via.placeholder.com/400x300?text=No+Image'
+        imagen: firstProduct?.imagen || 'https://via.placeholder.com/400x300?text=No+Image'
       };
     });
   }, [apiCategories, apiProducts]);
@@ -199,14 +199,14 @@ const Categories: React.FC = () => {
                   }}
                 />
                   <img
-                    src={category.image}
+                    src={category.imagen}
                     alt={category.title}
                     className="category-image"
                     style={{
                       width: '100%',
                       height: '100%',
-                      objectFit: 'contain', // Cambiado de cover a contain para ver la imagen completa
-                      padding: '10px', // Espacio para que no toque los bordes
+                      objectFit: 'contain',
+                      padding: '10px',
                       transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   />

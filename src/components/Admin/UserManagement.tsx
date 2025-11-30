@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Badge, Alert } from 'react-bootstrap';
 import { Edit, Delete, Add, Search, MoreVert } from '@mui/icons-material';
+import { userService } from '../../service/api';
 
 const UserManagement = () => {
-  // Usuarios de demostración
-  const [users, setUsers] = useState([
-    { id: 1, name: 'Juan Pérez', email: 'juan@email.com', role: 'admin', status: 'active', createdAt: '2024-01-15' },
-    { id: 2, name: 'María González', email: 'maria@email.com', role: 'customer', status: 'active', createdAt: '2024-02-20' },
-    { id: 3, name: 'Carlos Rodríguez', email: 'carlos@email.com', role: 'customer', status: 'active', createdAt: '2024-03-10' },
-    { id: 4, name: 'Ana Martínez', email: 'ana@email.com', role: 'customer', status: 'inactive', createdAt: '2024-01-05' },
-    { id: 5, name: 'Pedro López', email: 'pedro@email.com', role: 'customer', status: 'active', createdAt: '2024-04-01' }
-  ]);
+  // Estado para usuarios desde la API
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('add');
@@ -26,6 +23,27 @@ const UserManagement = () => {
     role: 'customer',
     status: 'active'
   });
+
+  // Cargar usuarios desde la API
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await userService.getAll();
+      console.log('✅ Usuarios cargados desde API:', data);
+      setUsers(data);
+    } catch (err: any) {
+      console.error('❌ Error cargando usuarios:', err);
+      setError('Error al cargar usuarios de la API');
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddUser = () => {
     setModalMode('add');
@@ -92,10 +110,12 @@ const UserManagement = () => {
     setTimeout(() => setShowAlert(false), 3000);
   };
 
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter(user => {
+    const name = user.name || '';
+    const email = user.email || '';
+    const searchLower = searchTerm.toLowerCase();
+    return name.toLowerCase().includes(searchLower) || email.toLowerCase().includes(searchLower);
+  });
 
   return (
     <div>
