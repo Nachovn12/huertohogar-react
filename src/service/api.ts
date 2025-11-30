@@ -229,7 +229,7 @@ export const authService = {
   },
 };
 
-// 🛍️ PRODUCTOS (HuertoHogar) - API REAL
+// 🛍️ PRODUCTOS (HuertoHogar) - API REAL con Fallback Local
 export const productService = {
   getAll: async () => {
     try {
@@ -246,8 +246,8 @@ export const productService = {
       const productos = response.data;
       
       if (!productos || !Array.isArray(productos) || productos.length === 0) {
-        console.warn('⚠️ No se recibieron productos de la API');
-        return [];
+        console.warn('⚠️ No se recibieron productos de la API, usando datos locales...');
+        return productService.getLocalProducts();
       }
       
       console.log(`📦 API devolvió ${productos.length} productos brutos`);
@@ -279,8 +279,30 @@ export const productService = {
       return productosAdaptados;
     } catch (error: any) {
       console.error('❌ Error obteniendo productos de la API:', error.message);
-      return [];
+      console.log('📦 Usando datos locales como fallback...');
+      return productService.getLocalProducts();
     }
+  },
+
+  // Método para obtener productos locales
+  getLocalProducts: () => {
+    console.log('📁 Cargando productos desde datos locales (products.json)...');
+    const localProducts = productsData.map((p: any) => ({
+      id: p.id,
+      nombre: p.name || p.nombre,
+      descripcion: p.description || p.descripcion || 'Sin descripción',
+      precio: p.price || p.precio || 0,
+      categoria: p.category || p.categoria || 'General',
+      categoriaId: 1,
+      imagen: p.image || p.imagen || 'https://via.placeholder.com/150',
+      stock: p.stock || 10,
+      unidad: 'unidad',
+      oferta: p.offer || p.oferta || false,
+      tiendaId: 1,
+      tiendaNombre: 'HuertoHogar'
+    }));
+    console.log(`✅ ${localProducts.length} productos cargados desde datos locales`);
+    return localProducts;
   },
 
   getById: async (id: string | number) => {
@@ -355,7 +377,7 @@ export const productService = {
   },
 };
 
-// 📁 CATEGORÍAS - API REAL
+// 📁 CATEGORÍAS - API REAL con Fallback Local
 export const categoryService = {
   getAll: async () => {
     try {
@@ -381,9 +403,16 @@ export const categoryService = {
       return categoriasFiltradas;
     } catch (error: any) {
       console.error('❌ Error obteniendo categorías de la API:', error.message);
-      console.log('⚠️ Retornando array vacío - No hay categorías disponibles');
-      return [];
+      console.log('📦 Usando datos locales de categorías como fallback...');
+      return categoryService.getLocalCategories();
     }
+  },
+
+  // Método para obtener categorías locales
+  getLocalCategories: () => {
+    console.log('📁 Cargando categorías desde datos locales (categories.json)...');
+    console.log(`✅ ${categoriesData.length} categorías cargadas desde datos locales`);
+    return categoriesData;
   },
 
   getById: async (id: string | number) => {
