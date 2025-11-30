@@ -144,8 +144,10 @@ export const useProductsOnOffer = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        // Si tienes un endpoint de ofertas en productService, úsalo aquí
-        setProducts([]); // Implementar si existe en el servicio
+        const data = await productService.getAll();
+        // Filtrar productos destacados (en oferta)
+        const offerProducts = (data as Product[]).filter((p: Product) => p.oferta === true);
+        setProducts(offerProducts);
         setError(null);
       } catch (err) {
         setError(err as Error);

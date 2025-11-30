@@ -261,7 +261,7 @@ export const productService = {
       
       // Adaptar estructura de la API al formato de la aplicación
       const productosAdaptados = productosFinales.map((p: any) => ({
-        id: p.id,
+        id: p.id.toString(), // Convertir a string para coincidir con el tipo Product
         nombre: p.nombre || 'Producto sin nombre',
         descripcion: p.descripcion || 'Sin descripción',
         precio: parseFloat(p.precio) || 0,
