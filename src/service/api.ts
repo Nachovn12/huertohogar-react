@@ -411,8 +411,15 @@ export const categoryService = {
   // Método para obtener categorías locales
   getLocalCategories: () => {
     console.log('📁 Cargando categorías desde datos locales (categories.json)...');
-    console.log(`✅ ${categoriesData.length} categorías cargadas desde datos locales`);
-    return categoriesData;
+    const localCategories = categoriesData.map((c: any) => ({
+      id: c.id,
+      nombre: c.name || c.nombre || 'Sin nombre', // Mapear name a nombre
+      descripcion: c.description || c.descripcion || '',
+      tiendaId: 1,
+      tiendaNombre: 'HuertoHogar'
+    }));
+    console.log(`✅ ${localCategories.length} categorías cargadas desde datos locales`);
+    return localCategories;
   },
 
   getById: async (id: string | number) => {
