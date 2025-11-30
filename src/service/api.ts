@@ -235,8 +235,18 @@ export const productService = {
     try {
       console.log('🔄 Cargando productos desde API Pública (/api/productos)...');
       
+      // Determinar URL base dependiendo del entorno para evitar CORS en producción
+      let url = `${API_BASE_URL}/api/productos`;
+      
+      // Si estamos en producción (GitHub Pages), usar un proxy CORS
+      if (process.env.NODE_ENV === 'production') {
+        console.log('🌍 Entorno de producción detectado: Usando Proxy CORS');
+        // Usamos corsproxy.io para evitar el bloqueo CORS
+        url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+      }
+
       // Usar el endpoint público /api/productos
-      const response = await axios.get(`${API_BASE_URL}/api/productos`, {
+      const response = await axios.get(url, {
         timeout: 15000,
         headers: {
           'Content-Type': 'application/json'
@@ -383,8 +393,17 @@ export const categoryService = {
     try {
       console.log('🔄 Cargando categorías desde API (sin autenticación)...');
       
+      // Determinar URL base dependiendo del entorno para evitar CORS en producción
+      let url = `${API_BASE_URL}/api/categorias`;
+      
+      // Si estamos en producción (GitHub Pages), usar un proxy CORS
+      if (process.env.NODE_ENV === 'production') {
+        // Usamos corsproxy.io para evitar el bloqueo CORS
+        url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+      }
+      
       // Crear instancia de axios SIN el token de autenticación
-      const response = await axios.get(`${API_BASE_URL}/api/categorias`, {
+      const response = await axios.get(url, {
         timeout: 15000,
         headers: {
           'Content-Type': 'application/json'
