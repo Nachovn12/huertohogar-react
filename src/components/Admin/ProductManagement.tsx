@@ -40,7 +40,8 @@ const ProductManagement = () => {
     setAlertMessage(message);
     setAlertType(type);
     setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
+    // Mostrar alerta por 5 segundos para que el usuario pueda leerla
+    setTimeout(() => setShowAlert(false), 5000);
   };
 
   const fetchProducts = async () => {
@@ -132,27 +133,30 @@ const ProductManagement = () => {
         showAlertMessage('✅ Producto agregado correctamente a la API', 'success');
       } else {
         if (currentProduct) {
+          console.log('📤 Enviando actualización para producto ID:', currentProduct.id);
+          
           await productService.update(currentProduct.id, {
             nombre: formData.nombre,
             descripcion: formData.descripcion,
-            precio: formData.precio,
+            precio: Number(formData.precio),
             categoriaId: Number(formData.categoria),
-            stock: formData.stock,
+            stock: Number(formData.stock),
             unidad: formData.unidad,
             imagen: formData.imagen,
             oferta: formData.oferta,
-            tiendaId: currentProduct.tiendaId
+            tiendaId: currentProduct.tiendaId || 1
           });
           
-          showAlertMessage('✅ Producto actualizado correctamente en la API', 'success');
+          showAlertMessage('✅ Se han guardado los cambios correctamente en la API', 'success');
         }
       }
       
+      // Recargar productos desde la API para reflejar cambios
       await fetchProducts();
       setShowModal(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al guardar producto:', error);
-      showAlertMessage('❌ Error al guardar cambios en la API', 'danger');
+      showAlertMessage(`❌ Error al guardar cambios: ${error.message || 'Error desconocido'}`, 'danger');
     }
   };
 

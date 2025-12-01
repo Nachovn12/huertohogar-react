@@ -388,25 +388,25 @@ export const productService = {
         tienda_id: productData.tiendaId || productData.tienda_id || 1
       };
 
-      // Determinar URL base dependiendo del entorno para evitar CORS en producción
-      let url = `${API_BASE_URL}/api/productos/${id}`;
-      
-      // Si estamos en producción (GitHub Pages), usar un proxy CORS
-      if (process.env.NODE_ENV === 'production') {
-        console.log('🌍 Entorno de producción detectado en Update: Usando Proxy CORS (CodeTabs)');
-        url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
-      }
+      console.log('📤 Datos enviados a la API:', dataToSend);
+
+      // URL de la API directamente (Railway debería tener CORS habilitado)
+      const url = `${API_BASE_URL}/api/productos/${id}`;
 
       // Usar axios directo para evitar problemas con tokens mock
       const response = await axios.put(url, dataToSend, {
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
       });
       
-      console.log('✅ Producto actualizado exitosamente en API');
+      console.log('✅ Producto actualizado exitosamente en API:', response.data);
       return response.data;
     } catch (error: any) {
       console.error('❌ Error actualizando producto:', error.response?.data || error.message);
-      throw error;
+      // Lanzar error con mensaje descriptivo
+      throw new Error(error.response?.data?.message || error.message || 'Error al actualizar producto');
     }
   },
 
