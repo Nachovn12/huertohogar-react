@@ -392,36 +392,47 @@ export const productService = {
       // URL de la API
       const apiUrl = `${API_BASE_URL}/api/productos/${id}`;
       
-      // En producción (GitHub Pages), usar fetch con mode no-cors NO funciona para PUT
-      // Intentamos con la API directa primero, si falla usamos proxy
-      try {
-        const response = await axios.put(apiUrl, dataToSend, {
-          headers: { 
+      // En producción (GitHub Pages), usar proxy CORS directamente
+      if (process.env.NODE_ENV === 'production') {
+        console.log('🌍 Producción: Usando proxy CORS para PUT...');
+        
+        // Usar cors-anywhere alternativo o hacer fetch directo con headers custom
+        // Opción: usar un worker de Cloudflare o proxy público
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+        
+        console.log('📤 URL con proxy:', proxyUrl);
+        
+        // Usar fetch nativo con más control
+        const response = await fetch(proxyUrl, {
+          method: 'PUT',
+          headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify(dataToSend)
         });
-        console.log('✅ Producto actualizado exitosamente en API:', response.data);
-        return response.data;
-      } catch (corsError: any) {
-        // Si falla por CORS en producción, intentar con proxy
-        if (process.env.NODE_ENV === 'production') {
-          console.log('🔄 Reintentando con proxy CORS...');
-          
-          // Usar thingproxy que soporta PUT/POST
-          const proxyUrl = `https://thingproxy.freeboard.io/fetch/${apiUrl}`;
-          
-          const proxyResponse = await axios.put(proxyUrl, dataToSend, {
-            headers: { 
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            }
-          });
-          console.log('✅ Producto actualizado via proxy:', proxyResponse.data);
-          return proxyResponse.data;
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ Error del proxy:', response.status, errorText);
+          throw new Error(`Error ${response.status}: ${errorText}`);
         }
-        throw corsError;
+        
+        const data = await response.json();
+        console.log('✅ Producto actualizado via proxy:', data);
+        return data;
       }
+      
+      // En desarrollo, llamada directa
+      const response = await axios.put(apiUrl, dataToSend, {
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      console.log('✅ Producto actualizado exitosamente en API:', response.data);
+      return response.data;
     } catch (error: any) {
       console.error('❌ Error actualizando producto:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || error.message || 'Error al actualizar producto');
