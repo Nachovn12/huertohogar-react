@@ -88,8 +88,8 @@ export const authService = {
       
       // Si estamos en producción (GitHub Pages), usar un proxy CORS
       if (process.env.NODE_ENV === 'production') {
-        console.log('🌍 Entorno de producción detectado en Login: Usando Proxy CORS');
-        url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        console.log('🌍 Entorno de producción detectado: Usando Proxy CORS (CodeTabs)');
+        url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
       }
 
       const response = await axios.get(url);
@@ -249,9 +249,9 @@ export const productService = {
       
       // Si estamos en producción (GitHub Pages), usar un proxy CORS
       if (process.env.NODE_ENV === 'production') {
-        console.log('🌍 Entorno de producción detectado: Usando Proxy CORS');
+        console.log('🌍 Entorno de producción detectado: Usando Proxy CORS (CodeTabs)');
         // Usamos corsproxy.io para evitar el bloqueo CORS
-        url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
       }
 
       // Usar el endpoint público /api/productos
@@ -355,8 +355,8 @@ export const productService = {
       
       // Si estamos en producción (GitHub Pages), usar un proxy CORS
       if (process.env.NODE_ENV === 'production') {
-        console.log('🌍 Entorno de producción detectado en Create: Usando Proxy CORS');
-        url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        console.log('🌍 Entorno de producción detectado en Create: Usando Proxy CORS (CodeTabs)');
+        url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
       }
 
       const response = await axios.post(url, dataToSend, {
@@ -393,8 +393,8 @@ export const productService = {
       
       // Si estamos en producción (GitHub Pages), usar un proxy CORS
       if (process.env.NODE_ENV === 'production') {
-        console.log('🌍 Entorno de producción detectado en Update: Usando Proxy CORS');
-        url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        console.log('🌍 Entorno de producción detectado en Update: Usando Proxy CORS (CodeTabs)');
+        url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
       }
 
       // Usar axios directo para evitar problemas con tokens mock
@@ -419,8 +419,8 @@ export const productService = {
       
       // Si estamos en producción (GitHub Pages), usar un proxy CORS
       if (process.env.NODE_ENV === 'production') {
-        console.log('🌍 Entorno de producción detectado en Delete: Usando Proxy CORS');
-        url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        console.log('🌍 Entorno de producción detectado en Delete: Usando Proxy CORS (CodeTabs)');
+        url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
       }
 
       const response = await axios.delete(url);
@@ -454,7 +454,7 @@ export const categoryService = {
       // Si estamos en producción (GitHub Pages), usar un proxy CORS
       if (process.env.NODE_ENV === 'production') {
         // Usamos corsproxy.io para evitar el bloqueo CORS
-        url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
       }
       
       // Crear instancia de axios SIN el token de autenticación
