@@ -390,8 +390,15 @@ export const productService = {
 
       console.log('📤 Datos enviados a la API:', dataToSend);
 
-      // URL de la API directamente (Railway debería tener CORS habilitado)
-      const url = `${API_BASE_URL}/api/productos/${id}`;
+      // URL de la API
+      let url = `${API_BASE_URL}/api/productos/${id}`;
+      
+      // En producción (GitHub Pages), usar proxy CORS que soporte PUT
+      if (process.env.NODE_ENV === 'production') {
+        console.log('🌍 Entorno de producción detectado en Update: Usando Proxy CORS');
+        // Usamos corsproxy.io que soporta todos los métodos HTTP
+        url = `https://corsproxy.io/?${encodeURIComponent(`${API_BASE_URL}/api/productos/${id}`)}`;
+      }
 
       // Usar axios directo para evitar problemas con tokens mock
       const response = await axios.put(url, dataToSend, {
