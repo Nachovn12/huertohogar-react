@@ -762,6 +762,21 @@ const ProductManagement = () => {
                     fontSize: '0.95rem',
                     transition: 'all 0.2s'
                   }}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  style={{
+                    background: modalMode === 'add' ? '#10b981' : '#3b82f6',
+                    border: 'none',
+                    color: '#fff',
+                    borderRadius: '10px',
+                    padding: '10px 24px',
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    transition: 'all 0.2s'
+                  }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = modalMode === 'add' ? '#059669' : '#2563eb';
                     e.currentTarget.style.transform = 'translateY(-1px)';
