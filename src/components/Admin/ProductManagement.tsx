@@ -35,6 +35,22 @@ const ProductManagement = () => {
     imagen: '',
     oferta: false
   });
+
+  const showAlertMessage = (message: string, type = 'success') => {
+    setAlertMessage(message);
+    setAlertType(type);
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 3000);
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const data = await productService.getAll();
+      setProducts(data);
+    } catch (error) {
+      console.error('Error recargando productos:', error);
+    }
+  };
   
   const getCategoryId = (product: Product): string => {
     if (product.categoriaId) {
@@ -87,12 +103,11 @@ const ProductManagement = () => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
       try {
         await productService.delete(productId);
-        setProducts(products.filter(p => String(p.id) !== String(productId)));
-        showAlertMessage('Producto eliminado exitosamente', 'success');
-        setShowModal(false);
+        showAlertMessage('✅ Producto eliminado exitosamente', 'success');
+        await fetchProducts();
       } catch (error) {
         console.error('Error al eliminar producto:', error);
-        showAlertMessage('Error al eliminar el producto', 'danger');
+        showAlertMessage('❌ Error al eliminar el producto', 'danger');
       }
     }
   };
@@ -102,12 +117,9 @@ const ProductManagement = () => {
     
     try {
       if (modalMode === 'add') {
-        const categoryName = apiCategories.find(c => String(c.id) === String(formData.categoria))?.nombre || formData.categoria;
-        const newProduct: Product = {
-          id: `PR${Date.now().toString().slice(-5)}`,
+        const newProductData = {
           nombre: formData.nombre,
           precio: Number(formData.precio) || 0,
-          categoria: categoryName,
           categoriaId: Number(formData.categoria),
           stock: Number(formData.stock) || 0,
           unidad: formData.unidad,
@@ -115,8 +127,9 @@ const ProductManagement = () => {
           imagen: formData.imagen,
           oferta: formData.oferta
         };
-        setProducts(prev => [...prev, newProduct]);
-        showAlertMessage('Producto agregado exitosamente', 'success');
+        
+        await productService.create(newProductData);
+        showAlertMessage('✅ Producto agregado correctamente a la API', 'success');
       } else {
         if (currentProduct) {
           await productService.update(currentProduct.id, {
@@ -130,36 +143,17 @@ const ProductManagement = () => {
             oferta: formData.oferta,
             tiendaId: currentProduct.tiendaId
           });
-
-          const categoryName = apiCategories.find(c => String(c.id) === String(formData.categoria))?.nombre || formData.categoria;
-          setProducts(prev => prev.map(p => p.id === currentProduct.id ? {
-            ...p,
-            nombre: formData.nombre,
-            precio: Number(formData.precio) || 0,
-            categoria: categoryName,
-            categoriaId: Number(formData.categoria),
-            stock: Number(formData.stock) || 0,
-            unidad: formData.unidad,
-            descripcion: formData.descripcion,
-            imagen: formData.imagen,
-            oferta: formData.oferta
-          } : p));
           
-          showAlertMessage('Producto actualizado exitosamente', 'success');
+          showAlertMessage('✅ Producto actualizado correctamente en la API', 'success');
         }
       }
+      
+      await fetchProducts();
       setShowModal(false);
     } catch (error) {
       console.error('Error al guardar producto:', error);
-      showAlertMessage('Error al guardar cambios', 'danger');
+      showAlertMessage('❌ Error al guardar cambios en la API', 'danger');
     }
-  };
-
-  const showAlertMessage = (message: string, type = 'success') => {
-    setAlertMessage(message);
-    setAlertType(type);
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
   };
 
   const handleImageError = (productId: string) => {
@@ -205,70 +199,70 @@ const ProductManagement = () => {
       )}
       
       <div className="admin-table-wrapper">
-  <Table hover responsive className="admin-table">
-    <thead>
-      <tr>
-        <th style={{ width: '80px', textAlign: 'center' }}>ID</th>
-        <th style={{ width: '100px', textAlign: 'center' }}>IMAGEN</th>
-        <th style={{ width: '200px' }}>NOMBRE</th>
-        <th style={{ width: '150px' }}>CATEGORÍA</th>
-        <th style={{ width: '120px' }}>PRECIO</th>
-        <th style={{ width: '100px', textAlign: 'center' }}>STOCK</th>
-        <th style={{ width: '120px', textAlign: 'center' }}>UNIDAD</th>
-        <th style={{ width: '100px', textAlign: 'center' }}>OFERTA</th>
-        <th style={{ textAlign: 'center' }}>ACCIONES</th>
-      </tr>
-    </thead>
-    <tbody>
-      {filteredProducts
-        .reduce((acc, product) => {
-          const exists = acc.find(p => p.id === product.id);
-          if (!exists) acc.push(product);
-          return acc;
-        }, [])
-        .map(product => (
-          <tr key={product.id}>
-            <td style={{ color: '#64748b', textAlign: 'center', verticalAlign: 'middle', width: '80px' }}>{product.id}</td>
-            <td style={{ textAlign: 'center', verticalAlign: 'middle', width: '100px' }}>
-              {isImageValid(product) ? (
-                <img
-                  src={product.imagen}
-                  alt={product.nombre}
-                  style={{ 
-                    width: '48px', 
-                    height: '48px', 
-                    objectFit: 'contain',
-                    borderRadius: '10px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                    background: '#fff',
-                    border: '1px solid #e5e7eb',
-                    padding: '4px',
-                    margin: '0 auto',
-                    display: 'block'
-                  }}
-                  onError={() => handleImageError(String(product.id))}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '10px',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '20px',
-                    color: '#fff',
-                    fontWeight: 600,
-                    border: '1px solid #e5e7eb',
-                    margin: '0 auto'
-                  }}
-                >
-                  {product.nombre?.charAt(0).toUpperCase() || '?'}
-                </div>
-              )}
-            </td>
+        <Table hover responsive className="admin-table">
+          <thead>
+            <tr>
+              <th style={{ width: '80px', textAlign: 'center' }}>ID</th>
+              <th style={{ width: '100px', textAlign: 'center' }}>IMAGEN</th>
+              <th style={{ width: '200px' }}>NOMBRE</th>
+              <th style={{ width: '150px' }}>CATEGORÍA</th>
+              <th style={{ width: '120px' }}>PRECIO</th>
+              <th style={{ width: '100px', textAlign: 'center' }}>STOCK</th>
+              <th style={{ width: '120px', textAlign: 'center' }}>UNIDAD</th>
+              <th style={{ width: '100px', textAlign: 'center' }}>OFERTA</th>
+              <th style={{ textAlign: 'center' }}>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredProducts
+              .reduce((acc, product) => {
+                const exists = acc.find(p => p.id === product.id);
+                if (!exists) acc.push(product);
+                return acc;
+              }, [] as Product[])
+              .map(product => (
+                <tr key={product.id}>
+                  <td style={{ color: '#64748b', textAlign: 'center', verticalAlign: 'middle', width: '80px' }}>{product.id}</td>
+                  <td style={{ textAlign: 'center', verticalAlign: 'middle', width: '100px' }}>
+                    {isImageValid(product) ? (
+                      <img
+                        src={product.imagen}
+                        alt={product.nombre}
+                        style={{ 
+                          width: '48px', 
+                          height: '48px', 
+                          objectFit: 'contain',
+                          borderRadius: '10px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                          background: '#fff',
+                          border: '1px solid #e5e7eb',
+                          padding: '4px',
+                          margin: '0 auto',
+                          display: 'block'
+                        }}
+                        onError={() => handleImageError(String(product.id))}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '10px',
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '20px',
+                          color: '#fff',
+                          fontWeight: 600,
+                          border: '1px solid #e5e7eb',
+                          margin: '0 auto'
+                        }}
+                      >
+                        {product.nombre?.charAt(0).toUpperCase() || '?'}
+                      </div>
+                    )}
+                  </td>
                   <td style={{ fontWeight: 600, verticalAlign: 'middle', width: '200px', textAlign: 'center' }}>{product.nombre}</td>
                   <td style={{ verticalAlign: 'middle', width: '150px', textAlign: 'center' }}>
                     <Badge bg="secondary" className="badge-custom">
@@ -276,26 +270,26 @@ const ProductManagement = () => {
                     </Badge>
                   </td>
                   <td style={{ fontWeight: 700, color: '#0f172a', verticalAlign: 'middle', width: '120px', textAlign: 'center' }}>${(product.precio || 0).toLocaleString()}</td>
-            <td style={{ textAlign: 'center', verticalAlign: 'middle', width: '100px' }}>
-              <Badge bg={(product.stock || 0) > 20 ? 'success' : (product.stock || 0) > 10 ? 'warning' : 'danger'} className="badge-custom">
-                {product.stock || 0}
-              </Badge>
-            </td>
-            <td style={{ textAlign: 'center', verticalAlign: 'middle', width: '120px' }}>{product.unidad}</td>
-            <td style={{ textAlign: 'center', verticalAlign: 'middle', width: '100px' }}>
-              {product.oferta ? (
-                <Badge bg="danger" className="badge-custom">🔥 Sí</Badge>
-              ) : (
-                <Badge bg="secondary" className="badge-custom">No</Badge>
-              )}
-            </td>
-            <td className="actions-cell" style={{ textAlign: 'center', verticalAlign: 'middle' }}>
-              <Button 
-                size="sm" 
-                onClick={() => handleOpenActions(product)}
-                className="action-btn action-btn-view"
-              >
-                <MoreVert fontSize="small" /> Acciones
+                  <td style={{ textAlign: 'center', verticalAlign: 'middle', width: '100px' }}>
+                    <Badge bg={(product.stock || 0) > 20 ? 'success' : (product.stock || 0) > 10 ? 'warning' : 'danger'} className="badge-custom">
+                      {product.stock || 0}
+                    </Badge>
+                  </td>
+                  <td style={{ textAlign: 'center', verticalAlign: 'middle', width: '120px' }}>{product.unidad}</td>
+                  <td style={{ textAlign: 'center', verticalAlign: 'middle', width: '100px' }}>
+                    {product.oferta ? (
+                      <Badge bg="danger" className="badge-custom">🔥 Sí</Badge>
+                    ) : (
+                      <Badge bg="secondary" className="badge-custom">No</Badge>
+                    )}
+                  </td>
+                  <td className="actions-cell" style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleOpenActions(product)}
+                      className="action-btn action-btn-view"
+                    >
+                      <MoreVert fontSize="small" /> Acciones
                     </Button>
                   </td>
                 </tr>
