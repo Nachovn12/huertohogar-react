@@ -336,10 +336,36 @@ export const productService = {
 
   create: async (productData: any) => {
     try {
-      const response = await api.post('/api/productos', productData);
+      console.log('🔄 Creando producto en API:', productData);
+      
+      const dataToSend = {
+        nombre: productData.nombre,
+        descripcion: productData.descripcion || '',
+        precio: Number(productData.precio),
+        categoria_id: productData.categoriaId || 1,
+        imagen: productData.imagen,
+        stock: Number(productData.stock),
+        unidad: productData.unidad || 'unidad',
+        destacado: productData.oferta || false,
+        tienda_id: 1 // Forzar tienda HuertoHogar
+      };
+
+      // Determinar URL base dependiendo del entorno para evitar CORS en producción
+      let url = `${API_BASE_URL}/api/productos`;
+      
+      // Si estamos en producción (GitHub Pages), usar un proxy CORS
+      if (process.env.NODE_ENV === 'production') {
+        console.log('🌍 Entorno de producción detectado en Create: Usando Proxy CORS');
+        url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+      }
+
+      const response = await axios.post(url, dataToSend, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
       return response.data;
-    } catch (error) {
-      console.error('Error creando producto:', error);
+    } catch (error: any) {
+      console.error('Error creando producto:', error.response?.data || error.message);
       throw error;
     }
   },
@@ -362,8 +388,17 @@ export const productService = {
         tienda_id: productData.tiendaId || productData.tienda_id || 1
       };
 
+      // Determinar URL base dependiendo del entorno para evitar CORS en producción
+      let url = `${API_BASE_URL}/api/productos/${id}`;
+      
+      // Si estamos en producción (GitHub Pages), usar un proxy CORS
+      if (process.env.NODE_ENV === 'production') {
+        console.log('🌍 Entorno de producción detectado en Update: Usando Proxy CORS');
+        url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+      }
+
       // Usar axios directo para evitar problemas con tokens mock
-      const response = await axios.put(`${API_BASE_URL}/api/productos/${id}`, dataToSend, {
+      const response = await axios.put(url, dataToSend, {
         headers: { 'Content-Type': 'application/json' }
       });
       
@@ -377,10 +412,21 @@ export const productService = {
 
   delete: async (id: string | number) => {
     try {
-      const response = await api.delete(`/api/productos/${id}`);
+      console.log('🔄 Eliminando producto en API:', id);
+      
+      // Determinar URL base dependiendo del entorno para evitar CORS en producción
+      let url = `${API_BASE_URL}/api/productos/${id}`;
+      
+      // Si estamos en producción (GitHub Pages), usar un proxy CORS
+      if (process.env.NODE_ENV === 'production') {
+        console.log('🌍 Entorno de producción detectado en Delete: Usando Proxy CORS');
+        url = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+      }
+
+      const response = await axios.delete(url);
       return response.data;
-    } catch (error) {
-      console.error('Error eliminando producto:', error);
+    } catch (error: any) {
+      console.error('Error eliminando producto:', error.response?.data || error.message);
       throw error;
     }
   },
