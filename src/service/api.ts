@@ -375,7 +375,6 @@ export const productService = {
       console.log('🔄 Actualizando producto en API:', id, productData);
       
       // Adaptar datos para la API (camelCase -> snake_case)
-      // Aseguramos enviar TODOS los campos requeridos
       const dataToSend = {
         nombre: productData.nombre,
         descripcion: productData.descripcion || '',
@@ -391,28 +390,40 @@ export const productService = {
       console.log('📤 Datos enviados a la API:', dataToSend);
 
       // URL de la API
-      let url = `${API_BASE_URL}/api/productos/${id}`;
+      const apiUrl = `${API_BASE_URL}/api/productos/${id}`;
       
-      // En producción (GitHub Pages), usar proxy CORS que soporte PUT
-      if (process.env.NODE_ENV === 'production') {
-        console.log('🌍 Entorno de producción detectado en Update: Usando Proxy CORS');
-        // Usamos corsproxy.io que soporta todos los métodos HTTP
-        url = `https://corsproxy.io/?${encodeURIComponent(`${API_BASE_URL}/api/productos/${id}`)}`;
-      }
-
-      // Usar axios directo para evitar problemas con tokens mock
-      const response = await axios.put(url, dataToSend, {
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+      // En producción (GitHub Pages), usar fetch con mode no-cors NO funciona para PUT
+      // Intentamos con la API directa primero, si falla usamos proxy
+      try {
+        const response = await axios.put(apiUrl, dataToSend, {
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+        console.log('✅ Producto actualizado exitosamente en API:', response.data);
+        return response.data;
+      } catch (corsError: any) {
+        // Si falla por CORS en producción, intentar con proxy
+        if (process.env.NODE_ENV === 'production') {
+          console.log('🔄 Reintentando con proxy CORS...');
+          
+          // Usar thingproxy que soporta PUT/POST
+          const proxyUrl = `https://thingproxy.freeboard.io/fetch/${apiUrl}`;
+          
+          const proxyResponse = await axios.put(proxyUrl, dataToSend, {
+            headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+          console.log('✅ Producto actualizado via proxy:', proxyResponse.data);
+          return proxyResponse.data;
         }
-      });
-      
-      console.log('✅ Producto actualizado exitosamente en API:', response.data);
-      return response.data;
+        throw corsError;
+      }
     } catch (error: any) {
       console.error('❌ Error actualizando producto:', error.response?.data || error.message);
-      // Lanzar error con mensaje descriptivo
       throw new Error(error.response?.data?.message || error.message || 'Error al actualizar producto');
     }
   },
