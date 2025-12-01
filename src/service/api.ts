@@ -338,15 +338,18 @@ export const productService = {
     try {
       console.log('🔄 Creando producto en API:', productData);
       
+      // Asegurar que categoria_id sea un número válido (mínimo 1)
+      const categoriaId = Number(productData.categoriaId) || Number(productData.categoria_id) || 1;
+      
       const dataToSend = {
-        nombre: productData.nombre,
-        descripcion: productData.descripcion || '',
-        precio: Number(productData.precio),
-        categoria_id: productData.categoriaId || 1,
-        imagen: productData.imagen,
-        stock: Number(productData.stock),
+        nombre: productData.nombre || 'Nuevo Producto',
+        descripcion: productData.descripcion || 'Sin descripción',
+        precio: Number(productData.precio) || 0,
+        categoria_id: categoriaId,
+        imagen: productData.imagen || 'https://via.placeholder.com/300x200/10b981/FFFFFF?text=Producto',
+        stock: Number(productData.stock) || 0,
         unidad: productData.unidad || 'unidad',
-        destacado: productData.oferta || false,
+        destacado: Boolean(productData.oferta || productData.destacado || false),
         tienda_id: 1 // Forzar tienda HuertoHogar
       };
 
