@@ -341,10 +341,13 @@ export const productService = {
       // Asegurar que categoria_id sea un número válido (mínimo 1)
       const categoriaId = Number(productData.categoriaId) || Number(productData.categoria_id) || 1;
       
+      // Formatear precio como string con 2 decimales (como lo espera la API)
+      const precioFormateado = Number(productData.precio).toFixed(2);
+      
       const dataToSend = {
         nombre: productData.nombre || 'Nuevo Producto',
         descripcion: productData.descripcion || 'Sin descripción',
-        precio: Number(productData.precio) || 0,
+        precio: precioFormateado,
         categoria_id: categoriaId,
         imagen: productData.imagen || 'https://via.placeholder.com/300x200/10b981/FFFFFF?text=Producto',
         stock: Number(productData.stock) || 0,
@@ -353,7 +356,7 @@ export const productService = {
         tienda_id: 1 // Forzar tienda HuertoHogar
       };
 
-      console.log('📤 Datos a enviar:', dataToSend);
+      console.log('📤 Datos a enviar:', JSON.stringify(dataToSend, null, 2));
 
       const apiUrl = `${API_BASE_URL}/api/productos`;
       
