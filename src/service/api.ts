@@ -350,23 +350,48 @@ export const productService = {
         tienda_id: 1 // Forzar tienda HuertoHogar
       };
 
-      // Determinar URL base dependiendo del entorno para evitar CORS en producción
-      let url = `${API_BASE_URL}/api/productos`;
-      
-      // Si estamos en producción (GitHub Pages), usar un proxy CORS
-      if (process.env.NODE_ENV === 'production') {
-        console.log('🌍 Entorno de producción detectado en Create: Usando Proxy CORS (CodeTabs)');
-        url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
-      }
+      console.log('📤 Datos a enviar:', dataToSend);
 
-      const response = await axios.post(url, dataToSend, {
+      const apiUrl = `${API_BASE_URL}/api/productos`;
+      
+      // En producción (GitHub Pages), usar proxy CORS directamente
+      if (process.env.NODE_ENV === 'production') {
+        console.log('🌍 Producción: Usando proxy CORS para POST...');
+        
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+        console.log('📤 URL con proxy:', proxyUrl);
+        
+        const response = await fetch(proxyUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify(dataToSend)
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ Error del proxy:', response.status, errorText);
+          throw new Error(`Error ${response.status}: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log('✅ Producto creado via proxy:', data);
+        return data;
+      }
+      
+      // En desarrollo, llamada directa
+      const response = await axios.post(apiUrl, dataToSend, {
         headers: { 'Content-Type': 'application/json' }
       });
       
+      console.log('✅ Producto creado exitosamente:', response.data);
       return response.data;
     } catch (error: any) {
-      console.error('Error creando producto:', error.response?.data || error.message);
-      throw error;
+      console.error('❌ Error creando producto:', error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || error.message || 'Error al crear producto');
     }
   },
 
@@ -443,20 +468,41 @@ export const productService = {
     try {
       console.log('🔄 Eliminando producto en API:', id);
       
-      // Determinar URL base dependiendo del entorno para evitar CORS en producción
-      let url = `${API_BASE_URL}/api/productos/${id}`;
+      const apiUrl = `${API_BASE_URL}/api/productos/${id}`;
       
-      // Si estamos en producción (GitHub Pages), usar un proxy CORS
+      // En producción (GitHub Pages), usar proxy CORS directamente
       if (process.env.NODE_ENV === 'production') {
-        console.log('🌍 Entorno de producción detectado en Delete: Usando Proxy CORS (CodeTabs)');
-        url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
+        console.log('🌍 Producción: Usando proxy CORS para DELETE...');
+        
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+        console.log('📤 URL con proxy:', proxyUrl);
+        
+        const response = await fetch(proxyUrl, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ Error del proxy:', response.status, errorText);
+          throw new Error(`Error ${response.status}: ${errorText}`);
+        }
+        
+        console.log('✅ Producto eliminado via proxy');
+        return { success: true };
       }
-
-      const response = await axios.delete(url);
+      
+      // En desarrollo, llamada directa
+      const response = await axios.delete(apiUrl);
+      console.log('✅ Producto eliminado exitosamente');
       return response.data;
     } catch (error: any) {
-      console.error('Error eliminando producto:', error.response?.data || error.message);
-      throw error;
+      console.error('❌ Error eliminando producto:', error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || error.message || 'Error al eliminar producto');
     }
   },
 
