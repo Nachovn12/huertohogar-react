@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/huertohogar-react/static/css/main.9ed5cd37.css",
-    "main.js": "/huertohogar-react/static/js/main.b94e9276.js",
+    "main.css": "/huertohogar-react/static/css/main.c69b7156.css",
+    "main.js": "/huertohogar-react/static/js/main.2e60d147.js",
     "index.html": "/huertohogar-react/index.html",
-    "main.9ed5cd37.css.map": "/huertohogar-react/static/css/main.9ed5cd37.css.map",
-    "main.b94e9276.js.map": "/huertohogar-react/static/js/main.b94e9276.js.map"
+    "main.c69b7156.css.map": "/huertohogar-react/static/css/main.c69b7156.css.map",
+    "main.2e60d147.js.map": "/huertohogar-react/static/js/main.2e60d147.js.map"
   },
   "entrypoints": [
-    "static/css/main.9ed5cd37.css",
-    "static/js/main.b94e9276.js"
+    "static/css/main.c69b7156.css",
+    "static/js/main.2e60d147.js"
   ]
 }
