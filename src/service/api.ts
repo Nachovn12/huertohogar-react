@@ -555,7 +555,25 @@ export const productService = {
 
       console.log('📤 Datos enviados a la API:', dataToSend);
 
-      // IMPORTANTE: Usar la instancia api que ya tiene el interceptor con el token
+      // En producción, usar proxy CORS para PUT
+      if (process.env.NODE_ENV === 'production') {
+        console.log('🌍 Producción detectada: Usando proxy CORS para PUT');
+        
+        // AllOrigins soporta todos los métodos HTTP
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`${API_BASE_URL}/api/productos/${id}`)}`;
+        
+        const response = await axios.put(proxyUrl, dataToSend, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          timeout: 15000
+        });
+        
+        console.log('✅ Producto actualizado exitosamente en API (via proxy):', response.data);
+        return response.data;
+      }
+
+      // En desarrollo, llamada directa
       const response = await api.put(`/api/productos/${id}`, dataToSend);
       
       console.log('✅ Producto actualizado exitosamente en API:', response.data);
@@ -595,7 +613,21 @@ export const productService = {
         return { success: true, id: numId };
       }
       
-      // Si es un producto de la API (ID < 1000), intentar eliminar de la API
+      // En producción, usar proxy CORS para DELETE
+      if (process.env.NODE_ENV === 'production') {
+        console.log('🌍 Producción detectada: Usando proxy CORS para DELETE');
+        
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`${API_BASE_URL}/api/productos/${id}`)}`;
+        
+        const response = await axios.delete(proxyUrl, {
+          timeout: 15000
+        });
+        
+        console.log('✅ Producto eliminado exitosamente de la API (via proxy)');
+        return response.data;
+      }
+      
+      // En desarrollo, llamada directa
       console.log('🔄 Eliminando producto de la API:', id);
       const response = await api.delete(`/api/productos/${id}`);
       
