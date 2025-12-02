@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Box, Typography, Card, CardContent, Button, Chip, Container } from '@mui/material';
 
 import { useAvailableCategories, useProducts } from '../hooks/useApi';
@@ -20,10 +21,17 @@ const Categories: React.FC = () => {
   const categories: CategoryDisplay[] = React.useMemo(() => {
     if (!apiCategories.length) return [];
 
+    // Mapa de imágenes por categoría
+    const categoryImages: { [key: string]: string } = {
+      'Verduras': 'https://media.istockphoto.com/id/589415708/es/foto/frescos-de-frutas-y-verduras.jpg?s=612x612&w=0&k=20&c=lfGDyo_wtzei9IQhM8J6bi-fKxi1bMv6KjjaXiSd_eA=',
+      'Frutas': 'https://www.telemundo.com/sites/nbcutelemundo/files/images/promo/article/2017/04/13/naranja-manzana-y-otras-frutas-frescas.jpg',
+      'Hierbas': 'https://www.cucinare.tv/wp-content/uploads/2019/01/19-01-23-Hierbas.jpg',
+      'Legumbres': 'https://fundaciondelcorazon.com/images/Blog/iStock-964325260.jpg'
+    };
+
     return apiCategories.slice(0, 4).map(cat => {
-      // Encontrar productos de esta categoría para obtener imagen y conteo
-      const catProducts = apiProducts.filter(p => String(p.categoria) === String(cat.id));
-      const firstProduct = catProducts[0];
+      // Encontrar productos de esta categoría para conteo
+      const catProducts = apiProducts.filter(p => p.categoriaId === cat.id);
 
       return {
         id: String(cat.id),
@@ -31,7 +39,7 @@ const Categories: React.FC = () => {
         description: cat.descripcion || `Explora nuestra selección de ${cat.nombre} con la mejor calidad y frescura garantizada.`,
         features: ['Calidad Premium', 'Mejor Precio', 'Stock Disponible'],
         productCount: catProducts.length,
-        imagen: firstProduct?.imagen || 'https://via.placeholder.com/400x300?text=No+Image'
+        imagen: categoryImages[cat.nombre] || 'https://via.placeholder.com/400x300?text=No+Image'
       };
     });
   }, [apiCategories, apiProducts]);
@@ -205,8 +213,7 @@ const Categories: React.FC = () => {
                     style={{
                       width: '100%',
                       height: '100%',
-                      objectFit: 'contain',
-                      padding: '10px',
+                      objectFit: 'cover',
                       transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   />
@@ -331,9 +338,10 @@ const Categories: React.FC = () => {
                 }}
               >
                 <Button
+                  component={Link}
+                  to={`productos?categoria=${category.id}`}
                   variant="contained"
                   size="medium"
-                  href={`/productos?categoria=${category.id}`}
                   sx={{
                     borderRadius: 3,
                     bgcolor: '#2E8B57',

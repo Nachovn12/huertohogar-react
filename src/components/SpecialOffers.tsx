@@ -1,11 +1,27 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '../types';
-import { Box, Typography, Card, CardContent, Button, CircularProgress } from '@mui/material';
+import { Box, Typography, Card, CardContent, Button, CircularProgress, Chip } from '@mui/material';
 import { useCart } from '../context/CartContext';
 import { useProductsOnOffer } from '../hooks/useApi';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
-const formatPrice = (value: number) => `${value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+const formatPrice = (value: number) => {
+  return new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    minimumFractionDigits: 0
+  }).format(value);
+};
+
+const categoryNames: { [k: string]: string } = {
+  'frutas': 'Frutas Frescas',
+  'verduras': 'Verduras Orgánicas',
+  'organicos': 'Productos Orgánicos',
+  'lacteos': 'Productos Lácteos'
+};
 
 const SpecialOffers: React.FC = () => {
   const { addToCart } = useCart() as { addToCart: (p: Product) => void };
@@ -45,28 +61,291 @@ const SpecialOffers: React.FC = () => {
           <Typography sx={{ color: '#666666', fontSize: { xs: '0.85rem', md: '1rem' }, fontFamily: 'Montserrat, Arial, sans-serif', maxWidth: 600, mx: 'auto', lineHeight: 1.6, px: { xs: 2, md: 0 } }}>Aprovecha estas ofertas limitadas en nuestros productos más frescos y de mejor calidad</Typography>
         </Box>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: { xs: 2, sm: 2, md: 2.5 }, position: 'relative', zIndex: 1, width: '100%', boxSizing: 'border-box' }}>
-          {offers.map((item) => (
-            <Card key={item.id} elevation={0} sx={{ borderRadius: { xs: 2, md: 3 }, bgcolor: '#fff', border: '1px solid #e5e7eb', position: 'relative', padding: 0, minHeight: { xs: 400, sm: 420, md: 460 }, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <Box sx={{ position: 'absolute', top: { xs: 8, md: 12 }, right: { xs: 8, md: 12 }, bgcolor: '#dc2626', color: '#fff', px: { xs: 1.2, md: 1.5 }, py: { xs: 0.4, md: 0.5 }, borderRadius: 2, fontWeight: 700, fontSize: { xs: '0.75rem', md: '0.85rem' }, zIndex: 10 }}>-{item.descuento}% OFF</Box>
-              <Box sx={{ position: 'relative', width: '100%', height: { xs: 140, sm: 160, md: 180 }, display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: '#f9fafb', overflow: 'hidden', p: { xs: 1.5, md: 2 } }}>
-                <img src={item.imagen} alt={item.nombre} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-              </Box>
-              <CardContent sx={{ textAlign: 'center', p: { xs: 2, md: 2.5 }, flexGrow: 1, display: 'flex', flexDirection: 'column', gap: { xs: 0.5, md: 1 } }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: { xs: '0.9rem', md: '1rem' }, mb: 0.5 }}>{item.nombre}</Typography>
-                <Typography variant="body2" sx={{ color: '#10b981', fontSize: { xs: '0.7rem', md: '0.8rem' }, fontWeight: 600, textTransform: 'uppercase', mb: { xs: 0.5, md: 1 } }}>{item.unidad}</Typography>
-                <Box sx={{ mb: { xs: 1, md: 1.5 }, bgcolor: '#f0fdf4', py: { xs: 1, md: 1.2 }, px: { xs: 1.5, md: 2 }, borderRadius: 2, border: '1px dashed #bbf7d0' }}>
-                  <Typography variant="caption" sx={{ color: '#6b7280', display: 'block', mb: 0.5 }}>Precio Especial</Typography>
-                  <Typography variant="h5" sx={{ color: '#2E8B57', fontWeight: 800 }}>${formatPrice(item.oferta ? item.precio : item.precio)}</Typography>
-                  <Typography variant="body2" sx={{ textDecoration: 'line-through', color: '#9ca3af', mt: 0.5 }}>Antes: ${formatPrice(item.precio)}</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(2, 1fr)' }, gap: { xs: 2, sm: 2.5, md: 3 }, position: 'relative', zIndex: 1, width: '100%', boxSizing: 'border-box', maxWidth: '800px', mx: 'auto' }}>
+          {offers.map((item) => {
+            const isOffer = item.oferta && item.offerPrice && item.offerPrice < item.precio;
+            const currentPrice = isOffer ? item.offerPrice : item.precio;
+            const originalPrice = isOffer ? item.precio : null;
+
+            return (
+            <Card 
+              key={item.id}
+              sx={{ 
+                height: '100%',
+                minHeight: 520,
+                display: 'flex', 
+                flexDirection: 'column', 
+                bgcolor: '#fff', 
+                border: '1px solid #f0f0f0',
+                borderRadius: 4,
+                position: 'relative', 
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+                overflow: 'hidden',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 16px 40px rgba(0,0,0,0.15)',
+                  borderColor: '#e0e0e0',
+                  '& .product-image': {
+                    transform: 'scale(1.08)'
+                  }
+                }
+              }}
+            >
+              {/* Badge de oferta */}
+              {isOffer && (
+                <Box sx={{ 
+                  position: 'absolute', 
+                  top: 8, 
+                  left: 12, 
+                  zIndex: 3, 
+                  bgcolor: '#dc2626', 
+                  color: '#fff', 
+                  px: 2, 
+                  py: 0.8, 
+                  borderRadius: 3, 
+                  fontWeight: 700, 
+                  fontSize: '0.7rem', 
+                  boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)', 
+                  fontFamily: 'Montserrat, Arial, sans-serif', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 0.5,
+                  letterSpacing: '0.5px',
+                  textTransform: 'uppercase'
+                }}>
+                  <LocalOfferIcon sx={{ fontSize: 12 }} />
+                  -{item.descuento}% OFF
                 </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 0.8, md: 1 }, mt: 'auto', width: '100%' }}>
-                  <Button component={Link} to={`/productos/${item.id}`} variant="outlined" size="small" sx={{ borderRadius: 2, color: '#d97706', fontWeight: 600 }}>Ver Detalles</Button>
-                  <Button variant="contained" size="small" onClick={() => addToCart(item)} sx={{ bgcolor: '#2E8B57', color: '#fff', borderRadius: 2 }}>Agregar al Carrito</Button>
+              )}
+
+              {/* Imagen del producto */}
+              <Box sx={{ 
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                bgcolor: '#fff',
+                height: 240,
+                minHeight: 240,
+                maxHeight: 240,
+                p: 0,
+                position: 'relative',
+                overflow: 'hidden',
+                borderRadius: 4,
+              }}>
+                <img
+                  src={item.imagen}
+                  alt={item.nombre}
+                  className="product-image"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    borderRadius: '16px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                    background: '#f3f4f6',
+                    border: '1px solid #e5e7eb',
+                    transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    display: 'block',
+                    margin: '0 auto',
+                  }}
+                />
+              </Box>
+
+              <CardContent sx={{ 
+                flexGrow: 1, 
+                display: 'flex', 
+                flexDirection: 'column', 
+                p: 3,
+                pt: 2,
+                pb: 2.5,
+                gap: 1
+              }}>
+                {/* Nombre del producto */}
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600, 
+                    textAlign: 'center', 
+                    fontFamily: 'Montserrat, Arial, sans-serif', 
+                    color: '#1a1a1a', 
+                    fontSize: '1rem', 
+                    lineHeight: 1.3,
+                    height: '42px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mb: 0.5
+                  }}
+                >
+                  {item.nombre}
+                </Typography>
+
+                {/* Categoría */}
+                <Box sx={{ 
+                  display: 'flex',
+                  justifyContent: 'center',
+                  mb: 0.5
+                }}>
+                  <Chip 
+                    label={categoryNames[item.categoria] || item.categoria}
+                    size="small"
+                    sx={{
+                      bgcolor: '#f0f9f4',
+                      color: '#2E8B57',
+                      fontWeight: 600,
+                      fontSize: '0.7rem',
+                      height: '24px',
+                      borderRadius: 2.5,
+                      fontFamily: 'Montserrat, Arial, sans-serif',
+                      border: '1px solid #c8e6c9',
+                      '& .MuiChip-label': {
+                        px: 1.5
+                      }
+                    }}
+                  />
+                </Box>
+
+                {/* Espacio vacío */}
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 0.5,
+                  my: 0.5
+                }} />
+
+                {/* Precios */}
+                <Box sx={{ 
+                  mt: 'auto',
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  gap: 0.3,
+                  mb: 1.5
+                }}>
+                  <Typography 
+                    variant="caption"
+                    sx={{ 
+                      color: '#999', 
+                      fontSize: '0.7rem',
+                      fontFamily: 'Montserrat, Arial, sans-serif',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      fontWeight: 600
+                    }}
+                  >
+                    POR KG
+                  </Typography>
+                  {isOffer && originalPrice && (
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: '#9ca3af', 
+                        textDecoration: 'line-through', 
+                        fontWeight: 500, 
+                        fontSize: '0.85rem',
+                        fontFamily: 'Montserrat, Arial, sans-serif'
+                      }}
+                    >
+                      Antes: {formatPrice(originalPrice)}
+                    </Typography>
+                  )}
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      color: '#2E8B57', 
+                      fontWeight: 700, 
+                      fontSize: '1.5rem',
+                      fontFamily: 'Montserrat, Arial, sans-serif',
+                      letterSpacing: '-0.5px'
+                    }}
+                  >
+                    {formatPrice(currentPrice || 0)}
+                  </Typography>
+                  {isOffer && originalPrice && (
+                    <Typography 
+                      variant="caption"
+                      sx={{ 
+                        color: '#2E8B57', 
+                        fontWeight: 600, 
+                        fontSize: '0.75rem',
+                        fontFamily: 'Montserrat, Arial, sans-serif',
+                        mt: 0.3
+                      }}
+                    >
+                      Ahorras {formatPrice((originalPrice || 0) - (currentPrice || 0))}
+                    </Typography>
+                  )}
+                </Box>
+
+                {/* Botones de acción */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: 1, 
+                  width: '100%'
+                }}>
+                  <Button 
+                    component={Link}
+                    to={`/productos/${item.id}`}
+                    variant="contained" 
+                    fullWidth
+                    startIcon={<VisibilityIcon sx={{ fontSize: 16 }} />}
+                    sx={{ 
+                      bgcolor: '#fbbf24', 
+                      color: '#1a1a1a', 
+                      borderRadius: 3, 
+                      fontWeight: 700, 
+                      fontSize: '0.8rem', 
+                      py: 1.2, 
+                      boxShadow: '0 2px 8px rgba(251, 191, 36, 0.3)',
+                      textTransform: 'none',
+                      fontFamily: 'Montserrat, Arial, sans-serif',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': { 
+                        bgcolor: '#f59e0b',
+                        boxShadow: '0 4px 16px rgba(251, 191, 36, 0.5)',
+                        transform: 'translateY(-2px)'
+                      }
+                    }}
+                  >
+                    Ver Detalles
+                  </Button>
+                  <Button 
+                    variant="contained" 
+                    fullWidth
+                    startIcon={<AddShoppingCartIcon sx={{ fontSize: 16 }} />}
+                    onClick={() => addToCart(item)}
+                    sx={{ 
+                      bgcolor: '#2E8B57', 
+                      color: '#fff', 
+                      borderRadius: 3, 
+                      fontWeight: 700, 
+                      fontSize: '0.8rem', 
+                      py: 1.2, 
+                      boxShadow: '0 2px 8px rgba(46, 139, 87, 0.3)',
+                      textTransform: 'none',
+                      fontFamily: 'Montserrat, Arial, sans-serif',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': { 
+                        bgcolor: '#257d4a',
+                        boxShadow: '0 4px 16px rgba(46, 139, 87, 0.5)',
+                        transform: 'translateY(-2px)'
+                      },
+                      '&:disabled': {
+                        bgcolor: '#e0e0e0',
+                        color: '#9ca3af'
+                      }
+                    }}
+                    disabled={item.stock === 0}
+                  >
+                    Agregar al Carrito
+                  </Button>
                 </Box>
               </CardContent>
             </Card>
-          ))}
+          )})}
         </Box>
       </Box>
     </Box>

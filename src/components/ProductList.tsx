@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import ProductCard from './ProductCard';
 import { Product } from '../types';
 import { Box, Typography, Grid, Button, Container, CircularProgress, Alert } from '@mui/material';
-import { useProducts, useCategories } from '../hooks/useApi';
+import { useProducts, useAvailableCategories } from '../hooks/useApi';
 
 const ProductList: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -11,7 +11,7 @@ const ProductList: React.FC = () => {
   
   // Cargar productos y categorías desde API
   const { products, loading: loadingProducts, error: errorProducts } = useProducts();
-  const { categories: apiCategories, loading: loadingCategories } = useCategories();
+  const { categories: apiCategories, loading: loadingCategories } = useAvailableCategories();
 
   useEffect(() => {
     const categoria = searchParams.get('categoria');
@@ -33,7 +33,7 @@ const ProductList: React.FC = () => {
   const categories = [
     { key: 'all', label: 'Todos' },
     ...apiCategories.map(cat => ({
-      key: cat.id,
+      key: String(cat.id),
       label: cat.nombre
     }))
   ];
@@ -41,12 +41,8 @@ const ProductList: React.FC = () => {
   const filteredProducts: Product[] = filter === 'all'
     ? products
     : products.filter(product => {
-        // Comparar por ID de categoría (prioridad) o por nombre si el filtro no es numérico
-        if (!isNaN(Number(filter))) {
-          return String(product.categoriaId) === String(filter);
-        }
-        // Fallback por nombre si el filtro fuera un string (ej: URL antigua)
-        return String(product.categoria).toLowerCase() === String(filter).toLowerCase();
+        // Comparar por ID de categoría (numérico)
+        return product.categoriaId === Number(filter);
       });
 
   // Mostrar loading
@@ -114,10 +110,10 @@ const ProductList: React.FC = () => {
           {categories.map(category => (
             <Button
               key={category.key}
-              variant={filter === category.key ? 'contained' : 'outlined'}
+              variant={String(filter) === String(category.key) ? 'contained' : 'outlined'}
               sx={{ 
-                bgcolor: filter === category.key ? '#2E8B57' : '#fff', 
-                color: filter === category.key ? '#fff' : '#2E8B57', 
+                bgcolor: String(filter) === String(category.key) ? '#2E8B57' : '#fff', 
+                color: String(filter) === String(category.key) ? '#fff' : '#2E8B57', 
                 borderRadius: 3, 
                 fontWeight: 600, 
                 borderColor: '#2E8B57',
@@ -126,10 +122,10 @@ const ProductList: React.FC = () => {
                 fontSize: '0.9rem',
                 textTransform: 'none',
                 fontFamily: 'Montserrat, Arial, sans-serif',
-                boxShadow: filter === category.key ? '0 2px 8px rgba(46, 139, 87, 0.3)' : 'none',
+                boxShadow: String(filter) === String(category.key) ? '0 2px 8px rgba(46, 139, 87, 0.3)' : 'none',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  bgcolor: filter === category.key ? '#257d4a' : 'rgba(46, 139, 87, 0.08)',
+                  bgcolor: String(filter) === String(category.key) ? '#257d4a' : 'rgba(46, 139, 87, 0.08)',
                   borderColor: '#2E8B57',
                   transform: 'translateY(-2px)',
                   boxShadow: '0 4px 12px rgba(46, 139, 87, 0.2)'

@@ -15,7 +15,29 @@ export const useProducts = () => {
       try {
         setLoading(true);
         const data = await productService.getAll();
-        setProducts(data as Product[]);
+        
+        // Cargar ofertas desde localStorage
+        const offersData = JSON.parse(localStorage.getItem('productOffers') || '{}');
+        
+        // Combinar datos de la API con datos de ofertas de localStorage
+        const productsWithOffers = (data as Product[]).map((product: Product) => {
+          const localOffer = offersData[product.id];
+          
+          // Si existe una oferta en localStorage para este producto, usarla
+          if (localOffer && localOffer.oferta) {
+            return {
+              ...product,
+              oferta: true,
+              descuento: localOffer.descuento,
+              offerPrice: localOffer.offerPrice
+            };
+          }
+          
+          // Si no hay oferta en localStorage, retornar el producto sin modificar
+          return product;
+        });
+        
+        setProducts(productsWithOffers);
         setError(null);
       } catch (err) {
         setError(err as Error);
@@ -48,7 +70,23 @@ export const useProduct = (id: string | undefined) => {
       try {
         setLoading(true);
         const data = await productService.getById(id);
-        setProduct(data as Product);
+        
+        // Cargar ofertas desde localStorage
+        const offersData = JSON.parse(localStorage.getItem('productOffers') || '{}');
+        const localOffer = offersData[id];
+        
+        // Si existe una oferta en localStorage para este producto, aplicarla
+        let productWithOffer = data as Product;
+        if (localOffer && localOffer.oferta) {
+          productWithOffer = {
+            ...productWithOffer,
+            oferta: true,
+            descuento: localOffer.descuento,
+            offerPrice: localOffer.offerPrice
+          };
+        }
+        
+        setProduct(productWithOffer);
         setError(null);
       } catch (err) {
         setError(err as Error);
@@ -81,8 +119,29 @@ export const useProductsByCategory = (categoryId: string | undefined) => {
       try {
         setLoading(true);
         const data = await productService.getAll();
+        
+        // Cargar ofertas desde localStorage
+        const offersData = JSON.parse(localStorage.getItem('productOffers') || '{}');
+        
+        // Combinar datos de la API con datos de ofertas de localStorage
+        const productsWithOffers = (data as Product[]).map((product: Product) => {
+          const localOffer = offersData[product.id];
+          
+          // Si existe una oferta en localStorage para este producto, usarla
+          if (localOffer && localOffer.oferta) {
+            return {
+              ...product,
+              oferta: true,
+              descuento: localOffer.descuento,
+              offerPrice: localOffer.offerPrice
+            };
+          }
+          
+          return product;
+        });
+        
         // Filtrar productos por categoría localmente
-        const filtered = (data as Product[]).filter(
+        const filtered = productsWithOffers.filter(
           (p: Product) => p.categoria === categoryId || p.categoriaId?.toString() === categoryId
         );
         setProducts(filtered);
@@ -145,8 +204,31 @@ export const useProductsOnOffer = () => {
       try {
         setLoading(true);
         const data = await productService.getAll();
-        // Filtrar productos destacados (en oferta)
-        const offerProducts = (data as Product[]).filter((p: Product) => p.oferta === true);
+        
+        // Cargar ofertas desde localStorage
+        const offersData = JSON.parse(localStorage.getItem('productOffers') || '{}');
+        
+        // Combinar datos de la API con datos de ofertas de localStorage
+        const productsWithOffers = (data as Product[]).map((product: Product) => {
+          const localOffer = offersData[product.id];
+          
+          // Si existe una oferta en localStorage para este producto, usarla
+          if (localOffer && localOffer.oferta) {
+            return {
+              ...product,
+              oferta: true,
+              descuento: localOffer.descuento,
+              offerPrice: localOffer.offerPrice
+            };
+          }
+          
+          // Si no hay oferta en localStorage pero el producto tiene oferta en API, mantenerla
+          return product;
+        });
+        
+        // Filtrar solo productos que tienen oferta activa
+        const offerProducts = productsWithOffers.filter((p: Product) => p.oferta === true);
+        
         setProducts(offerProducts);
         setError(null);
       } catch (err) {
@@ -235,8 +317,8 @@ export const useAvailableCategories = () => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        // Si tienes la función en categoryService, úsala aquí
-        setCategories([]); // Implementar si existe en el servicio
+        const data = await categoryService.getAll();
+        setCategories(data as Category[]);
         setError(null);
       } catch (err) {
         setError(err as Error);

@@ -149,25 +149,28 @@ export const authService = {
 
   register: async (userData: { nombre: string; email: string; password: string; rol?: string }) => {
     try {
-      // Intentar crear usuario en la API
-      const response = await api.post('/api/usuarios', {
+      console.log('📤 Registrando usuario en la API...');
+      
+      // Datos a enviar a la API - incluir password que es requerido
+      const dataToSend = {
         nombre: userData.nombre,
         email: userData.email,
-        rol: userData.rol || 'Cliente',
-        direccion: '',
-        telefono: ''
+        password: userData.password
+      };
+
+      const apiUrl = `${API_BASE_URL}/api/usuarios`;
+      
+      // Llamada directa a la API (sin proxy para desarrollo local)
+      const response = await axios.post(apiUrl, dataToSend, {
+        headers: { 'Content-Type': 'application/json' }
       });
       
+      console.log('✅ Usuario registrado exitosamente:', response.data);
       return response.data;
-    } catch (error) {
-      console.error('Error en registro:', error);
-      // Mock: Simular registro exitoso
-      return {
-        id: Math.floor(Math.random() * 1000),
-        nombre: userData.nombre,
-        email: userData.email,
-        rol: 'Cliente'
-      };
+    } catch (error: any) {
+      console.error('❌ Error en registro:', error);
+      const errorMessage = error.response?.data?.error || error.response?.data?.details?.join(', ') || error.message || 'Error al registrar usuario';
+      throw new Error(errorMessage);
     }
   },
 
@@ -242,14 +245,11 @@ export const authService = {
 export const productService = {
   getAll: async () => {
     try {
-      console.log('🔄 Cargando productos desde API Pública (/api/productos)...');
-      
       // Determinar URL base dependiendo del entorno para evitar CORS en producción
       let url = `${API_BASE_URL}/api/productos`;
       
       // Si estamos en producción (GitHub Pages), usar un proxy CORS
       if (process.env.NODE_ENV === 'production') {
-        console.log('🌍 Entorno de producción detectado: Usando Proxy CORS (CodeTabs)');
         // Usamos corsproxy.io para evitar el bloqueo CORS
         url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
       }
@@ -265,18 +265,13 @@ export const productService = {
       const productos = response.data;
       
       if (!productos || !Array.isArray(productos) || productos.length === 0) {
-        console.warn('⚠️ No se recibieron productos de la API, usando datos locales...');
         return productService.getLocalProducts();
       }
-      
-      console.log(`📦 API devolvió ${productos.length} productos brutos`);
 
       // FILTRO ESTRICTO: Solo productos de "Huerto Orgánico del Profesor"
       const productosFinales = productos.filter((p: any) => {
         return p.tienda_slug === 'huerto' || p.tienda_nombre === 'Huerto Orgánico del Profesor';
       });
-      
-      console.log(`🎯 Filtrados ${productosFinales.length} productos de HuertoHogar`);
       
       // Adaptar estructura de la API al formato de la aplicación
       const productosAdaptados = productosFinales.map((p: any) => ({
@@ -294,11 +289,9 @@ export const productService = {
         tiendaNombre: p.tienda_nombre || p.tiendaNombre || 'Tienda General'
       }));
       
-      console.log(`✅ ${productosAdaptados.length} productos cargados y adaptados desde API Pública`);
       return productosAdaptados;
     } catch (error: any) {
-      console.error('❌ Error obteniendo productos de la API:', error.message);
-      console.log('📦 Usando datos locales como fallback...');
+      console.error('Error obteniendo productos de la API:', error.message);
       return productService.getLocalProducts();
     }
   },
@@ -326,12 +319,86 @@ export const productService = {
 
   getById: async (id: string | number) => {
     try {
-      const response = await api.get(`/api/huerto/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error obteniendo producto:', error);
-      throw error;
+      console.log('🔄 Cargando producto por ID desde API:', id);
+      
+      // Determinar URL base dependiendo del entorno para evitar CORS en producción
+      let url = `${API_BASE_URL}/api/productos/${id}`;
+      
+      // Si estamos en producción (GitHub Pages), usar un proxy CORS
+      if (process.env.NODE_ENV === 'production') {
+        console.log('🌍 Entorno de producción detectado: Usando Proxy CORS (CodeTabs)');
+        url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
+      }
+
+      const response = await axios.get(url, {
+        timeout: 15000,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const p = response.data as any;
+      
+      if (!p) {
+        console.warn('⚠️ Producto no encontrado en API, buscando en datos locales...');
+        return productService.getLocalProductById(id);
+      }
+      
+      // Adaptar estructura de la API al formato de la aplicación
+      const productoAdaptado = {
+        id: p.id.toString(),
+        nombre: p.nombre || 'Producto sin nombre',
+        descripcion: p.descripcion || 'Sin descripción',
+        precio: parseFloat(p.precio) || 0,
+        categoria: p.categoria_nombre || p.categoria || 'General',
+        categoriaId: p.categoria_id || p.categoriaId || 1,
+        imagen: p.imagen || 'https://via.placeholder.com/150',
+        stock: p.stock || 10,
+        unidad: p.unidad || 'unidad',
+        oferta: p.destacado || p.oferta || false,
+        tiendaId: p.tienda_id || p.tiendaId,
+        tiendaNombre: p.tienda_nombre || p.tiendaNombre || 'Tienda General'
+      };
+      
+      console.log('✅ Producto cargado desde API:', productoAdaptado.nombre);
+      return productoAdaptado;
+    } catch (error: any) {
+      console.error('❌ Error obteniendo producto de la API:', error.message);
+      console.log('📦 Buscando en datos locales como fallback...');
+      return productService.getLocalProductById(id);
     }
+  },
+
+  // Método para obtener un producto local por ID
+  getLocalProductById: (id: string | number) => {
+    console.log('📁 Buscando producto en datos locales por ID:', id);
+    const localProduct = productsData.find((p: any) => 
+      p.id === id || p.id === Number(id) || p.id?.toString() === id?.toString()
+    );
+    
+    if (!localProduct) {
+      console.warn('⚠️ Producto no encontrado en datos locales');
+      return null;
+    }
+    
+    const lp = localProduct as any;
+    const productoAdaptado = {
+      id: lp.id,
+      nombre: lp.name || lp.nombre,
+      descripcion: lp.description || lp.descripcion || 'Sin descripción',
+      precio: lp.price || lp.precio || 0,
+      categoria: lp.category || lp.categoria || 'General',
+      categoriaId: 1,
+      imagen: lp.image || lp.imagen || 'https://via.placeholder.com/150',
+      stock: lp.stock || 10,
+      unidad: 'unidad',
+      oferta: lp.offer || lp.oferta || false,
+      tiendaId: 1,
+      tiendaNombre: 'HuertoHogar'
+    };
+    
+    console.log('✅ Producto encontrado en datos locales:', productoAdaptado.nombre);
+    return productoAdaptado;
   },
 
   create: async (productData: any) => {
@@ -671,25 +738,41 @@ export const cartService = {
   },
 };
 
-// � USUARIOS - API REAL
+// 👥 USUARIOS - API REAL
 export const userService = {
   getAll: async () => {
     try {
       console.log('🔄 Cargando usuarios desde API...');
-      const response = await axios.get(`${API_BASE_URL}/api/usuarios`, {
+      
+      let url = `${API_BASE_URL}/api/usuarios`;
+      
+      // En producción (GitHub Pages), usar proxy CORS
+      if (process.env.NODE_ENV === 'production') {
+        console.log('🌍 Producción: Usando proxy CORS para GET usuarios...');
+        url = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
+      }
+      
+      const response = await axios.get(url, {
         timeout: 15000,
         headers: {
           'Content-Type': 'application/json'
         }
       });
       
+      // Función para determinar el rol basado en el email
+      const getRoleFromEmail = (email: string): string => {
+        if (email === 'admin@huertohogar.com') return 'admin';
+        if (email === 'vendedor@huertohogar.com') return 'vendedor';
+        return 'customer'; // Por defecto, todos los nuevos usuarios son clientes
+      };
+      
       // Adaptar estructura de la API
       const usuariosAdaptados = (response.data as any[]).map((u: any) => ({
         id: u.id,
         name: u.nombre || u.name || 'Usuario',
         email: u.email,
-        role: u.rol || 'customer',
-        status: u.estado || 'active',
+        role: getRoleFromEmail(u.email), // Asignar rol basado en email
+        status: u.estado || 'active', // La API no tiene estado, asignamos active por defecto
         createdAt: u.fechaRegistro || u.createdAt || new Date().toISOString().split('T')[0]
       }));
       
@@ -724,11 +807,27 @@ export const userService = {
 
   delete: async (id: string | number) => {
     try {
-      const response = await api.delete(`/api/usuarios/${id}`);
+      console.log('🔄 Eliminando usuario en API:', id);
+      
+      const apiUrl = `${API_BASE_URL}/api/usuarios/${id}`;
+      
+      // Llamada directa a la API
+      const response = await axios.delete(apiUrl);
+      console.log('✅ Usuario eliminado exitosamente');
       return response.data;
-    } catch (error) {
-      console.error('Error eliminando usuario:', error);
-      throw error;
+    } catch (error: any) {
+      console.error('❌ Error eliminando usuario:', error);
+      
+      // Verificar si es error 404 (endpoint no existe)
+      if (error.response?.status === 404) {
+        const apiError = error.response?.data?.error || error.response?.data?.mensaje;
+        if (apiError?.includes('Endpoint no encontrado')) {
+          throw new Error('La API no tiene endpoint para eliminar usuarios (DELETE no soportado)');
+        }
+        throw new Error('Usuario no encontrado (404)');
+      }
+      
+      throw new Error(error.response?.data?.message || error.message || 'Error al eliminar usuario');
     }
   },
 };

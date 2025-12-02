@@ -5,7 +5,10 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import { useProducts, useProductsOnOffer } from '../hooks/useApi';
 import { Product } from '../types';
-import { CircularProgress, Box } from '@mui/material';
+import { CircularProgress, Box, Card, CardContent, Button, Chip } from '@mui/material';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -26,11 +29,19 @@ const FeaturedProducts: React.FC = () => {
 
   const loading = loadingOffers || loadingAll;
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (value: number) => {
     return new Intl.NumberFormat('es-CL', {
       style: 'currency',
-      currency: 'CLP'
-    }).format(price);
+      currency: 'CLP',
+      minimumFractionDigits: 0
+    }).format(value);
+  };
+
+  const categoryNames: { [k: string]: string } = {
+    'frutas': 'Frutas Frescas',
+    'verduras': 'Verduras Orgánicas',
+    'organicos': 'Productos Orgánicos',
+    'lacteos': 'Productos Lácteos'
   };
 
   const navigate = useNavigate();
@@ -51,12 +62,6 @@ const FeaturedProducts: React.FC = () => {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const duplicated = [...featuredProducts, ...featuredProducts];
-  const trackRef = useRef<HTMLDivElement | null>(null);
-
-  const baseDurationPerCard = 4; // seconds per card approx
-  const duration = Math.max(12, featuredProducts.length * baseDurationPerCard);
-
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
@@ -72,7 +77,7 @@ const FeaturedProducts: React.FC = () => {
       position: 'relative'
     }}>
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 40px' }}>
-        {/* Header mejorado */}
+        {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 50 }}>
           <div style={{
             display: 'inline-flex',
@@ -121,58 +126,11 @@ const FeaturedProducts: React.FC = () => {
           </p>
         </div>
         
-        {isWide ? (
-          <div className="ch-carousel" aria-hidden={false}>
-            <div
-              className="ch-track"
-              ref={trackRef}
-              style={{ animationDuration: `${duration}s` }}
-              onMouseEnter={() => trackRef.current && (trackRef.current.style.animationPlayState = 'paused')}
-              onMouseLeave={() => trackRef.current && (trackRef.current.style.animationPlayState = 'running')}
-            >
-              {duplicated.map((product, idx) => {
-                const isOffer = product.oferta && product.offerPrice && product.offerPrice < product.precio;
-                const currentPrice = isOffer ? product.offerPrice : product.precio;
-                const originalPrice = isOffer ? product.precio : null;
-                const savings = isOffer ? (product.precio - (product.offerPrice || 0)) : 0;
-
-                return (
-                <div className="ch-slide" key={`${product.id}-${idx}`}>
-                  {/* Reuse same markup for product card */}
-                  <div className="ch-card">
-                    {product.descuento && (
-                      <span className="ch-badge">-{product.descuento}%</span>
-                    )}
-                    <div className="ch-img">
-                      <img src={product.imagen} alt={product.nombre} onError={(e: any) => { e.target.style.display = 'none'; }} />
-                    </div>
-                    <h5 className="ch-name">{product.nombre}</h5>
-                    <div className="ch-price">
-                      <span className="ch-price-main">{formatPrice(currentPrice || 0)}</span>
-                      <span className="ch-unit">{product.unidad}</span>
-                    </div>
-                    {originalPrice ? (
-                      <div className="ch-savings">
-                        <span className="ch-strike">{formatPrice(originalPrice)}</span>
-                        <span className="ch-save">Ahorras {formatPrice(savings)}</span>
-                      </div>
-                    ) : (
-                      <div style={{ height: 32 }} />
-                    )}
-                    <div className="ch-actions">
-                      <button className="ch-ghost" onClick={() => handleViewDetails(product)}>Ver Detalles</button>
-                      <button className="ch-primary" onClick={() => handleAddToCart(product)}>Agregar al Carrito</button>
-                    </div>
-                  </div>
-                </div>
-              )})}
-            </div>
-          </div>
-        ) : (
+        {/* Swiper Carousel */}
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
-          spaceBetween={16}
-          slidesPerView={1.5}
+          spaceBetween={20}
+          slidesPerView={1.2}
           centeredSlides={false}
           navigation={true}
           pagination={{ 
@@ -184,29 +142,29 @@ const FeaturedProducts: React.FC = () => {
             disableOnInteraction: false,
             pauseOnMouseEnter: true
           }}
-          loop={true}
+          loop={featuredProducts.length > 4}
           speed={800}
           grabCursor={true}
           breakpoints={{
             480: {
-              slidesPerView: 2.2,
-              spaceBetween: 14,
+              slidesPerView: 1.8,
+              spaceBetween: 16,
             },
             640: {
-              slidesPerView: 2.5,
-              spaceBetween: 16,
+              slidesPerView: 2.2,
+              spaceBetween: 18,
             },
             768: {
-              slidesPerView: 3,
-              spaceBetween: 16,
+              slidesPerView: 2.8,
+              spaceBetween: 20,
             },
             1024: {
-              slidesPerView: 4,
-              spaceBetween: 18,
+              slidesPerView: 3.5,
+              spaceBetween: 22,
             },
             1280: {
-              slidesPerView: 5,
-              spaceBetween: 18,
+              slidesPerView: 4.2,
+              spaceBetween: 24,
             },
           }}
           style={{
@@ -220,196 +178,282 @@ const FeaturedProducts: React.FC = () => {
             const isOffer = product.oferta && product.offerPrice && product.offerPrice < product.precio;
             const currentPrice = isOffer ? product.offerPrice : product.precio;
             const originalPrice = isOffer ? product.precio : null;
-            const savings = isOffer ? (product.precio - (product.offerPrice || 0)) : 0;
 
             return (
             <SwiperSlide key={product.id}>
-              <div style={{ 
-                background: '#fff', 
-                borderRadius: 12, 
-                border: '1px solid #e5e7eb',
-                display: 'flex', 
-                flexDirection: 'column', 
-                padding: '16px 14px 18px 14px', 
-                height: '100%',
-                minHeight: '360px',
-                maxHeight: '360px',
-                maxWidth: '250px',
-                margin: '0 auto',
-                position: 'relative',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                cursor: 'pointer',
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = 'translateY(-5px)';
-                (e.currentTarget as HTMLElement).style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.12)';
-                (e.currentTarget as HTMLElement).style.borderColor = '#2E8B57';
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-                (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
-                (e.currentTarget as HTMLElement).style.borderColor = '#e5e7eb';
-              }}
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  minHeight: 520,
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  bgcolor: '#fff', 
+                  border: '1px solid #f0f0f0',
+                  borderRadius: 4,
+                  position: 'relative', 
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+                  overflow: 'hidden',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 16px 40px rgba(0,0,0,0.15)',
+                    borderColor: '#e0e0e0',
+                    '& .product-image': {
+                      transform: 'scale(1.08)'
+                    }
+                  }
+                }}
               >
-                {product.descuento && (
-                  <span style={{ 
+                {/* Badge de oferta */}
+                {isOffer && product.descuento && (
+                  <Box sx={{ 
                     position: 'absolute', 
-                    top: 12, 
-                    right: 12, 
-                    background: '#2E8B57', 
+                    top: 8, 
+                    left: 12, 
+                    zIndex: 3, 
+                    bgcolor: '#dc2626', 
                     color: '#fff', 
-                    fontWeight: 600, 
-                    fontSize: '0.75rem', 
-                    borderRadius: 4, 
-                    padding: '4px 8px',
-                    letterSpacing: '0.3px',
-                    zIndex: 2
+                    px: 2, 
+                    py: 0.8, 
+                    borderRadius: 3, 
+                    fontWeight: 700, 
+                    fontSize: '0.7rem', 
+                    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)', 
+                    fontFamily: 'Montserrat, Arial, sans-serif', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 0.5,
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase'
                   }}>
-                    -{product.descuento}%
-                  </span>
+                    <LocalOfferIcon sx={{ fontSize: 12 }} />
+                    -{product.descuento}% OFF
+                  </Box>
                 )}
-                <div style={{
-                  width: '100%',
-                  height: '110px',
+
+                {/* Imagen del producto */}
+                <Box sx={{ 
                   display: 'flex',
-                  alignItems: 'center',
                   justifyContent: 'center',
-                  marginBottom: 10,
-                  background: '#f9fafb',
-                  borderRadius: 8,
-                  flexShrink: 0,
-                  border: '1px solid #f3f4f6'
+                  alignItems: 'center',
+                  bgcolor: '#fff',
+                  height: 240,
+                  minHeight: 240,
+                  maxHeight: 240,
+                  p: 0,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  borderRadius: 4,
                 }}>
-                  <img 
-                    src={product.imagen} 
+                  <img
+                    src={product.imagen}
                     alt={product.nombre}
-                    style={{ 
+                    className="product-image"
+                    style={{
                       width: '100%',
                       height: '100%',
                       objectFit: 'contain',
-                      padding: '8px'
-                    }}
-                    onError={(e: any) => { e.target.style.display = 'none'; }}
-                  />
-                </div>
-                <h5 style={{ 
-                  fontWeight: 600, 
-                  fontSize: '0.9rem', 
-                  color: '#1a1a1a', 
-                  marginBottom: 6, 
-                  textAlign: 'center',
-                  lineHeight: 1.3,
-                  height: '35px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  {product.nombre}
-                </h5>
-                <div style={{ marginBottom: 5, textAlign: 'center', flexShrink: 0 }}>
-                  <span style={{ 
-                    fontWeight: 700, 
-                    fontSize: '1.1rem', 
-                    color: '#2E8B57',
-                    letterSpacing: '-0.3px',
-                    display: 'block',
-                    marginBottom: '1px'
-                  }}>
-                    {formatPrice(currentPrice || 0)}
-                  </span>
-                  <span style={{ 
-                    color: '#9ca3af', 
-                    fontSize: '0.75rem',
-                    fontWeight: 400
-                  }}>
-                    {product.unidad}
-                  </span>
-                </div>
-                {originalPrice ? (
-                  <div style={{ 
-                    marginBottom: 6, 
-                    textAlign: 'center', 
-                    flexShrink: 0,
-                    height: '32px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center'
-                  }}>
-                    <span style={{ 
-                      color: '#9ca3af', 
-                      textDecoration: 'line-through', 
-                      fontSize: '0.72rem',
-                      fontWeight: 400,
+                      borderRadius: '16px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                      background: '#f3f4f6',
+                      border: '1px solid #e5e7eb',
+                      transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                       display: 'block',
-                      marginBottom: '2px'
-                    }}>
-                      {formatPrice(originalPrice)}
-                    </span>
-                    <span style={{ 
-                      color: '#2E8B57', 
-                      fontWeight: 600, 
-                      fontSize: '0.7rem',
-                      display: 'inline-block'
-                    }}>
-                      Ahorras {formatPrice(savings)}
-                    </span>
-                  </div>
-                ) : (
-                  <div style={{ 
-                    height: '32px',
-                    flexShrink: 0
-                  }} />
-                )}
-                <div style={{ 
-                  width: '100%', 
-                  marginTop: 'auto', 
+                      margin: '0 auto',
+                    }}
+                  />
+                </Box>
+
+                <CardContent sx={{ 
+                  flexGrow: 1, 
                   display: 'flex', 
                   flexDirection: 'column', 
-                  gap: 7,
-                  paddingTop: '6px'
+                  p: 3,
+                  pt: 2,
+                  pb: 2.5,
+                  gap: 1
                 }}>
-                  <button
-                    type="button"
-                    style={{ 
-                      border: '1px solid #e5e7eb', 
-                      color: '#6b7280', 
-                      fontWeight: 500, 
-                      borderRadius: 8, 
-                      padding: '8px 0', 
-                      fontSize: '0.8rem', 
-                      background: '#fff', 
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onClick={() => handleViewDetails(product)}
-                  >
-                    Ver Detalles
-                  </button>
-                  <button
-                    style={{ 
-                      background: '#2E8B57', 
-                      color: '#fff', 
+                  {/* Nombre del producto */}
+                  <Box 
+                    sx={{ 
                       fontWeight: 600, 
-                      borderRadius: 8, 
-                      padding: '9px 0', 
-                      fontSize: '0.8rem', 
-                      border: 'none', 
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      boxShadow: '0 1px 3px rgba(33, 145, 80, 0.3)'
+                      textAlign: 'center', 
+                      fontFamily: 'Montserrat, Arial, sans-serif', 
+                      color: '#1a1a1a', 
+                      fontSize: '1rem', 
+                      lineHeight: 1.3,
+                      height: '42px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mb: 0.5
                     }}
-                    onClick={() => handleAddToCart(product)}
                   >
-                    Agregar al Carrito
-                  </button>
-                </div>
-              </div>
+                    {product.nombre}
+                  </Box>
+
+                  {/* Categoría */}
+                  <Box sx={{ 
+                    display: 'flex',
+                    justifyContent: 'center',
+                    mb: 0.5
+                  }}>
+                    <Chip 
+                      label={categoryNames[product.categoria] || product.categoria}
+                      size="small"
+                      sx={{
+                        bgcolor: '#f0f9f4',
+                        color: '#2E8B57',
+                        fontWeight: 600,
+                        fontSize: '0.7rem',
+                        height: '24px',
+                        borderRadius: 2.5,
+                        fontFamily: 'Montserrat, Arial, sans-serif',
+                        border: '1px solid #c8e6c9',
+                        '& .MuiChip-label': {
+                          px: 1.5
+                        }
+                      }}
+                    />
+                  </Box>
+
+                  {/* Espacio vacío */}
+                  <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 0.5,
+                    my: 0.5
+                  }} />
+
+                  {/* Precios */}
+                  <Box sx={{ 
+                    mt: 'auto',
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    gap: 0.3,
+                    mb: 1.5
+                  }}>
+                    <Box 
+                      sx={{ 
+                        color: '#999', 
+                        fontSize: '0.7rem',
+                        fontFamily: 'Montserrat, Arial, sans-serif',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        fontWeight: 600
+                      }}
+                    >
+                      POR {product.unidad?.toUpperCase() || 'KG'}
+                    </Box>
+                    {isOffer && originalPrice && (
+                      <Box 
+                        sx={{ 
+                          color: '#9ca3af', 
+                          textDecoration: 'line-through', 
+                          fontWeight: 500, 
+                          fontSize: '0.85rem',
+                          fontFamily: 'Montserrat, Arial, sans-serif'
+                        }}
+                      >
+                        Antes: {formatPrice(originalPrice)}
+                      </Box>
+                    )}
+                    <Box 
+                      sx={{ 
+                        color: '#2E8B57', 
+                        fontWeight: 700, 
+                        fontSize: '1.5rem',
+                        fontFamily: 'Montserrat, Arial, sans-serif',
+                        letterSpacing: '-0.5px'
+                      }}
+                    >
+                      {formatPrice(currentPrice || 0)}
+                    </Box>
+                    {isOffer && originalPrice && (
+                      <Box 
+                        sx={{ 
+                          color: '#2E8B57', 
+                          fontWeight: 600, 
+                          fontSize: '0.75rem',
+                          fontFamily: 'Montserrat, Arial, sans-serif',
+                          mt: 0.3
+                        }}
+                      >
+                        Ahorras {formatPrice((originalPrice || 0) - (currentPrice || 0))}
+                      </Box>
+                    )}
+                  </Box>
+
+                  {/* Botones de acción */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: 1, 
+                    width: '100%'
+                  }}>
+                    <Button 
+                      variant="contained" 
+                      fullWidth
+                      startIcon={<VisibilityIcon sx={{ fontSize: 16 }} />}
+                      onClick={() => handleViewDetails(product)}
+                      sx={{ 
+                        bgcolor: '#fbbf24', 
+                        color: '#1a1a1a', 
+                        borderRadius: 3, 
+                        fontWeight: 700, 
+                        fontSize: '0.8rem', 
+                        py: 1.2, 
+                        boxShadow: '0 2px 8px rgba(251, 191, 36, 0.3)',
+                        textTransform: 'none',
+                        fontFamily: 'Montserrat, Arial, sans-serif',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        '&:hover': { 
+                          bgcolor: '#f59e0b',
+                          boxShadow: '0 4px 16px rgba(251, 191, 36, 0.5)',
+                          transform: 'translateY(-2px)'
+                        }
+                      }}
+                    >
+                      Ver Detalles
+                    </Button>
+                    <Button 
+                      variant="contained" 
+                      fullWidth
+                      startIcon={<AddShoppingCartIcon sx={{ fontSize: 16 }} />}
+                      onClick={() => handleAddToCart(product)}
+                      sx={{ 
+                        bgcolor: '#2E8B57', 
+                        color: '#fff', 
+                        borderRadius: 3, 
+                        fontWeight: 700, 
+                        fontSize: '0.8rem', 
+                        py: 1.2, 
+                        boxShadow: '0 2px 8px rgba(46, 139, 87, 0.3)',
+                        textTransform: 'none',
+                        fontFamily: 'Montserrat, Arial, sans-serif',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        '&:hover': { 
+                          bgcolor: '#257d4a',
+                          boxShadow: '0 4px 16px rgba(46, 139, 87, 0.5)',
+                          transform: 'translateY(-2px)'
+                        },
+                        '&:disabled': {
+                          bgcolor: '#e0e0e0',
+                          color: '#9ca3af'
+                        }
+                      }}
+                      disabled={product.stock === 0}
+                    >
+                      Agregar al Carrito
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
             </SwiperSlide>
           )})}
         </Swiper>
-        )}
       </div>
 
       <style>{`
@@ -419,8 +463,8 @@ const FeaturedProducts: React.FC = () => {
           background: #ffffff;
           padding: 8px;
           border-radius: 50%;
-          width: 32px;
-          height: 32px;
+          width: 40px;
+          height: 40px;
           border: 1px solid #e5e7eb;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
           transition: all 0.2s ease;
@@ -431,7 +475,7 @@ const FeaturedProducts: React.FC = () => {
 
         .swiper-button-next:after,
         .swiper-button-prev:after {
-          font-size: 12px;
+          font-size: 14px;
           font-weight: 900;
         }
 

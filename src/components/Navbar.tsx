@@ -4,12 +4,14 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '@mui/material';
 import UserDropdown from './UserDropdown';
+import { useProducts } from '../hooks/useApi';
 
 const Navbar: React.FC = () => {
   const { getTotalItems, openCart } = useCart();
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const { products } = useProducts();
 
   // UI state
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -88,17 +90,15 @@ const Navbar: React.FC = () => {
     setShowSearchDropdown(value.length > 0);
   };
 
-  const suggestions = [
-    'Tomate orgánico',
-    'Lechuga fresca',
-    'Zanahoria orgánica',
-    'Manzana roja',
-    'Quinua orgánica'
-  ];
-
-  const filteredSuggestions = suggestions.filter(s => 
-    s.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filtrar productos reales basados en el query de búsqueda
+  const filteredSuggestions = searchQuery.length > 0
+    ? products
+        .filter(p => 
+          p.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.categoria?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .slice(0, 5) // Limitar a 5 sugerencias
+    : [];
 
   return (
     <>
@@ -173,17 +173,35 @@ const Navbar: React.FC = () => {
                 {/* Dropdown de búsqueda */}
                 {showSearchDropdown && filteredSuggestions.length > 0 && (
                   <div className="search-dropdown show">
-                    {filteredSuggestions.map((suggestion, index) => (
+                    {filteredSuggestions.map((product) => (
                       <div 
-                        key={index}
-                        className="suggestion-text"
+                        key={product.id}
+                        className="suggestion-item"
                         onClick={() => {
-                          setSearchQuery(suggestion);
                           setShowSearchDropdown(false);
-                          navigate(`/productos?search=${encodeURIComponent(suggestion)}`);
+                          setSearchQuery('');
+                          navigate(`/productos/${product.id}`);
                         }}
                       >
-                        {suggestion}
+                        <img 
+                          src={product.imagen} 
+                          alt={product.nombre}
+                          className="suggestion-image"
+                        />
+                        <div className="suggestion-info">
+                          <span className="suggestion-name">{product.nombre}</span>
+                          <span className="suggestion-category">{product.categoria}</span>
+                        </div>
+                        <div className="suggestion-price-container">
+                          {product.oferta && product.offerPrice ? (
+                            <>
+                              <span className="suggestion-price-original">${Math.round(product.precio)}</span>
+                              <span className="suggestion-price">${Math.round(product.offerPrice)}</span>
+                            </>
+                          ) : (
+                            <span className="suggestion-price">${Math.round(product.precio)}</span>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

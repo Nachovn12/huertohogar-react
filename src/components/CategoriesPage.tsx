@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Container, Row, Col, Nav, Badge, Spinner, Alert } from 'react-bootstrap';
+import { useSearchParams } from 'react-router-dom';
 import ProductCard from './ProductCard';
 import { Product, Category } from '../types';
 import { useProducts, useAvailableCategories } from '../hooks/useApi';
@@ -7,21 +8,30 @@ import { useProducts, useAvailableCategories } from '../hooks/useApi';
 const CategoriesPage: React.FC = () => {
   const { products, loading: loadingProducts, error: errorProducts } = useProducts();
   const { categories: allCategories, loading: loadingCategories, error: errorCategories } = useAvailableCategories();
+  const [searchParams] = useSearchParams();
   
-  const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
+  const [selectedCategory, setSelectedCategory] = useState<string | number>('Todas');
 
-  // Filtrar productos por categoría
+  // Leer el parámetro de categoría de la URL al cargar el componente
+  useEffect(() => {
+    const categoriaParam = searchParams.get('categoria');
+    if (categoriaParam) {
+      setSelectedCategory(Number(categoriaParam));
+    }
+  }, [searchParams]);
+
+  // Filtrar productos por categoría usando categoriaId
   const filteredProducts = useMemo(() => {
     if (selectedCategory === 'Todas') {
       return products;
     }
-    return products.filter((p: Product) => String(p.categoria) === String(selectedCategory));
+    return products.filter((p: Product) => p.categoriaId === Number(selectedCategory));
   }, [selectedCategory, products]);
 
-  // Contar productos por categoría
-  const getCategoryCount = (category: string) => {
-    if (category === 'Todas') return products.length;
-    return products.filter((p: Product) => String(p.categoria) === String(category)).length;
+  // Contar productos por categoría usando categoriaId
+  const getCategoryCount = (categoryId: string | number) => {
+    if (categoryId === 'Todas') return products.length;
+    return products.filter((p: Product) => p.categoriaId === Number(categoryId)).length;
   };
 
   // Mostrar spinner mientras carga
@@ -121,21 +131,21 @@ const CategoriesPage: React.FC = () => {
               <Nav.Item key={category.id}>
                 <Nav.Link
                   eventKey={category.id}
-                   onClick={() => setSelectedCategory(String(category.id))}
+                  onClick={() => setSelectedCategory(category.id)}
                   style={{
                     borderRadius: '12px',
                     padding: '0.8rem 1.5rem',
                     fontWeight: 600,
                     fontSize: '1rem',
                     border: '2px solid #e0e0e0',
-                    background: String(selectedCategory) === String(category.id) ? '#2E8B57' : 'white',
-                    color: String(selectedCategory) === String(category.id) ? 'white' : '#2E8B57',
+                    background: Number(selectedCategory) === Number(category.id) ? '#2E8B57' : 'white',
+                    color: Number(selectedCategory) === Number(category.id) ? 'white' : '#2E8B57',
                     transition: 'all 0.3s ease',
                     cursor: 'pointer'
                   }}
-                  className={String(selectedCategory) === String(category.id) ? '' : 'hover-category-btn'}
+                  className={Number(selectedCategory) === Number(category.id) ? '' : 'hover-category-btn'}
                 >
-                  {category.nombre} <Badge bg="light" text="dark" className="ms-2">{getCategoryCount(String(category.id))}</Badge>
+                  {category.nombre} <Badge bg="light" text="dark" className="ms-2">{getCategoryCount(category.id)}</Badge>
                 </Nav.Link>
               </Nav.Item>
             ))}
@@ -146,7 +156,7 @@ const CategoriesPage: React.FC = () => {
         <div className="text-center mb-4">
           <h5 style={{ color: '#2E8B57', fontWeight: 600 }}>
             {filteredProducts.length} {filteredProducts.length === 1 ? 'producto' : 'productos'}
-            {selectedCategory !== 'Todas' && ` en ${selectedCategory}`}
+            {selectedCategory !== 'Todas' && ` en ${allCategories.find(c => c.id === Number(selectedCategory))?.nombre || 'esta categoría'}`}
           </h5>
         </div>
 

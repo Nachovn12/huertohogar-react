@@ -6,6 +6,7 @@ type CartEntry = Product & { quantity: number; discountedPrice?: number };
 interface CartState {
   items: CartEntry[];
   isCartOpen: boolean;
+  appliedCoupon: { code: string; discount: number } | null;
 }
 
 type CartAction =
@@ -15,7 +16,9 @@ type CartAction =
   | { type: 'CLEAR_CART' }
   | { type: 'TOGGLE_CART' }
   | { type: 'OPEN_CART' }
-  | { type: 'CLOSE_CART' };
+  | { type: 'CLOSE_CART' }
+  | { type: 'APPLY_COUPON'; payload: { code: string; discount: number } }
+  | { type: 'REMOVE_COUPON' };
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
@@ -70,6 +73,12 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
     case 'CLOSE_CART':
       return { ...state, isCartOpen: false };
 
+    case 'APPLY_COUPON':
+      return { ...state, appliedCoupon: action.payload };
+
+    case 'REMOVE_COUPON':
+      return { ...state, appliedCoupon: null };
+
     default:
       return state;
   }
@@ -80,6 +89,7 @@ export interface CartContextValue {
   // legacy alias used in some components during migration
   cart: CartEntry[];
   isCartOpen: boolean;
+  appliedCoupon: { code: string; discount: number } | null;
   addToCart: (product: Product, quantity?: number) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
@@ -87,14 +97,18 @@ export interface CartContextValue {
   toggleCart: () => void;
   openCart: () => void;
   closeCart: () => void;
+  applyCoupon: (code: string, discount: number) => void;
+  removeCoupon: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
+  getCouponDiscount: () => number;
+  getSubtotalAfterCoupon: () => number;
 }
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(cartReducer, { items: [], isCartOpen: false });
+  const [state, dispatch] = useReducer(cartReducer, { items: [], isCartOpen: false, appliedCoupon: null });
 
   const addToCart = (product: Product, quantity = 1) => {
     const discountedPrice = product.oferta ? (product.offerPrice ?? Math.round(product.precio * (1 - (product.descuento ?? 0) / 100))) : undefined;
@@ -108,16 +122,32 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const openCart = () => dispatch({ type: 'OPEN_CART' });
   const closeCart = () => dispatch({ type: 'CLOSE_CART' });
 
+  const applyCoupon = (code: string, discount: number) => dispatch({ type: 'APPLY_COUPON', payload: { code, discount } });
+  const removeCoupon = () => dispatch({ type: 'REMOVE_COUPON' });
+
   const getTotalItems = () => state.items.reduce((total, item) => total + item.quantity, 0);
   const getTotalPrice = () => state.items.reduce((total, item) => {
     const price = (item.discountedPrice ?? item.offerPrice ?? item.precio) as number;
     return total + price * item.quantity;
   }, 0);
 
+  const getCouponDiscount = () => {
+    if (!state.appliedCoupon) return 0;
+    const subtotal = getTotalPrice();
+    return subtotal * state.appliedCoupon.discount;
+  };
+
+  const getSubtotalAfterCoupon = () => {
+    const subtotal = getTotalPrice();
+    const discount = getCouponDiscount();
+    return subtotal - discount;
+  };
+
   const value: CartContextValue = {
     items: state.items,
     cart: state.items,
     isCartOpen: state.isCartOpen,
+    appliedCoupon: state.appliedCoupon,
     addToCart,
     removeFromCart,
     updateQuantity,
@@ -125,8 +155,12 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     toggleCart,
     openCart,
     closeCart,
+    applyCoupon,
+    removeCoupon,
     getTotalItems,
-    getTotalPrice
+    getTotalPrice,
+    getCouponDiscount,
+    getSubtotalAfterCoupon
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

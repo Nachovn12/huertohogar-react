@@ -8,6 +8,7 @@ import FeaturedProducts from './components/FeaturedProducts';
 import Mission from './components/Mission';
 import ProductList from './components/ProductList';
 import Cart from './components/Cart';
+import CartPage from './components/CartPage';
 import Nosotros from './components/Nosotros';
 import Blog from './components/Blog';
 import Offers from './components/Offers';
@@ -19,6 +20,7 @@ import ScrollToTop from './components/ScrollToTop';
 import ProductDetails from './components/ProductDetails';
 import Login from './components/Login';
 import Registro from './components/Registro';
+import MisPedidos from './components/MisPedidos';
 
 import { CartProvider } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -54,14 +56,17 @@ const App: React.FC = () => {
               <Route path="/" element={<><Navbar /><Hero /><Categories /><SpecialOffers /><FeaturedProducts /><Mission /><Footer /></>} />
               
               {/* Ruta de Login con Navbar y Footer */}
-              <Route path="/login" element={<><Navbar /><Login /><Footer /></>} />
+              <Route path="/login" element={<><Navbar /><Login /><Footer noMargin /></>} />
 
-              <Route path="/registro" element={<Registro />} />
+              {/* Ruta de Registro con Navbar y Footer */}
+              <Route path="/registro" element={<><Navbar /><Registro /><Footer noMargin /></>} />
               <Route path="/productos" element={<><Navbar /><ProductList /><Footer /></>} />
               <Route path="/productos/:id" element={<><Navbar /><ProductDetails /><Footer /></>} />
+              <Route path="/carrito" element={<><Navbar /><CartPage /><Footer /></>} />
               <Route path="/ofertas" element={<><Navbar /><Offers /><Footer /></>} />
               <Route path="/categorias" element={<><Navbar /><CategoriesPage /><Footer /></>} />
               <Route path="/checkout" element={<><Navbar /><Checkout /><Footer /></>} />
+              <Route path="/mis-pedidos" element={<><Navbar /><MisPedidos /><Footer /></>} />
               <Route path="/nosotros" element={<><Navbar /><Nosotros /><Footer /></>} />
               <Route path="/blog" element={<><Navbar /><Blog /><Footer /></>} />
 

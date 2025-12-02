@@ -7,9 +7,23 @@ const FeaturedCategories: React.FC = () => {
   const { categories: availableCategories, loading: loadingCategories, error: errorCategories } = useAvailableCategories();
   const { products, loading: loadingProducts } = useProducts();
 
-  // Contar productos por categoría
-  const getCategoryCount = (categoryId: string) => {
-    return products.filter(p => String(p.categoria) === String(categoryId)).length;
+  // Contar productos por categoría usando el ID de la categoría
+  const getCategoryCount = (categoryId: number) => {
+    return products.filter(p => p.categoriaId === categoryId).length;
+  };
+
+  // Obtener icono según el nombre de la categoría
+  const getCategoryIcon = (categoryName: string) => {
+    const name = categoryName.toLowerCase();
+    if (name.includes('fruta')) return '🍓';
+    if (name.includes('verdura')) return '🥬';
+    if (name.includes('hierba')) return '🌿';
+    if (name.includes('semilla')) return '🌱';
+    if (name.includes('herramienta')) return '🔨';
+    if (name.includes('tierra') || name.includes('abono')) return '🪴';
+    if (name.includes('orgánico')) return '🌾';
+    if (name.includes('lácteo')) return '🥛';
+    return '🥬'; // Por defecto
   };
 
   if (loadingCategories || loadingProducts) {
@@ -31,22 +45,48 @@ const FeaturedCategories: React.FC = () => {
     }}>
       <Container>
         <div className="text-center mb-5">
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '16px',
+            padding: '8px 24px',
+            borderRadius: '32px',
+            background: 'rgba(46, 139, 87, 0.1)',
+            border: '1px solid rgba(46, 139, 87, 0.2)'
+          }}>
+            <span style={{ fontSize: '1.2rem' }}>🌱</span>
+            <span style={{ 
+              color: '#2E8B57', 
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              textTransform: 'uppercase',
+              letterSpacing: '1.5px',
+              fontFamily: 'Montserrat, Arial, sans-serif'
+            }}>
+              Explora por Categoría
+            </span>
+          </div>
+          
           <h2 style={{
             fontFamily: 'Playfair Display, serif',
-            fontWeight: 700,
-            color: '#2E8B57',
-            fontSize: '2.5rem',
-            marginBottom: '1rem'
+            fontWeight: 800,
+            color: '#1a1a1a',
+            fontSize: '2.8rem',
+            marginBottom: '1rem',
+            letterSpacing: '-1px'
           }}>
             Nuestras Categorías
           </h2>
           <p style={{
-            fontSize: '1.1rem',
-            color: '#666',
+            fontSize: '1.05rem',
+            color: '#666666',
             maxWidth: '600px',
-            margin: '0 auto'
+            margin: '0 auto',
+            fontFamily: 'Montserrat, Arial, sans-serif',
+            lineHeight: 1.6
           }}>
-            Explora nuestras categorías de productos frescos y orgánicos
+            Descubre nuestra amplia selección de productos frescos, orgánicos y naturales organizados para tu conveniencia
           </p>
         </div>
 
@@ -54,49 +94,83 @@ const FeaturedCategories: React.FC = () => {
           {availableCategories.map((category) => (
             <Col key={category.id} xs={12} sm={6} md={4}>
               <Link 
-                to={`/categorias?cat=${category.id}`} 
+                to={`productos?categoria=${category.id}`} 
                 style={{ textDecoration: 'none' }}
               >
                 <Card 
                   className="h-100 category-card"
                   style={{
-                    border: '2px solid #e0e0e0',
+                    border: '1px solid #f0f0f0',
                     borderRadius: '16px',
                     overflow: 'hidden',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer'
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    cursor: 'pointer',
+                    background: '#fff',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.08)'
                   }}
                 >
-                  <Card.Body style={{ padding: '2rem', textAlign: 'center' }}>
+                  <Card.Body style={{ 
+                    padding: '2.5rem 2rem', 
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1rem'
+                  }}>
+                    <div style={{
+                      width: '80px',
+                      height: '80px',
+                      margin: '0 auto 0.5rem',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #f0f9f4 0%, #e8f5e9 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '2.5rem',
+                      boxShadow: '0 4px 12px rgba(46, 139, 87, 0.15)'
+                    }}>
+                      {getCategoryIcon(category.nombre)}
+                    </div>
+                    
                     <Card.Title style={{
                       fontWeight: 700,
-                      color: '#2E8B57',
-                      fontSize: '1.5rem',
-                      marginBottom: '1rem'
+                      color: '#1a1a1a',
+                      fontSize: '1.4rem',
+                      marginBottom: '0.5rem',
+                      fontFamily: 'Montserrat, Arial, sans-serif'
                     }}>
                       {category.nombre}
                     </Card.Title>
+                    
                     <Card.Text style={{
-                      color: '#666',
-                      fontSize: '1rem',
-                      marginBottom: '1.5rem'
+                      color: '#666666',
+                      fontSize: '0.95rem',
+                      marginBottom: '1rem',
+                      lineHeight: 1.6,
+                      fontFamily: 'Montserrat, Arial, sans-serif',
+                      minHeight: '48px'
                     }}>
-                      {category.descripcion}
+                      {category.descripcion || 'Productos frescos y de calidad'}
                     </Card.Text>
+                    
                     <div style={{
                       display: 'flex',
                       justifyContent: 'center',
                       alignItems: 'center',
-                      gap: '0.5rem'
+                      gap: '0.5rem',
+                      marginTop: 'auto'
                     }}>
                       <Badge 
                         bg="success" 
                         style={{ 
-                          fontSize: '0.9rem',
-                          padding: '0.5rem 1rem'
+                          fontSize: '0.85rem',
+                          padding: '0.6rem 1.2rem',
+                          fontWeight: 600,
+                          borderRadius: '8px',
+                          background: '#2E8B57',
+                          fontFamily: 'Montserrat, Arial, sans-serif'
                         }}
                       >
-                        {getCategoryCount(String(category.id))} productos
+                        {getCategoryCount(category.id)} productos
                       </Badge>
                     </div>
                   </Card.Body>
@@ -110,7 +184,7 @@ const FeaturedCategories: React.FC = () => {
         <style>{`
           .category-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 12px 24px rgba(46, 139, 87, 0.2) !important;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.15) !important;
             border-color: #2E8B57 !important;
           }
         `}</style>

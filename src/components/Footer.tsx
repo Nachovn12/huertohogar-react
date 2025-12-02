@@ -14,14 +14,14 @@ import Divider from '@mui/material/Divider';
 import InputBase from '@mui/material/InputBase';
 import Button from '@mui/material/Button';
 
-const Footer: React.FC = () => {
+const Footer: React.FC<{ noMargin?: boolean }> = ({ noMargin = false }) => {
   return (
     <Box component="footer" sx={{
       bgcolor: '#f8f9fa',
       color: '#1a1a1a',
       pt: { xs: 6, md: 8 },
       pb: 3,
-      mt: { xs: 8, md: 12 },
+      mt: noMargin ? 0 : { xs: 8, md: 12 },
       borderTop: '3px solid #2E8B57',
     }}>
       <Container maxWidth="lg">
