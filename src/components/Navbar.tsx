@@ -140,20 +140,34 @@ const Navbar: React.FC = () => {
             <Link to="/blog" onClick={() => setIsMenuOpen(false)}>
               <i className="fas fa-newspaper"></i> Blog
             </Link>
-              {/* Mobile search shown inside hamburger menu on small screens */}
-              {isMenuOpen && (
-                <div className="mobile-search">
-                  <form className="search-bar" onSubmit={handleSearch}>
-                    <i className="fas fa-search"></i>
-                    <input
-                      type="text"
-                      placeholder="Buscar productos..."
-                      value={searchQuery}
-                      onChange={handleSearchChange}
-                    />
-                  </form>
-                </div>
-              )}
+
+            {/* Login dentro del menú móvil - ANTES de la búsqueda */}
+            {isMenuOpen && !user && (
+              <div className="mobile-login-container">
+                <Link 
+                  to="/login" 
+                  onClick={() => setIsMenuOpen(false)}
+                  className="mobile-login-button"
+                >
+                  <span>Iniciar Sesión</span>
+                </Link>
+              </div>
+            )}
+
+            {/* Mobile search shown inside hamburger menu on small screens */}
+            {isMenuOpen && (
+              <div className="mobile-search">
+                <form className="search-bar" onSubmit={handleSearch}>
+                  <i className="fas fa-search"></i>
+                  <input
+                    type="text"
+                    placeholder="Buscar productos..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                  />
+                </form>
+              </div>
+            )}
           </nav>
 
           {/* Acciones del header */}
@@ -234,7 +248,7 @@ const Navbar: React.FC = () => {
                   }
                 }}
               >
-                Iniciar Sesión
+                Iniciar Sesion
               </Button>
             )}
 

@@ -4,6 +4,11 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -13,6 +18,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   /* Evitar scroll horizontal ocasionado por offcanvas o sombras fuera del viewport */
   overflow-x: hidden;
+  width: 100%;
+  position: relative;
 }
 
 code {
@@ -778,34 +785,51 @@ code {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 40px;
-    height: 40px;
-    background: none;
-    border: none;
+    width: 44px;
+    height: 44px;
+    background: rgba(46, 139, 87, 0.05);
+    border: 1px solid rgba(46, 139, 87, 0.15);
+    border-radius: 10px;
     cursor: pointer;
     z-index: 1101;
+    transition: all 0.3s ease;
+    padding: 8px;
+}
+
+.hamburger:hover {
+    background: rgba(46, 139, 87, 0.1);
+    border-color: rgba(46, 139, 87, 0.3);
+    transform: scale(1.05);
 }
 
 .hamburger span {
     display: block;
-    width: 28px;
-    height: 4px;
-    margin: 4px 0;
+    width: 24px;
+    height: 3px;
+    margin: 3px 0;
     background: #2e8b57;
-    border-radius: 2px;
-    transition: 0.3s;
+    border-radius: 3px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hamburger.open {
+    background: rgba(46, 139, 87, 0.15);
+    border-color: #2e8b57;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .hamburger.open span:nth-child(1) {
-    transform: translateY(12px) rotate(45deg);
+    transform: translateY(9px) rotate(45deg);
 }
 
 .hamburger.open span:nth-child(2) {
     opacity: 0;
+    transform: translateX(-20px);
 }
 
 .hamburger.open span:nth-child(3) {
-    transform: translateY(-12px) rotate(-45deg);
+    transform: translateY(-9px) rotate(-45deg);
 }
 
 /* Navegación */
@@ -1109,16 +1133,460 @@ code {
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(238, 82, 83, 0); }
 }
 
+/* ==================== RESPONSIVE NAVBAR MOBILE ==================== */
 @media (max-width: 768px) {
-  .cart-button {
-    width: 42px;
-    height: 42px;
+  .main-header {
+    padding: 0.85rem 1.25rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   }
+
+  .header-content {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* Logo responsive */
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    max-width: 48px;
+    box-shadow: 0 2px 6px rgba(46, 139, 87, 0.12);
+  }
+
+  .logo-title {
+    font-size: 1.3rem !important;
+    font-weight: 700;
+  }
+
+  /* Hamburguesa mejorada */
+  .hamburger {
+    display: flex;
+    width: 46px;
+    height: 46px;
+    background: rgba(46, 139, 87, 0.08);
+    border: 1.5px solid rgba(46, 139, 87, 0.2);
+    border-radius: 12px;
+    z-index: 1101;
+    flex-shrink: 0;
+    margin-left: auto;
+    margin-right: 0.5rem;
+  }
+
+  .hamburger:active {
+    transform: scale(0.95);
+  }
+
+  .hamburger span {
+    width: 22px;
+    height: 2.5px;
+    margin: 2.5px 0;
+  }
+
+  /* Acciones a la derecha */
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+  }
+
+  /* Navegación mobile mejorada */
+  .main-nav {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 320px;
+    max-width: 85vw;
+    height: 100vh;
+    height: 100dvh; /* Para móviles modernos */
+    background: #ffffff;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 1.5rem 0 0 0;
+    gap: 0;
+    transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.35s;
+    box-shadow: -6px 0 40px rgba(0, 0, 0, 0.25);
+    z-index: 1100;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .main-nav.open {
+    right: 0;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  /* Links del menú mejorados */
+  .main-nav a {
+    padding: 1.2rem 1.75rem;
+    margin: 0.35rem 1rem;
+    border-radius: 14px;
+    border-left: none;
+    transition: all 0.25s ease;
+    font-size: 1.05rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: #1a1a1a;
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+  }
+
+  .main-nav a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: linear-gradient(180deg, #2E8B57 0%, #1f6a3f 100%);
+    transform: scaleY(0);
+    transition: transform 0.25s ease;
+    border-radius: 0 3px 3px 0;
+  }
+
+  .main-nav a i {
+    font-size: 1.4rem;
+    min-width: 32px;
+    color: #2E8B57;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .main-nav a::after {
+    display: none;
+  }
+
+  .main-nav a:hover,
+  .main-nav a:active {
+    background: linear-gradient(90deg, rgba(46, 139, 87, 0.12) 0%, rgba(46, 139, 87, 0.05) 100%);
+    color: #2E8B57;
+    transform: translateX(8px);
+    box-shadow: 0 3px 10px rgba(46, 139, 87, 0.12);
+  }
+
+  .main-nav a:hover::before,
+  .main-nav a:active::before {
+    transform: scaleY(1);
+  }
+
+  .main-nav a:hover i,
+  .main-nav a:active i {
+    transform: scale(1.15) rotate(5deg);
+    color: #1f6a3f;
+  }
+
+  /* Búsqueda mobile mejorada */
+  .mobile-search {
+    padding: 1rem 1.5rem 1.25rem;
+    border-top: 2px solid rgba(46, 139, 87, 0.1);
+    border-bottom: 2px solid rgba(46, 139, 87, 0.1);
+    margin: auto 0 0.5rem 0;
+    background: linear-gradient(180deg, rgba(46, 139, 87, 0.02) 0%, rgba(46, 139, 87, 0.05) 100%);
+  }
+
+  .mobile-search .search-bar {
+    width: 100%;
+    margin: 0;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+    border: 1.5px solid rgba(46, 139, 87, 0.2);
+  }
+
+  /* Ocultar búsqueda desktop en móvil */
+  .header-actions .search-bar {
+    display: none;
+  }
+
+  /* Ocultar botón de login en móvil - se muestra en el menú */
+  .header-actions .MuiButton-root,
+  .header-actions .login-button-nav {
+    display: none !important;
+  }
+
+  /* Contenedor del login móvil - ANTES de la búsqueda */
+  .mobile-login-container {
+    padding: 0.75rem 1.5rem 0.75rem 0rem;
+    margin: 8rem 0 0.5rem 0;
+    background: transparent;
+    border: none;
+  }
+
+  /* Botón de login dentro del menú móvil */
+  .mobile-login-button {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    width: 100%;
+    background: linear-gradient(135deg, #2E8B57 0%, #1f6a3f 100%) !important;
+    color: white !important;
+    padding: 0.85rem 1.5rem !important;
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    text-align: center !important;
+    box-shadow: 0 3px 10px rgba(46, 139, 87, 0.25) !important;
+    border: none !important;
+    text-decoration: none !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  .mobile-login-button:hover,
+  .mobile-login-button:active {
+    background: linear-gradient(135deg, #1f6a3f 0%, #2E8B57 100%) !important;
+    transform: translateY(-2px) scale(1.02) !important;
+    box-shadow: 0 6px 18px rgba(46, 139, 87, 0.4) !important;
+  }
+
+  .mobile-login-button::before {
+    display: none !important;
+  }
+
+  .mobile-login-button i {
+    color: white !important;
+    font-size: 1.3rem !important;
+    transition: transform 0.3s ease !important;
+  }
+
+  .mobile-login-button:hover i {
+    transform: scale(1.15) !important;
+  }
+
+  .mobile-login-button span {
+    color: white !important;
+    letter-spacing: 0.3px;
+    text-align: center !important;
+    flex: 1;
+  }
+
+  /* Carrito mejorado */
+  .cart-button {
+    width: 46px !important;
+    height: 46px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(46, 139, 87, 0.15) !important;
+  }
+
   .cart-icon {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .cart-counter {
+    min-width: 22px;
+    height: 22px;
+    font-size: 0.72rem;
+    top: -7px;
+    right: -7px;
+    border-width: 2.5px;
+    font-weight: 800;
+  }
+
+  body.menu-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
   }
 }
+
+/* ==================== RESPONSIVE TABLET (769px - 1024px) ==================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .main-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .header-content {
+    max-width: 100%;
+  }
+
+  .logo {
+    max-width: 60px;
+  }
+
+  .logo-title {
+    font-size: 1.5rem !important;
+  }
+
+  .main-nav {
+    gap: 1.5rem;
+  }
+
+  .main-nav a {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .search-bar {
+    width: 220px;
+  }
+
+  .header-actions {
+    gap: 1rem;
+  }
+}
+
+/* ==================== RESPONSIVE MÓVIL PEQUEÑO (max-width: 480px) ==================== */
+@media (max-width: 480px) {
+  .main-header {
+    padding: 0.7rem 1rem;
+  }
+
+  .header-content {
+    gap: 0.5rem;
+  }
+
+  .logo {
+    max-width: 42px;
+  }
+
+  .logo-title {
+    font-size: 1.15rem !important;
+  }
+
+  .hamburger {
+    width: 44px;
+    height: 44px;
+    margin-right: 0.4rem;
+  }
+
+  .hamburger span {
+    width: 20px;
+    height: 2.5px;
+  }
+
+  .header-actions {
+    gap: 0.5rem;
+  }
+
+  .header-actions .MuiButton-root,
+  .cart-button {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 11px !important;
+  }
+
+  .header-actions .MuiButton-root .MuiButton-startIcon i {
+    font-size: 1.15rem !important;
+  }
+
+  .cart-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .cart-counter {
+    min-width: 20px;
+    height: 20px;
+    font-size: 0.68rem;
+    top: -6px;
+    right: -6px;
+  }
+
+  .main-nav {
+    width: 280px;
+  }
+
+  .main-nav a {
+    padding: 1.1rem 1.5rem;
+    margin: 0.3rem 0.85rem;
+    font-size: 1rem;
+    gap: 14px;
+  }
+
+  .main-nav a i {
+    font-size: 1.3rem;
+    min-width: 30px;
+  }
+
+  .mobile-search {
+    padding: 1.25rem 1.25rem 1.75rem;
+  }
+}
+
+/* ==================== RESPONSIVE MÓVIL MUY PEQUEÑO (max-width: 375px) ==================== */
+@media (max-width: 375px) {
+  .main-header {
+    padding: 0.65rem 0.85rem;
+  }
+
+  .header-content {
+    gap: 0.4rem;
+  }
+
+  .logo {
+    max-width: 38px;
+  }
+
+  .logo-title {
+    font-size: 1.05rem !important;
+  }
+
+  .hamburger {
+    width: 42px;
+    height: 42px;
+    margin-right: 0.35rem;
+  }
+
+  .hamburger span {
+    width: 19px;
+  }
+
+  .header-actions {
+    gap: 0.45rem;
+  }
+
+  .header-actions .MuiButton-root,
+  .cart-button {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .header-actions .MuiButton-root .MuiButton-startIcon i {
+    font-size: 1.1rem !important;
+  }
+
+  .cart-icon {
+    width: 21px;
+    height: 21px;
+  }
+
+  .main-nav {
+    width: 270px;
+  }
+
+  .main-nav a {
+    padding: 1rem 1.35rem;
+    margin: 0.25rem 0.75rem;
+    font-size: 0.98rem;
+    gap: 12px;
+  }
+
+  .main-nav a i {
+    font-size: 1.25rem;
+    min-width: 28px;
+  }
+
+  .mobile-search {
+    padding: 1.15rem 1.15rem 1.5rem;
+  }
+}
+
 
 .nosotros-section-text {
   font-family: 'Montserrat', Arial, sans-serif;
@@ -1994,7 +2462,7 @@ code {
 }
 
 .login-text {
-    color: #718096;
+    color: #FFFFFF;
     font-size: 0.95rem;
 }
 
@@ -2621,38 +3089,58 @@ code {
 /* Responsive */
 @media (max-width: 768px) {
   .cart-drawer {
-    top: 70px;
-    right: 10px;
-    width: calc(100% - 20px);
-    max-width: 380px;
-    max-height: calc(100vh - 90px);
-  }
-  
-  .cart-drawer::before {
-    right: 14px;
-  }
-}
-
-@media (max-width: 480px) {
-  .cart-drawer {
-    top: 60px;
-    right: 0;
-    width: 100%;
-    max-width: 100%;
-    max-height: calc(100vh - 60px);
+    top: 0;
+    right: -100%;
+    width: 90%;
+    max-width: 400px;
+    height: 100vh;
+    max-height: 100vh;
     border-radius: 0;
+    box-shadow: -6px 0 40px rgba(0, 0, 0, 0.3);
+    transform: translateX(0);
+  }
+
+  .cart-drawer.open {
+    right: 0;
+    transform: translateX(0);
   }
   
   .cart-drawer::before {
     display: none;
   }
-  
-  .cart-drawer::after {
-    border-radius: 0;
+
+  .cart-header {
+    padding: 1.25rem 1.25rem 1rem;
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .cart-title {
+    font-size: 1.1rem;
+  }
+
+  .cart-close {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-drawer {
+    width: 100%;
+    max-width: 100%;
   }
   
   .cart-header {
-    padding: 1rem;
+    padding: 1.1rem 1rem 0.9rem;
+  }
+
+  .cart-title {
+    font-size: 1rem;
+  }
+
+  .cart-close {
+    width: 34px;
+    height: 34px;
   }
   
   .cart-product {

@@ -289,6 +289,15 @@ export const productService = {
         tiendaNombre: p.tienda_nombre || p.tiendaNombre || 'Tienda General'
       }));
       
+      // Cargar también productos creados localmente
+      const productosLocales = JSON.parse(localStorage.getItem('productos_locales') || '[]');
+      
+      if (productosLocales.length > 0) {
+        console.log(`📦 ${productosLocales.length} productos locales encontrados`);
+        // Combinar productos de la API con los locales
+        return [...productosAdaptados, ...productosLocales];
+      }
+      
       return productosAdaptados;
     } catch (error: any) {
       console.error('Error obteniendo productos de la API:', error.message);
@@ -372,6 +381,19 @@ export const productService = {
   // Método para obtener un producto local por ID
   getLocalProductById: (id: string | number) => {
     console.log('📁 Buscando producto en datos locales por ID:', id);
+    
+    // Primero buscar en productos guardados en localStorage (ID >= 1000)
+    const productosLocales = JSON.parse(localStorage.getItem('productos_locales') || '[]');
+    const productoLocalGuardado = productosLocales.find((p: any) => 
+      p.id === id || p.id === Number(id) || p.id?.toString() === id?.toString()
+    );
+    
+    if (productoLocalGuardado) {
+      console.log('✅ Producto encontrado en localStorage:', productoLocalGuardado.nombre);
+      return productoLocalGuardado;
+    }
+    
+    // Si no está en localStorage, buscar en products.json
     const localProduct = productsData.find((p: any) => 
       p.id === id || p.id === Number(id) || p.id?.toString() === id?.toString()
     );
@@ -402,13 +424,87 @@ export const productService = {
   },
 
   create: async (productData: any) => {
+    // ⚠️ NOTA: El endpoint POST /api/productos del backend tiene un bug
+    // que causa error 500: "INSERT has more target columns than expressions"
+    // Hasta que se solucione, guardamos los productos localmente
+    
+    console.warn('⚠️ Creando producto LOCALMENTE (API POST tiene bug en backend)');
+    console.log('📦 Datos del producto:', productData);
+    
+    // Obtener productos locales existentes
+    const productosLocales = JSON.parse(localStorage.getItem('productos_locales') || '[]');
+    
+    // Calcular el siguiente ID evitando conflictos con TODOS los productos de la API
+    let newId = 1000; // Empezar desde 1000 para evitar conflictos con cualquier tienda
+    
+    try {
+      // Obtener TODOS los productos de la API (todas las tiendas)
+      const responseAPI = await axios.get(`${API_BASE_URL}/api/productos`, {
+        timeout: 15000,
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      const todosProductosAPI = responseAPI.data as any[];
+      
+      // Encontrar el ID más alto de TODA la API
+      if (todosProductosAPI.length > 0) {
+        const maxIdAPI = Math.max(...todosProductosAPI.map((p: any) => {
+          const id = typeof p.id === 'string' ? parseInt(p.id) : p.id;
+          return isNaN(id) ? 0 : id;
+        }));
+        newId = Math.max(1000, maxIdAPI + 1);
+      }
+    } catch (error) {
+      console.warn('⚠️ No se pudo obtener productos de la API, usando ID 1000+');
+    }
+    
+    // Verificar IDs locales también
+    if (productosLocales.length > 0) {
+      const maxLocalId = Math.max(...productosLocales.map((p: any) => {
+        const id = typeof p.id === 'string' ? parseInt(p.id) : p.id;
+        return isNaN(id) ? 0 : id;
+      }));
+      newId = Math.max(newId, maxLocalId + 1);
+    }
+    
+    // Obtener nombre de categoría
+    const categorias = await categoryService.getAll();
+    const categoriaEncontrada = categorias.find((c: any) => 
+      c.id === Number(productData.categoriaId) || c.id === Number(productData.categoria_id)
+    );
+    
+    const productoLocal = {
+      id: newId,
+      nombre: productData.nombre || 'Nuevo Producto',
+      descripcion: productData.descripcion || 'Sin descripción',
+      precio: Number(productData.precio) || 0,
+      categoria: categoriaEncontrada?.nombre || productData.categoria || 'General',
+      categoriaId: Number(productData.categoriaId) || Number(productData.categoria_id) || 1,
+      imagen: productData.imagen || 'https://via.placeholder.com/300x200/10b981/FFFFFF?text=Producto',
+      stock: Number(productData.stock) || 0,
+      unidad: productData.unidad || 'unidad',
+      oferta: Boolean(productData.oferta || productData.destacado || false),
+      tiendaId: 1,
+      tiendaNombre: 'HuertoHogar'
+    };
+    
+    // Agregar a la lista y guardar
+    productosLocales.push(productoLocal);
+    localStorage.setItem('productos_locales', JSON.stringify(productosLocales));
+    
+    console.log(`✅ Producto guardado localmente con ID #${newId}:`, productoLocal);
+    
+    return {
+      id: newId,
+      nombre: productoLocal.nombre,
+      ...productoLocal
+    };
+    
+    /* CÓDIGO ORIGINAL (con bug en la API):
     try {
       console.log('🔄 Creando producto en API:', productData);
       
-      // Asegurar que categoria_id sea un número válido (mínimo 1)
       const categoriaId = Number(productData.categoriaId) || Number(productData.categoria_id) || 1;
-      
-      // Formatear precio como string con 2 decimales (como lo espera la API)
       const precioFormateado = Number(productData.precio).toFixed(2);
       
       const dataToSend = {
@@ -419,53 +515,25 @@ export const productService = {
         imagen: productData.imagen || 'https://via.placeholder.com/300x200/10b981/FFFFFF?text=Producto',
         stock: Number(productData.stock) || 0,
         unidad: productData.unidad || 'unidad',
-        destacado: Boolean(productData.oferta || productData.destacado || false),
-        tienda_id: 1 // Forzar tienda HuertoHogar
+        tienda_id: 1
       };
 
-      console.log('📤 Datos a enviar:', JSON.stringify(dataToSend, null, 2));
-
-      const apiUrl = `${API_BASE_URL}/api/productos`;
-      
-      // En producción (GitHub Pages), usar proxy CORS directamente
-      if (process.env.NODE_ENV === 'production') {
-        console.log('🌍 Producción: Usando proxy CORS para POST...');
-        
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
-        console.log('📤 URL con proxy:', proxyUrl);
-        
-        const response = await fetch(proxyUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          body: JSON.stringify(dataToSend)
-        });
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ Error del proxy:', response.status, errorText);
-          throw new Error(`Error ${response.status}: ${errorText}`);
-        }
-        
-        const data = await response.json();
-        console.log('✅ Producto creado via proxy:', data);
-        return data;
-      }
-      
-      // En desarrollo, llamada directa
-      const response = await axios.post(apiUrl, dataToSend, {
-        headers: { 'Content-Type': 'application/json' }
+      const response = await axios.post(`${API_BASE_URL}/api/productos`, dataToSend, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 15000
       });
       
-      console.log('✅ Producto creado exitosamente:', response.data);
-      return response.data;
+      const productoCreado = response.data as any;
+      return {
+        id: productoCreado.id || productoCreado.producto?.id,
+        nombre: productoCreado.nombre || productoCreado.producto?.nombre,
+        ...productoCreado
+      };
     } catch (error: any) {
       console.error('❌ Error creando producto:', error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || error.message || 'Error al crear producto');
+      throw new Error('Error del servidor: ' + (error.response?.data?.mensaje || 'Bug en POST /api/productos'));
     }
+    */
   },
 
   update: async (id: string | number, productData: any) => {
@@ -476,7 +544,7 @@ export const productService = {
       const dataToSend = {
         nombre: productData.nombre,
         descripcion: productData.descripcion || '',
-        precio: Number(productData.precio),
+        precio: Number(productData.precio).toFixed(2), // Formatear como string con 2 decimales
         categoria_id: productData.categoriaId || productData.categoria_id || 1,
         imagen: productData.imagen,
         stock: Number(productData.stock),
@@ -487,94 +555,59 @@ export const productService = {
 
       console.log('📤 Datos enviados a la API:', dataToSend);
 
-      // URL de la API
-      const apiUrl = `${API_BASE_URL}/api/productos/${id}`;
+      // IMPORTANTE: Usar la instancia api que ya tiene el interceptor con el token
+      const response = await api.put(`/api/productos/${id}`, dataToSend);
       
-      // En producción (GitHub Pages), usar proxy CORS directamente
-      if (process.env.NODE_ENV === 'production') {
-        console.log('🌍 Producción: Usando proxy CORS para PUT...');
-        
-        // Usar cors-anywhere alternativo o hacer fetch directo con headers custom
-        // Opción: usar un worker de Cloudflare o proxy público
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
-        
-        console.log('📤 URL con proxy:', proxyUrl);
-        
-        // Usar fetch nativo con más control
-        const response = await fetch(proxyUrl, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          body: JSON.stringify(dataToSend)
-        });
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ Error del proxy:', response.status, errorText);
-          throw new Error(`Error ${response.status}: ${errorText}`);
-        }
-        
-        const data = await response.json();
-        console.log('✅ Producto actualizado via proxy:', data);
-        return data;
-      }
-      
-      // En desarrollo, llamada directa
-      const response = await axios.put(apiUrl, dataToSend, {
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      });
       console.log('✅ Producto actualizado exitosamente en API:', response.data);
       return response.data;
     } catch (error: any) {
       console.error('❌ Error actualizando producto:', error.response?.data || error.message);
+      
+      // Si el error es por falta de autenticación
+      if (error.response?.status === 401) {
+        throw new Error('No tienes permisos. Debes iniciar sesión como administrador.');
+      }
+      
       throw new Error(error.response?.data?.message || error.message || 'Error al actualizar producto');
     }
   },
 
   delete: async (id: string | number) => {
     try {
-      console.log('🔄 Eliminando producto en API:', id);
+      console.log('🔄 Eliminando producto:', id);
       
-      const apiUrl = `${API_BASE_URL}/api/productos/${id}`;
+      // Verificar si es un producto local (ID >= 1000)
+      const numId = typeof id === 'string' ? parseInt(id) : id;
       
-      // En producción (GitHub Pages), usar proxy CORS directamente
-      if (process.env.NODE_ENV === 'production') {
-        console.log('🌍 Producción: Usando proxy CORS para DELETE...');
+      if (numId >= 1000) {
+        console.log('📦 Eliminando producto LOCAL de localStorage...');
         
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
-        console.log('📤 URL con proxy:', proxyUrl);
-        
-        const response = await fetch(proxyUrl, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          }
+        // Eliminar de localStorage
+        const productosLocales = JSON.parse(localStorage.getItem('productos_locales') || '[]');
+        const productosFiltrados = productosLocales.filter((p: any) => {
+          const pId = typeof p.id === 'string' ? parseInt(p.id) : p.id;
+          return pId !== numId;
         });
         
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ Error del proxy:', response.status, errorText);
-          throw new Error(`Error ${response.status}: ${errorText}`);
-        }
+        localStorage.setItem('productos_locales', JSON.stringify(productosFiltrados));
+        console.log(`✅ Producto local #${numId} eliminado de localStorage`);
         
-        console.log('✅ Producto eliminado via proxy');
-        return { success: true };
+        return { success: true, id: numId };
       }
       
-      // En desarrollo, llamada directa
-      const response = await axios.delete(apiUrl);
-      console.log('✅ Producto eliminado exitosamente');
+      // Si es un producto de la API (ID < 1000), intentar eliminar de la API
+      console.log('🔄 Eliminando producto de la API:', id);
+      const response = await api.delete(`/api/productos/${id}`);
+      
+      console.log('✅ Producto eliminado exitosamente de la API');
       return response.data;
     } catch (error: any) {
       console.error('❌ Error eliminando producto:', error.response?.data || error.message);
+      
+      if (error.response?.status === 401) {
+        throw new Error('No tienes permisos. Debes iniciar sesión como administrador.');
+      }
+      
       throw new Error(error.response?.data?.message || error.message || 'Error al eliminar producto');
     }
   },

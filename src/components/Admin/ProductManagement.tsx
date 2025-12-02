@@ -151,10 +151,10 @@ const ProductManagement = () => {
           oferta: formData.oferta
         };
         
-        const createdProduct = await productService.create(newProductData);
+        const createdProduct = await productService.create(newProductData) as any;
         
         // Guardar oferta en localStorage si está activada
-        if (formData.oferta && formData.descuento) {
+        if (formData.oferta && formData.descuento && createdProduct?.id) {
           const offersData = JSON.parse(localStorage.getItem('productOffers') || '{}');
           offersData[createdProduct.id] = {
             oferta: true,
