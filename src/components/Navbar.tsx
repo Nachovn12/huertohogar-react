@@ -16,6 +16,8 @@ const Navbar: React.FC = () => {
   // UI state
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
@@ -23,15 +25,32 @@ const Navbar: React.FC = () => {
   // total items in cart
   const cartItemsCount = getTotalItems ? getTotalItems() : 0;
 
-  // Manejar scroll para efectos del header
+  // Manejar scroll profesional para el header
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const currentScrollY = window.scrollY;
+      
+      // Detectar si ha hecho scroll
+      setIsScrolled(currentScrollY > 50);
+      
+      // Comportamiento hide/show profesional
+      if (currentScrollY < 10) {
+        // Siempre visible en el top
+        setIsHeaderVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 150) {
+        // Scroll hacia abajo - ocultar header
+        setIsHeaderVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        // Scroll hacia arriba - mostrar header
+        setIsHeaderVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   // Detect mobile breakpoint to hide desktop search input when on small screens
   useEffect(() => {
@@ -103,7 +122,7 @@ const Navbar: React.FC = () => {
   return (
     <>
       {/* Header principal */}
-      <header className={`main-header ${isScrolled ? 'scrolled' : ''}`}>
+      <header className={`main-header ${isScrolled ? 'scrolled' : ''} ${isHeaderVisible ? 'visible' : 'hidden'}`}>
         <div className="header-content">
           {/* Logo HuertoHogar */}
           <Link to="/" className="logo-container">
@@ -129,16 +148,16 @@ const Navbar: React.FC = () => {
           {/* Navegación principal */}
           <nav className={`main-nav ${isMenuOpen ? 'open' : ''}`}>
             <Link to="/" onClick={() => setIsMenuOpen(false)}>
-              <i className="fas fa-home"></i> Inicio
+              Inicio
             </Link>
             <Link to="/productos" onClick={() => setIsMenuOpen(false)}>
-              <i className="fas fa-shopping-basket"></i> Productos
+              Productos
             </Link>
             <Link to="/nosotros" onClick={() => setIsMenuOpen(false)}>
-              <i className="fas fa-leaf"></i> Nosotros
+              Nosotros
             </Link>
             <Link to="/blog" onClick={() => setIsMenuOpen(false)}>
-              <i className="fas fa-newspaper"></i> Blog
+              Blog
             </Link>
 
             {/* Login dentro del menú móvil - ANTES de la búsqueda */}

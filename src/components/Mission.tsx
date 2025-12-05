@@ -172,26 +172,30 @@ const Mission: FC = () => {
               alignItems: 'center' 
             }}>
               <Box sx={{
+                width: 200,
+                height: 200,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
                 background: 'linear-gradient(135deg, #f0f9f4 0%, #e8f5e9 100%)',
                 borderRadius: '50%',
-                p: 5,
                 boxShadow: '0 10px 40px rgba(46, 139, 87, 0.25)',
                 border: '4px solid #ffffff',
                 position: 'relative',
                 '&::before': {
                   content: '""',
                   position: 'absolute',
-                  top: -10,
-                  left: -10,
-                  right: -10,
-                  bottom: -10,
+                  top: '50%',
+                  left: '50%',
+                  width: 'calc(100% + 24px)',
+                  height: 'calc(100% + 24px)',
                   borderRadius: '50%',
                   border: '2px dashed rgba(46, 139, 87, 0.3)',
                   animation: 'rotate 20s linear infinite'
                 },
                 '@keyframes rotate': {
-                  '0%': { transform: 'rotate(0deg)' },
-                  '100%': { transform: 'rotate(360deg)' }
+                  '0%': { transform: 'translate(-50%, -50%) rotate(0deg)' },
+                  '100%': { transform: 'translate(-50%, -50%) rotate(360deg)' }
                 }
               }}>
                 <AgricultureIcon sx={{ 

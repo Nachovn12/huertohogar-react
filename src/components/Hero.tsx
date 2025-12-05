@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Box, Typography, Button, Container } from '@mui/material';
 
 const Hero: React.FC = () => (
@@ -87,7 +88,8 @@ const Hero: React.FC = () => (
         seleccionados para ti
       </Typography>
       <Button
-        href="/productos"
+        component={Link}
+        to="/productos"
         variant="contained"
         size="large"
         sx={{

@@ -12,6 +12,9 @@ import Receipt from '@mui/icons-material/Receipt';
 import FileDownload from '@mui/icons-material/FileDownload';
 import BarChart from '@mui/icons-material/BarChart';
 import PieChart from '@mui/icons-material/PieChart';
+import { productService } from '../../service/api';
+import * as XLSX from 'xlsx';
+import notify from '../../utils/toast';
 
 // Registrar locale español
 registerLocale('es', es);
@@ -39,13 +42,67 @@ const categoryData = [
 const AdminReports = () => {
   const [fromDate, setFromDate] = useState<Date>(new Date(2025, 10, 1)); // Nov 1, 2025
   const [toDate, setToDate] = useState<Date>(new Date(2025, 10, 30)); // Nov 30, 2025
+  const [products, setProducts] = useState<any[]>([]);
+  const [salesData, setSalesData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Cargar datos reales: Productos (API) y Ventas (LocalStorage)
+  React.useEffect(() => {
+    const loadData = async () => {
+      try {
+        // 1. Cargar productos de la API (HuertoHogar)
+        const productsApi = await productService.getAll();
+        setProducts(productsApi);
+
+        // 2. Cargar historial de ventas reales del almacenamiento local
+        const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        
+        // 3. Procesar y normalizar datos de ventas
+        const realSales = storedOrders.map((order: any) => {
+            // Intentar obtener la categoría real buscando el primer producto en la lista de la API
+            let category = 'General';
+            const firstItemName = order.items?.[0]?.name;
+            
+            if (firstItemName) {
+                const productMatch = (productsApi as any[]).find((p: any) => p.nombre === firstItemName);
+                if (productMatch) {
+                    category = productMatch.categoria || 'General';
+                }
+            }
+
+            return {
+                id: order.id, // ID local (ej: timestamp o string)
+                date: order.date, // Fecha real de la compra
+                total: order.total,
+                items: order.items ? order.items.reduce((acc: number, item: any) => acc + item.quantity, 0) : 0,
+                category: category,
+                status: order.status === 'delivered' ? 'completado' : 'pendiente', // Normalizar estado
+                productName: firstItemName || 'Varios'
+            };
+        });
+
+        // Ordenar por fecha descendente
+        realSales.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        
+        setSalesData(realSales);
+        console.log(`✅ Reportes cargados: ${realSales.length} ventas reales encontradas.`);
+
+      } catch (error) {
+        console.error("Error loading data for reports", error);
+        notify.error('Error al cargar datos de reportes');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
 
   const filtered = useMemo(() => {
-    return sampleSales.filter(s => {
+    return salesData.filter(s => {
       const d = new Date(s.date);
       return d >= fromDate && d <= toDate;
     });
-  }, [fromDate, toDate]);
+  }, [fromDate, toDate, salesData]);
 
   const formatDateStr = (date: Date) => {
     return date.toISOString().split('T')[0];

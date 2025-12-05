@@ -24,15 +24,18 @@ import MisPedidos from './components/MisPedidos';
 
 import { CartProvider } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastContainer } from './utils/toast';
 
 import AdminLayout from './components/Admin/AdminLayout';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import OrderManagement from './components/Admin/OrderManagement';
 import ProductManagement from './components/Admin/ProductManagement';
 import UserManagement from './components/Admin/UserManagement';
-import AdminCategories from './components/Admin/AdminCategories';
 import AdminReports from './components/Admin/AdminReports';
 import AdminProfile from './components/Admin/AdminProfile';
+import Chatbot from './components/Chatbot';
+import TrustBadges from './components/TrustBadges';
+import OfferBanner from './components/OfferBanner';
 
 // Importa tu hoja de estilos global
 import './styles/App.css';
@@ -52,8 +55,9 @@ const App: React.FC = () => {
         <CartProvider>
           <ScrollToTop />
           <div className="App" style={{ background: '#F7F7F7', minHeight: '100vh' }}>
+            <OfferBanner />
             <Routes>
-              <Route path="/" element={<><Navbar /><Hero /><Categories /><SpecialOffers /><FeaturedProducts /><Mission /><Footer /></>} />
+              <Route path="/" element={<><Navbar /><Hero /><Categories /><SpecialOffers /><FeaturedProducts /><TrustBadges /><Mission /><Footer /></>} />
               
               {/* Ruta de Login con Navbar y Footer */}
               <Route path="/login" element={<><Navbar /><Login /><Footer noMargin /></>} />
@@ -77,7 +81,6 @@ const App: React.FC = () => {
                   <Route path="ordenes" element={<OrderManagement />} />
                   <Route path="productos" element={<ProductManagement />} />
                   <Route path="usuarios" element={<UserManagement />} />
-                  <Route path="categorias" element={<AdminCategories />} />
                   <Route path="reportes" element={<AdminReports />} />
                   <Route path="perfil" element={<AdminProfile />} />
                 </Route>
@@ -86,9 +89,11 @@ const App: React.FC = () => {
               <Route path="/admin-old" element={<><Navbar /><AdminPanel /><Footer /></>} />
             </Routes>
             <Cart />
+            <Chatbot />
           </div>
         </CartProvider>
       </AuthProvider>
+      <ToastContainer />
     </Router>
   );
 };

@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import InventoryIcon from '@mui/icons-material/Inventory';
-import CategoryIcon from '@mui/icons-material/Category';
 import PeopleIcon from '@mui/icons-material/People';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import PersonIcon from '@mui/icons-material/Person';
@@ -20,10 +19,8 @@ const AdminSidebar = () => {
     { path: '/admin/dashboard', icon: <DashboardIcon />, label: 'Dashboard' },
     { path: '/admin/ordenes', icon: <ShoppingCartIcon />, label: 'Órdenes' },
     { path: '/admin/productos', icon: <InventoryIcon />, label: 'Productos' },
-    { path: '/admin/categorias', icon: <CategoryIcon />, label: 'Categorías' },
     { path: '/admin/usuarios', icon: <PeopleIcon />, label: 'Usuarios' },
     { path: '/admin/reportes', icon: <AssessmentIcon />, label: 'Reportes' },
-    { path: '/admin/perfil', icon: <PersonIcon />, label: 'Perfil' }
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -167,7 +164,10 @@ const AdminSidebar = () => {
         
         {/* Botón Cerrar Sesión */}
         <button 
-          onClick={logout}
+          onClick={() => {
+            sessionStorage.removeItem('admin_welcome_shown');
+            logout();
+          }}
           style={{
             display: 'flex',
             alignItems: 'center',

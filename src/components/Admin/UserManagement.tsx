@@ -34,6 +34,7 @@ const UserManagement = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
     role: 'customer',
     status: 'active'
   });
@@ -64,6 +65,7 @@ const UserManagement = () => {
     setFormData({
       name: '',
       email: '',
+      password: '',
       role: 'customer',
       status: 'active'
     });
@@ -76,6 +78,7 @@ const UserManagement = () => {
     setFormData({
       name: user.name,
       email: user.email,
+      password: '', // No mostramos la contraseña
       role: user.role,
       status: user.status
     });
@@ -117,50 +120,41 @@ const UserManagement = () => {
         console.log('📤 Creando usuario en la API...');
         const newUserData = {
           nombre: formData.name,
-          email: formData.email
+          email: formData.email,
+          password: formData.password // ✅ REQUERIDO por la API
         };
         
-        const apiUrl = 'https://api-dfs2-dm-production.up.railway.app/api/usuarios';
-        
-        // En producción, usar proxy CORS
-        let response;
-        if (process.env.NODE_ENV === 'production') {
-          const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
-          const fetchResponse = await fetch(proxyUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify(newUserData)
-          });
-          
-          if (!fetchResponse.ok) {
-            throw new Error('Error al crear usuario');
-          }
-          response = await fetchResponse.json();
-        } else {
-          const axiosResponse = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newUserData)
-          });
-          response = await axiosResponse.json();
-        }
-        
-        console.log('✅ Usuario creado:', response);
+        await userService.create(newUserData);
+        console.log('✅ Usuario creado exitosamente');
         
         // Recargar usuarios desde la API
         await loadUsers();
         showAlertMessage('Usuario agregado exitosamente', 'success');
       } else {
-        // Actualizar usuario (local por ahora ya que la API puede no soportar PUT)
-        setUsers(users.map(u => 
-          u.id === (currentUser as any).id 
-            ? { ...u, name: formData.name, email: formData.email, role: formData.role, status: formData.status }
-            : u
-        ));
-        showAlertMessage('Usuario actualizado exitosamente', 'info');
+        // Actualizar usuario en la API
+        console.log('📤 Actualizando usuario en la API...');
+        const updateData = {
+          nombre: formData.name,
+          email: formData.email,
+          rol: formData.role,
+          estado: formData.status
+        };
+        
+        try {
+          await userService.update((currentUser as any).id, updateData);
+          console.log('✅ Usuario actualizado exitosamente');
+          
+          // Recargar usuarios desde la API
+          await loadUsers();
+          showAlertMessage('Usuario actualizado exitosamente', 'success');
+        } catch (updateError: any) {
+          // Si la API no soporta UPDATE (404), mostrar mensaje informativo
+          if (updateError.response?.status === 404 || updateError.message?.includes('404')) {
+            showAlertMessage('⚠️ La API no permite editar usuarios. Solo puedes crear nuevos usuarios.', 'warning');
+          } else {
+            throw updateError;
+          }
+        }
       }
 
       setShowModal(false);
@@ -824,6 +818,29 @@ const UserManagement = () => {
                   }}
                 />
               </div>
+
+              {/* Password - Solo visible al crear */}
+              {modalMode === 'add' && (
+                <div>
+                  <Form.Label style={{ fontWeight: 600, color: '#374151', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    🔒 Contraseña *
+                  </Form.Label>
+                  <Form.Control
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    placeholder="Mínimo 6 caracteres"
+                    minLength={6}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      borderRadius: '10px',
+                      border: '2px solid #e5e7eb',
+                      fontSize: '0.95rem'
+                    }}
+                  />
+                </div>
+              )}
 
               {/* Rol */}
               <div>

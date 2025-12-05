@@ -37,8 +37,8 @@ const SpecialOffers: React.FC = () => {
   }
 
   // Usar directamente los productos que vienen del hook (ya filtrados por oferta en la API/adaptador)
-  // Tomamos solo los primeros 4 para mostrar en esta sección
-  const offers = products.slice(0, 4);
+  // Tomamos solo los primeros 3 para mostrar en una fila de 3 cards
+  const offers = products.slice(0, 3);
 
   return (
     <Box sx={{ 
@@ -61,7 +61,7 @@ const SpecialOffers: React.FC = () => {
           <Typography sx={{ color: '#666666', fontSize: { xs: '0.85rem', md: '1rem' }, fontFamily: 'Montserrat, Arial, sans-serif', maxWidth: 600, mx: 'auto', lineHeight: 1.6, px: { xs: 2, md: 0 } }}>Aprovecha estas ofertas limitadas en nuestros productos más frescos y de mejor calidad</Typography>
         </Box>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(2, 1fr)' }, gap: { xs: 2, sm: 2.5, md: 3 }, position: 'relative', zIndex: 1, width: '100%', boxSizing: 'border-box', maxWidth: '800px', mx: 'auto' }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: { xs: 2, sm: 2.5, md: 3 }, position: 'relative', zIndex: 1, width: '100%', boxSizing: 'border-box', maxWidth: '100%', mx: 'auto' }}>
           {offers.map((item) => {
             const isOffer = item.oferta && item.offerPrice && item.offerPrice < item.precio;
             const currentPrice = isOffer ? item.offerPrice : item.precio;
@@ -346,6 +346,94 @@ const SpecialOffers: React.FC = () => {
               </CardContent>
             </Card>
           )})}
+        </Box>
+
+        {/* Botón Ver Todas las Ofertas - Profesional */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          mt: { xs: 4, md: 6 },
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <Button
+            component={Link}
+            to="/ofertas"
+            variant="contained"
+            size="large"
+            sx={{
+              background: 'linear-gradient(135deg, #2E8B57 0%, #1f6a3f 100%)',
+              color: 'white',
+              px: { xs: 4, md: 6 },
+              py: { xs: 1.5, md: 2 },
+              borderRadius: 50,
+              fontSize: { xs: '0.95rem', md: '1.05rem' },
+              fontWeight: 700,
+              textTransform: 'none',
+              fontFamily: 'Montserrat, Arial, sans-serif',
+              boxShadow: '0 8px 24px rgba(46, 139, 87, 0.35)',
+              border: '2px solid rgba(255, 255, 255, 0.2)',
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                transition: 'left 0.6s',
+              },
+              '&:hover': {
+                transform: 'translateY(-4px) scale(1.02)',
+                boxShadow: '0 12px 32px rgba(46, 139, 87, 0.45)',
+                background: 'linear-gradient(135deg, #257d4a 0%, #1a5a35 100%)',
+                '&::before': {
+                  left: '100%',
+                },
+              },
+              '&:active': {
+                transform: 'translateY(-2px) scale(1.01)',
+              }
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <i className="fas fa-tags" style={{ fontSize: '18px' }}></i>
+              <span>Ver Todas las Ofertas</span>
+              <i className="fas fa-arrow-right" style={{ fontSize: '14px' }}></i>
+            </Box>
+          </Button>
+        </Box>
+
+        {/* Texto informativo adicional */}
+        <Box sx={{ 
+          textAlign: 'center', 
+          mt: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 1
+        }}>
+          <Typography sx={{ 
+            color: '#666', 
+            fontSize: '0.85rem',
+            fontFamily: 'Montserrat, Arial, sans-serif',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5
+          }}>
+            <i className="fas fa-clock" style={{ color: '#2E8B57', fontSize: '14px' }}></i>
+            Ofertas por tiempo limitado
+          </Typography>
+          <Typography sx={{ 
+            color: '#999', 
+            fontSize: '0.75rem',
+            fontFamily: 'Montserrat, Arial, sans-serif'
+          }}>
+            ¡No te pierdas nuestros descuentos exclusivos!
+          </Typography>
         </Box>
       </Box>
     </Box>

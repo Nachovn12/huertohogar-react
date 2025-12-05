@@ -289,15 +289,6 @@ export const productService = {
         tiendaNombre: p.tienda_nombre || p.tiendaNombre || 'Tienda General'
       }));
       
-      // Cargar también productos creados localmente
-      const productosLocales = JSON.parse(localStorage.getItem('productos_locales') || '[]');
-      
-      if (productosLocales.length > 0) {
-        console.log(`📦 ${productosLocales.length} productos locales encontrados`);
-        // Combinar productos de la API con los locales
-        return [...productosAdaptados, ...productosLocales];
-      }
-      
       return productosAdaptados;
     } catch (error: any) {
       console.error('Error obteniendo productos de la API:', error.message);
@@ -424,83 +415,6 @@ export const productService = {
   },
 
   create: async (productData: any) => {
-    // ⚠️ NOTA: El endpoint POST /api/productos del backend tiene un bug
-    // que causa error 500: "INSERT has more target columns than expressions"
-    // Hasta que se solucione, guardamos los productos localmente
-    
-    console.warn('⚠️ Creando producto LOCALMENTE (API POST tiene bug en backend)');
-    console.log('📦 Datos del producto:', productData);
-    
-    // Obtener productos locales existentes
-    const productosLocales = JSON.parse(localStorage.getItem('productos_locales') || '[]');
-    
-    // Calcular el siguiente ID evitando conflictos con TODOS los productos de la API
-    let newId = 1000; // Empezar desde 1000 para evitar conflictos con cualquier tienda
-    
-    try {
-      // Obtener TODOS los productos de la API (todas las tiendas)
-      const responseAPI = await axios.get(`${API_BASE_URL}/api/productos`, {
-        timeout: 15000,
-        headers: { 'Content-Type': 'application/json' }
-      });
-      
-      const todosProductosAPI = responseAPI.data as any[];
-      
-      // Encontrar el ID más alto de TODA la API
-      if (todosProductosAPI.length > 0) {
-        const maxIdAPI = Math.max(...todosProductosAPI.map((p: any) => {
-          const id = typeof p.id === 'string' ? parseInt(p.id) : p.id;
-          return isNaN(id) ? 0 : id;
-        }));
-        newId = Math.max(1000, maxIdAPI + 1);
-      }
-    } catch (error) {
-      console.warn('⚠️ No se pudo obtener productos de la API, usando ID 1000+');
-    }
-    
-    // Verificar IDs locales también
-    if (productosLocales.length > 0) {
-      const maxLocalId = Math.max(...productosLocales.map((p: any) => {
-        const id = typeof p.id === 'string' ? parseInt(p.id) : p.id;
-        return isNaN(id) ? 0 : id;
-      }));
-      newId = Math.max(newId, maxLocalId + 1);
-    }
-    
-    // Obtener nombre de categoría
-    const categorias = await categoryService.getAll();
-    const categoriaEncontrada = categorias.find((c: any) => 
-      c.id === Number(productData.categoriaId) || c.id === Number(productData.categoria_id)
-    );
-    
-    const productoLocal = {
-      id: newId,
-      nombre: productData.nombre || 'Nuevo Producto',
-      descripcion: productData.descripcion || 'Sin descripción',
-      precio: Number(productData.precio) || 0,
-      categoria: categoriaEncontrada?.nombre || productData.categoria || 'General',
-      categoriaId: Number(productData.categoriaId) || Number(productData.categoria_id) || 1,
-      imagen: productData.imagen || 'https://via.placeholder.com/300x200/10b981/FFFFFF?text=Producto',
-      stock: Number(productData.stock) || 0,
-      unidad: productData.unidad || 'unidad',
-      oferta: Boolean(productData.oferta || productData.destacado || false),
-      tiendaId: 1,
-      tiendaNombre: 'HuertoHogar'
-    };
-    
-    // Agregar a la lista y guardar
-    productosLocales.push(productoLocal);
-    localStorage.setItem('productos_locales', JSON.stringify(productosLocales));
-    
-    console.log(`✅ Producto guardado localmente con ID #${newId}:`, productoLocal);
-    
-    return {
-      id: newId,
-      nombre: productoLocal.nombre,
-      ...productoLocal
-    };
-    
-    /* CÓDIGO ORIGINAL (con bug en la API):
     try {
       console.log('🔄 Creando producto en API:', productData);
       
@@ -515,25 +429,47 @@ export const productService = {
         imagen: productData.imagen || 'https://via.placeholder.com/300x200/10b981/FFFFFF?text=Producto',
         stock: Number(productData.stock) || 0,
         unidad: productData.unidad || 'unidad',
-        tienda_id: 1
+        destacado: Boolean(productData.destacado || productData.oferta || false),
+        tienda_id: 4 // ID de HuertoHogar
       };
 
-      const response = await axios.post(`${API_BASE_URL}/api/productos`, dataToSend, {
-        headers: { 'Content-Type': 'application/json' },
-        timeout: 15000
-      });
+      console.log('📤 Datos enviados a la API:', dataToSend);
+
+      const response = await api.post(`/api/productos`, dataToSend);
+      
+      console.log('✅ Producto creado exitosamente:', response.data);
       
       const productoCreado = response.data as any;
       return {
         id: productoCreado.id || productoCreado.producto?.id,
         nombre: productoCreado.nombre || productoCreado.producto?.nombre,
-        ...productoCreado
+        descripcion: productoCreado.descripcion,
+        precio: parseFloat(productoCreado.precio),
+        categoria: productData.categoria,
+        categoriaId: productoCreado.categoria_id,
+        imagen: productoCreado.imagen,
+        stock: productoCreado.stock,
+        unidad: productoCreado.unidad,
+        oferta: productoCreado.destacado,
+        destacado: productoCreado.destacado,
+        tiendaId: 4,
+        tiendaNombre: 'Huerto Orgánico del Profesor'
       };
     } catch (error: any) {
       console.error('❌ Error creando producto:', error.response?.data || error.message);
-      throw new Error('Error del servidor: ' + (error.response?.data?.mensaje || 'Bug en POST /api/productos'));
+      
+      if (error.response?.status === 401) {
+        throw new Error('No tienes permisos. Debes iniciar sesión como administrador.');
+      }
+      
+      const errorMessage = error.response?.data?.error 
+        || error.response?.data?.mensaje 
+        || error.response?.data?.message
+        || error.message 
+        || 'Error al crear el producto';
+      
+      throw new Error(errorMessage);
     }
-    */
   },
 
   update: async (id: string | number, productData: any) => {
@@ -544,13 +480,13 @@ export const productService = {
       const dataToSend = {
         nombre: productData.nombre,
         descripcion: productData.descripcion || '',
-        precio: Number(productData.precio).toFixed(2), // Formatear como string con 2 decimales
+        precio: Number(productData.precio).toFixed(2),
         categoria_id: productData.categoriaId || productData.categoria_id || 1,
         imagen: productData.imagen,
         stock: Number(productData.stock),
         unidad: productData.unidad || 'unidad',
-        destacado: productData.oferta || false,
-        tienda_id: productData.tiendaId || productData.tienda_id || 1
+        destacado: productData.oferta || productData.destacado || false,
+        tienda_id: 4 // Siempre HuertoHogar
       };
 
       console.log('📤 Datos enviados a la API:', dataToSend);
@@ -592,26 +528,7 @@ export const productService = {
 
   delete: async (id: string | number) => {
     try {
-      console.log('🔄 Eliminando producto:', id);
-      
-      // Verificar si es un producto local (ID >= 1000)
-      const numId = typeof id === 'string' ? parseInt(id) : id;
-      
-      if (numId >= 1000) {
-        console.log('📦 Eliminando producto LOCAL de localStorage...');
-        
-        // Eliminar de localStorage
-        const productosLocales = JSON.parse(localStorage.getItem('productos_locales') || '[]');
-        const productosFiltrados = productosLocales.filter((p: any) => {
-          const pId = typeof p.id === 'string' ? parseInt(p.id) : p.id;
-          return pId !== numId;
-        });
-        
-        localStorage.setItem('productos_locales', JSON.stringify(productosFiltrados));
-        console.log(`✅ Producto local #${numId} eliminado de localStorage`);
-        
-        return { success: true, id: numId };
-      }
+      console.log('🔄 Eliminando producto de la API:', id);
       
       // En producción, usar proxy CORS para DELETE
       if (process.env.NODE_ENV === 'production') {
@@ -628,7 +545,6 @@ export const productService = {
       }
       
       // En desarrollo, llamada directa
-      console.log('🔄 Eliminando producto de la API:', id);
       const response = await api.delete(`/api/productos/${id}`);
       
       console.log('✅ Producto eliminado exitosamente de la API');
@@ -831,8 +747,16 @@ export const userService = {
         return 'customer'; // Por defecto, todos los nuevos usuarios son clientes
       };
       
+      
+      // FILTRO: Solo usuarios de HuertoHogar (email @huertohogar.com)
+      const usuariosHuerto = (response.data as any[]).filter((u: any) => 
+        u.email && u.email.endsWith('@huertohogar.com')
+      );
+      
+      console.log(`🎯 Filtrados ${usuariosHuerto.length} usuarios de HuertoHogar (de ${(response.data as any[]).length} totales)`);
+      
       // Adaptar estructura de la API
-      const usuariosAdaptados = (response.data as any[]).map((u: any) => ({
+      const usuariosAdaptados = usuariosHuerto.map((u: any) => ({
         id: u.id,
         name: u.nombre || u.name || 'Usuario',
         email: u.email,
@@ -856,6 +780,20 @@ export const userService = {
       return response.data;
     } catch (error) {
       console.error('Error obteniendo usuario:', error);
+      throw error;
+    }
+  },
+
+  create: async (userData: any) => {
+    try {
+      console.log('🔄 Creando usuario en API:', userData);
+      
+      const response = await api.post('/api/usuarios', userData);
+      
+      console.log('✅ Usuario creado exitosamente:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Error creando usuario:', error);
       throw error;
     }
   },

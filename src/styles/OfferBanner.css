@@ -1,0 +1,263 @@
+/* ============================================
+   OFFER BANNER - BANNER DE OFERTAS FLASH
+   ============================================ */
+
+.offer-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+  padding: 12px 20px;
+  box-shadow: 0 4px 20px rgba(231, 76, 60, 0.3);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Estados de visibilidad */
+.offer-banner.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.offer-banner.hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.offer-banner-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.offer-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse-icon 2s infinite;
+}
+
+.offer-icon i {
+  font-size: 20px;
+  color: #ffd700;
+}
+
+@keyframes pulse-icon {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.offer-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.offer-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #ffd700;
+  text-transform: uppercase;
+}
+
+.offer-message {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.offer-message strong {
+  font-size: 18px;
+  color: #ffd700;
+  font-weight: 900;
+}
+
+.offer-timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 16px;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.timer-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 40px;
+}
+
+.timer-value {
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+  font-family: 'Courier New', monospace;
+}
+
+.timer-label {
+  font-size: 10px;
+  opacity: 0.8;
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.timer-separator {
+  font-size: 20px;
+  font-weight: 700;
+  opacity: 0.6;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.offer-cta {
+  background: white;
+  color: #e74c3c;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.offer-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  background: #ffd700;
+  color: #c0392b;
+}
+
+.offer-cta i {
+  transition: transform 0.3s ease;
+}
+
+.offer-cta:hover i {
+  transform: translateX(4px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .offer-banner {
+    padding: 10px 15px;
+  }
+
+  .offer-banner-content {
+    gap: 12px;
+  }
+
+  .offer-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .offer-icon i {
+    font-size: 18px;
+  }
+
+  .offer-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .offer-label {
+    font-size: 10px;
+  }
+
+  .offer-message {
+    font-size: 13px;
+  }
+
+  .offer-message strong {
+    font-size: 15px;
+  }
+
+  .offer-timer {
+    padding: 6px 12px;
+    gap: 6px;
+  }
+
+  .timer-unit {
+    min-width: 32px;
+  }
+
+  .timer-value {
+    font-size: 16px;
+  }
+
+  .timer-label {
+    font-size: 9px;
+  }
+
+  .timer-separator {
+    font-size: 16px;
+  }
+
+  .offer-cta {
+    padding: 8px 18px;
+    font-size: 13px;
+  }
+
+  .offer-close {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .offer-banner-content {
+    justify-content: flex-start;
+  }
+
+  .offer-timer {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .offer-cta {
+    order: 2;
+  }
+}
