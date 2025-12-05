@@ -54,6 +54,34 @@ const Chatbot: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
+  // Bloquear scroll y ocultar banner en móvil cuando el chat está abierto
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth <= 768;
+      
+      if (isOpen && isMobile) {
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('chatbot-open-mobile');
+      } else {
+        document.body.style.overflow = 'unset';
+        document.body.classList.remove('chatbot-open-mobile');
+      }
+    };
+
+    // Ejecutar al abrir/cerrar
+    handleResize();
+
+    // Escuchar cambios de tamaño
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      // Limpieza al desmontar
+      document.body.style.overflow = 'unset';
+      document.body.classList.remove('chatbot-open-mobile');
+    };
+  }, [isOpen]);
+
   const addBotMessage = (text: string, suggestions?: string[], productLinks?: { text: string; url: string }[]) => {
     const newMessage: Message = {
       id: Date.now(),
@@ -363,6 +391,14 @@ const Chatbot: React.FC = () => {
                 </div>
               </div>
             </div>
+            
+            <button 
+              className="chatbot-close"
+              onClick={() => setIsOpen(false)}
+              aria-label="Cerrar chat"
+            >
+              <i className="fas fa-times"></i>
+            </button>
           </div>
 
           {/* Mensajes */}

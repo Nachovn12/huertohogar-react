@@ -5,205 +5,205 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import AgricultureIcon from '@mui/icons-material/Agriculture';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 const Mission: FC = () => {
   const navigate = useNavigate();
+  
+  const values = [
+    'Productos 100% orgánicos certificados',
+    'Apoyo directo a agricultores locales',
+    'Entrega fresca en 24-48 horas',
+    'Prácticas sostenibles y ecológicas'
+  ];
+
   return (
     <Box sx={{ 
-      bgcolor: '#f0f9f4',
-      background: 'linear-gradient(135deg, #f0f9f4 0%, #e8f5e9 100%)',
-      py: { xs: 8, md: 12 },
-      position: 'relative',
-      overflow: 'hidden',
-      '&::before': {
-        content: '""',
-        position: 'absolute',
-        top: '-50%',
-        right: '-10%',
-        width: '500px',
-        height: '500px',
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(46, 139, 87, 0.08) 0%, transparent 70%)',
-        pointerEvents: 'none'
-      },
-      '&::after': {
-        content: '""',
-        position: 'absolute',
-        bottom: '-50%',
-        left: '-10%',
-        width: '500px',
-        height: '500px',
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(139, 69, 19, 0.06) 0%, transparent 70%)',
-        pointerEvents: 'none'
-      }
+      bgcolor: '#ffffff',
+      py: { xs: 8, md: 12 }
     }}>
       <Container maxWidth="lg">
         <Box sx={{ 
-          bgcolor: '#ffffff', 
-          py: { xs: 6, md: 10 }, 
-          px: { xs: 3, md: 8 }, 
-          borderRadius: 5,
-          border: '2px solid #f0f0f0',
-          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08)',
-          position: 'relative',
-          zIndex: 1,
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' }, 
+          alignItems: 'center', 
+          gap: { xs: 6, md: 8 },
+          bgcolor: '#f8fafc',
+          borderRadius: 4,
           overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '6px',
-            background: 'linear-gradient(90deg, #2E8B57 0%, #8B4513 50%, #FFD700 100%)'
-          }
+          border: '1px solid #e2e8f0'
         }}>
+          {/* Imagen profesional */}
           <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', md: 'row' }, 
-            alignItems: 'center', 
-            gap: { xs: 5, md: 8 } 
+            flex: 1,
+            width: '100%',
+            minHeight: { xs: 350, md: 500 },
+            position: 'relative',
+            overflow: 'hidden'
           }}>
-            <Box sx={{ flex: 2 }}>
-              {/* Badge */}
-              <Box sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 1,
-                mb: 3,
-                px: 2.5,
-                py: 0.8,
-                borderRadius: 8,
-                bgcolor: 'rgba(46, 139, 87, 0.1)',
-                border: '1px solid rgba(46, 139, 87, 0.2)'
-              }}>
-                <Typography sx={{ fontSize: '1rem' }}>🌱</Typography>
-                <Typography sx={{ 
-                  color: '#2E8B57', 
-                  fontWeight: 700,
-                  fontSize: '0.8rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1.2px',
-                  fontFamily: 'Montserrat, Arial, sans-serif'
+            <Box
+              component="img"
+              src="https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800&auto=format&fit=crop&q=80"
+              alt="Vegetales frescos del campo chileno"
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                position: 'absolute',
+                top: 0,
+                left: 0
+              }}
+            />
+            
+            {/* Overlay con gradiente */}
+            <Box sx={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '60%',
+              background: 'linear-gradient(to top, rgba(22, 163, 74, 0.85) 0%, rgba(22, 163, 74, 0.4) 50%, transparent 100%)',
+              display: 'flex',
+              alignItems: 'flex-end',
+              p: 4
+            }}>
+              <Box>
+                <Typography sx={{
+                  color: '#fff',
+                  fontSize: { xs: '1.8rem', md: '2.2rem' },
+                  fontWeight: 900,
+                  fontFamily: 'Playfair Display, serif',
+                  textShadow: '2px 2px 8px rgba(0,0,0,0.5)',
+                  lineHeight: 1.2,
+                  mb: 0.5
                 }}>
-                  Nuestra Misión
+                  Del Campo Chileno
+                </Typography>
+                <Typography sx={{
+                  color: '#dcfce7',
+                  fontSize: { xs: '1.4rem', md: '1.6rem' },
+                  fontWeight: 600,
+                  fontFamily: 'Montserrat, Arial, sans-serif',
+                  fontStyle: 'italic',
+                  textShadow: '2px 2px 8px rgba(0,0,0,0.5)'
+                }}>
+                  Directo a Tu Mesa
                 </Typography>
               </Box>
-
-              <Typography variant="h3" sx={{ 
-                fontWeight: 800, 
-                mb: 3, 
-                color: '#1a1a1a',
-                fontFamily: 'Playfair Display, serif',
-                fontSize: { xs: '2rem', md: '2.5rem' },
-                letterSpacing: '-1px',
-                lineHeight: 1.2
-              }}>
-                Conectarte con la{' '}
-                <span style={{ 
-                  background: 'linear-gradient(135deg, #2E8B57 0%, #34d399 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
-                }}>
-                  Tierra
-                </span>
-              </Typography>
-              
-              <Typography variant="body1" sx={{ 
-                color: '#666666', 
-                mb: 4, 
-                fontFamily: 'Montserrat, Arial, sans-serif',
-                fontSize: '1.05rem',
-                lineHeight: 1.8
-              }}>
-                Proporcionar productos <strong style={{ color: '#2E8B57' }}>frescos y de calidad</strong> directamente desde el campo chileno 
-                hasta tu hogar, garantizando frescura y sabor en cada entrega. Apoyamos a 
-                agricultores locales y promovemos prácticas <strong style={{ color: '#8B4513' }}>sostenibles</strong> para una vida saludable.
-              </Typography>
-
-              <Button 
-                variant="contained" 
-                size="large" 
-                sx={{ 
-                  bgcolor: '#2E8B57', 
-                  color: '#fff', 
-                  fontWeight: 700, 
-                  borderRadius: 3, 
-                  boxShadow: '0 6px 20px rgba(46, 139, 87, 0.35)', 
-                  textTransform: 'none',
-                  px: 5,
-                  py: 1.8,
-                  fontSize: '1.05rem',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: '-100%',
-                    width: '100%',
-                    height: '100%',
-                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
-                    transition: 'left 0.6s ease'
-                  },
-                  '&:hover': { 
-                    bgcolor: '#257d4a',
-                    boxShadow: '0 8px 28px rgba(46, 139, 87, 0.5)',
-                    transform: 'translateY(-3px)',
-                    '&::before': {
-                      left: '100%'
-                    }
-                  },
-                  transition: 'all 0.3s ease'
-                }}
-                onClick={() => navigate('/nosotros')}
-              >
-                Conoce Más Sobre Nosotros
-              </Button>
             </Box>
+          </Box>
 
-            <Box sx={{ 
-              flex: 1, 
-              display: 'flex', 
-              justifyContent: 'center', 
-              alignItems: 'center' 
+          {/* Contenido */}
+          <Box sx={{ 
+            flex: 1,
+            p: { xs: 4, md: 6 }
+          }}>
+            {/* Badge */}
+            <Box sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 1,
+              mb: 3,
+              px: 3,
+              py: 1,
+              borderRadius: 8,
+              bgcolor: 'rgba(22, 163, 74, 0.1)',
+              border: '1px solid rgba(22, 163, 74, 0.2)'
             }}>
-              <Box sx={{
-                width: 200,
-                height: 200,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                background: 'linear-gradient(135deg, #f0f9f4 0%, #e8f5e9 100%)',
-                borderRadius: '50%',
-                boxShadow: '0 10px 40px rgba(46, 139, 87, 0.25)',
-                border: '4px solid #ffffff',
-                position: 'relative',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  width: 'calc(100% + 24px)',
-                  height: 'calc(100% + 24px)',
-                  borderRadius: '50%',
-                  border: '2px dashed rgba(46, 139, 87, 0.3)',
-                  animation: 'rotate 20s linear infinite'
-                },
-                '@keyframes rotate': {
-                  '0%': { transform: 'translate(-50%, -50%) rotate(0deg)' },
-                  '100%': { transform: 'translate(-50%, -50%) rotate(360deg)' }
-                }
+              <Typography sx={{ fontSize: '1.1rem' }}>🌱</Typography>
+              <Typography sx={{ 
+                color: '#16a34a', 
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                textTransform: 'uppercase',
+                letterSpacing: '1.2px',
+                fontFamily: 'Montserrat, Arial, sans-serif'
               }}>
-                <AgricultureIcon sx={{ 
-                  fontSize: 100, 
-                  color: '#2E8B57'
-                }} />
-              </Box>
+                Nuestra Misión
+              </Typography>
             </Box>
+
+            <Typography variant="h3" sx={{ 
+              fontWeight: 800, 
+              mb: 3, 
+              color: '#1e293b',
+              fontFamily: 'Playfair Display, serif',
+              fontSize: { xs: '2rem', md: '2.5rem' },
+              lineHeight: 1.2,
+              letterSpacing: '-1px'
+            }}>
+              Conectando el Campo con Tu Hogar
+            </Typography>
+
+            <Typography sx={{ 
+              color: '#64748b', 
+              mb: 4,
+              fontSize: '1.05rem',
+              lineHeight: 1.8,
+              fontFamily: 'Montserrat, Arial, sans-serif'
+            }}>
+              En HuertoHogar creemos en un futuro más saludable y sostenible. 
+              Trabajamos directamente con agricultores locales para traerte los 
+              productos más frescos y nutritivos, mientras apoyamos la economía 
+              de nuestras comunidades rurales.
+            </Typography>
+
+            {/* Lista de valores */}
+            <Box sx={{ mb: 4 }}>
+              {values.map((value, index) => (
+                <Box 
+                  key={index}
+                  sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 2,
+                    mb: 2
+                  }}
+                >
+                  <CheckCircleOutlineIcon sx={{ 
+                    color: '#16a34a', 
+                    fontSize: 24,
+                    flexShrink: 0
+                  }} />
+                  <Typography sx={{ 
+                    color: '#475569',
+                    fontSize: '1rem',
+                    fontWeight: 500,
+                    fontFamily: 'Montserrat, Arial, sans-serif'
+                  }}>
+                    {value}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+
+            {/* CTA */}
+            <Button
+              variant="contained"
+              size="large"
+              endIcon={<ArrowForwardIcon />}
+              onClick={() => navigate('/nosotros')}
+              sx={{
+                bgcolor: '#16a34a',
+                color: '#fff',
+                fontWeight: 700,
+                px: 5,
+                py: 2,
+                fontSize: '1.05rem',
+                borderRadius: 3,
+                textTransform: 'none',
+                fontFamily: 'Montserrat, Arial, sans-serif',
+                boxShadow: '0 4px 16px rgba(22, 163, 74, 0.3)',
+                '&:hover': {
+                  bgcolor: '#15803d',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 6px 20px rgba(22, 163, 74, 0.4)'
+                }
+              }}
+            >
+              Conoce Nuestra Historia
+            </Button>
           </Box>
         </Box>
       </Container>

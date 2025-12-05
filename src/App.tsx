@@ -36,6 +36,9 @@ import AdminProfile from './components/Admin/AdminProfile';
 import Chatbot from './components/Chatbot';
 import TrustBadges from './components/TrustBadges';
 import OfferBanner from './components/OfferBanner';
+import WhyChooseUs from './components/WhyChooseUs';
+import HomeNewsletter from './components/HomeNewsletter';
+import Testimonials from './components/Testimonials';
 
 // Importa tu hoja de estilos global
 import './styles/App.css';
@@ -57,7 +60,7 @@ const App: React.FC = () => {
           <div className="App" style={{ background: '#F7F7F7', minHeight: '100vh' }}>
             <OfferBanner />
             <Routes>
-              <Route path="/" element={<><Navbar /><Hero /><Categories /><SpecialOffers /><FeaturedProducts /><TrustBadges /><Mission /><Footer /></>} />
+              <Route path="/" element={<><Navbar /><Hero /><Categories /><SpecialOffers /><FeaturedProducts /><TrustBadges /><Testimonials /><Mission /><HomeNewsletter /><Footer /></>} />
               
               {/* Ruta de Login con Navbar y Footer */}
               <Route path="/login" element={<><Navbar /><Login /><Footer noMargin /></>} />

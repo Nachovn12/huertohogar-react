@@ -56,7 +56,7 @@ const Categories: React.FC = () => {
     <Box
       sx={{
         bgcolor: '#ffffff',
-        py: { xs: 6, md: 10 },
+        py: { xs: 8, md: 12 },
         position: 'relative'
       }}
     >
@@ -121,10 +121,10 @@ const Categories: React.FC = () => {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(2, 1fr)' },
-            gap: { xs: 3, md: 4 },
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+            gap: { xs: 3, md: 3 },
             px: { xs: 2, md: 0 },
-            maxWidth: 1000,
+            maxWidth: 1200,
             mx: 'auto'
           }}
         >
@@ -136,7 +136,7 @@ const Categories: React.FC = () => {
                 borderRadius: 4,
                 bgcolor: '#fff',
                 border: '2px solid #f5f5f5',
-                minHeight: 540,
+                minHeight: 340,
                 maxWidth: '100%',
                 display: 'flex',
                 flexDirection: 'column',
@@ -183,7 +183,7 @@ const Categories: React.FC = () => {
               <Box
                 sx={{
                   width: '100%',
-                  height: 180,
+                  height: 120,
                   overflow: 'hidden',
                   display: 'flex',
                   justifyContent: 'center',

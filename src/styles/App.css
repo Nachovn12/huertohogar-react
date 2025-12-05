@@ -19,12 +19,21 @@ body {
   /* Evitar scroll horizontal ocasionado por offcanvas o sombras fuera del viewport */
   overflow-x: hidden;
   width: 100%;
+  max-width: 100vw;
   position: relative;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Prevenir scroll horizontal global */
+#root,
+.App {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
 }
 
 
@@ -722,7 +731,7 @@ code {
     padding: 1rem 2rem;
     position: sticky;
     top: 60px;
-    z-index: 1000;
+    z-index: 9999;
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
     backdrop-filter: blur(10px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1162,6 +1171,7 @@ code {
   .main-header {
     padding: 0.85rem 1.25rem;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    top: 120px; /* Altura del banner en móvil + margen de seguridad */
   }
 
   .header-content {

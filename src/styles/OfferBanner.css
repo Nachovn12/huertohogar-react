@@ -16,6 +16,11 @@
               opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Ocultar banner si el chat está abierto en móvil */
+body.chatbot-open-mobile .offer-banner {
+  display: none !important;
+}
+
 /* Estados de visibilidad */
 .offer-banner.visible {
   transform: translateY(0);

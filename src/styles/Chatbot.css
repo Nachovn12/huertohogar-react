@@ -194,7 +194,7 @@
   height: 32px;
   border-radius: 50%;
   cursor: pointer;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
@@ -555,6 +555,14 @@
   .chatbot-header {
     border-radius: 0;
     padding: 16px 20px;
+  }
+
+  .chatbot-close {
+    display: flex;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.25);
+    font-size: 18px;
   }
 
   .chatbot-toggle {
